@@ -1,6 +1,7 @@
 <html>
 <head>
     <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.3/jquery-ui.min.js"></script>
     <script src="/socket.io/socket.io.js"></script>
     <link rel="stylesheet" type="text/css" href="/css.css">
 </head>
@@ -63,8 +64,12 @@
         }
 
         $(".tile").on("click", function(e){
-            console.log(selectedGroup);
-            socket.emit('select group', selectedGroup);
+            $.each(selectedGroup, function(index, selected){
+                $(".tile[data-pos=\""+selected+"\"")
+                .css({"-webkit-transform":"rotate(360deg) scale(0)","transition":".3s"})
+                .addClass('empty')
+            });
+            findMoveable()
         });
 
         $(".tile").on("mouseenter", function(e){
@@ -91,8 +96,8 @@
             });
 
         });
-
     };
+
     function replaceLetter(pos){
         localBoard.letters[pos.split(",")[2]]=alphabets[Math.floor((Math.random() * (alphabets.length-1)) )];
         var tile = $(".tile[data-pos=\""+pos+"\"]");
@@ -104,6 +109,46 @@
         tile.find(".letter").animate({
             top:"+=55"
         }, 300);
+    }
+
+    function findMoveable() {
+        var moveable = [];
+        moveable.blacklist = [];
+        var boardSize = localBoard.rows * localBoard.columns;
+ 
+        for(var t=boardSize; t > 0; t--) {
+            if($(".tile[data-pos=\""+t+"\"").hasClass('empty') && moveable.blacklist.indexOf(t) < 0) {
+                searchAbove(t, 1)
+            }
+        }
+
+        function updatePositions(){
+            // WORK IN PROGRESS
+            // for(var d=0;d < moveable.length; d++) {
+            //     $(".tile[data-pos=\""+moveable[d].pos+"\"").attr("data-pos", moveable[d].pos + (localBoard.rows * moveable[d].count))
+            // }
+            // setTimeout(function(){ $('.empty').remove(); }, 500);
+        }
+
+        function searchAbove(tile, count) {
+            var tileAbove = tile - localBoard.rows
+            if(tileAbove < 0) return;
+            if($(".tile[data-pos=\""+tileAbove +"\"").hasClass('empty')) {
+                moveable.blacklist.push(tileAbove);
+                searchAbove(tileAbove, count+=1)
+            } else {
+                moveable.push({pos: tileAbove, count: count});
+                searchAbove(tileAbove, count)
+            }
+        }
+        
+        for(var d=0;d < moveable.length; d++) {
+            $(".tile[data-pos=\""+moveable[d].pos+"\"")
+            .animate({ top: (70*moveable[d].count) }, {duration: 500, easing: 'easeOutBounce'});
+        }
+        
+        updatePositions();
+        return moveable;
     }
 
     function findNeighbors(pos) {
@@ -130,7 +175,6 @@
                         neighbors.push(neighbor(tile))
                         wagicalSearch(neighbor(tile))
                     }
-                    
                 }
                 
             })
