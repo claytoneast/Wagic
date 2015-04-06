@@ -51,7 +51,7 @@ var alphabets = ["a","a","a","a","a","a","a","a","a","b","b","c","c","c","c","d"
 
 var board={};
 
-var colors=["red","blue", "green"]
+var colors=["red","blue","green"]
 
 function init(){
     board={
