@@ -9,3 +9,14 @@
 <% @game.users.each do |user| %>
   <%= user.email %>
 <% end %>
+
+
+<% @game_state["board_state"]["array"].each do |horizontal| %>
+  <div class="row">
+    <% horizontal.each do |vertical| %>
+      <%= link_to vertical, game_path(data: vertical), :method => :put, class: 'btn btn-primary', style: "background-color:#{vertical["state"]}" %>
+
+    <% end %>
+
+  </div>
+<% end %>
