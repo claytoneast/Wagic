@@ -1,0 +1,11 @@
+<button type="button" name="button">Game Button</button>
+<% if user_signed_in? && @game.user_check(current_user) %>
+  You are part of this game!
+<% elsif user_signed_in? && !@game.user_check(current_user) %>
+  you are not part of this game
+  <%= link_to "Join this game", game_path, method: :patch %>
+<% end %>
+
+<% @game.users.each do |user| %>
+  <%= user.email %>
+<% end %>
