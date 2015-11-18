@@ -9,12 +9,22 @@
 <% @game.users.each do |user| %>
   <%= user.email %>
 <% end %>
+<br>
+<br>
 
-
-<% @game_state["board_state"]["array"].each do |horizontal| %>
-  <div class="row">
+<% @game_state.each do |horizontal| %>
+<div class="col-lg-1 col-md-1 col-sm-1 col-xs-1" id="row<%= horizontal.first['coordX'] %> ">
     <% horizontal.each do |vertical| %>
-      <%= link_to vertical, game_path(data: vertical), :method => :put, class: 'btn btn-primary', style: "background-color:#{vertical["state"]}" %>
+      <%= link_to vertical['letter'],
+      game_path(data: vertical),
+      :method => :put,
+      class: 'btn btn-primary btn-game',
+      id: "coordX#{vertical["coordX"]}coordY#{vertical["coordY"]}",
+      data: {
+        coordX: vertical['coordX'],
+        coordY: vertical['coordY'],
+        color: vertical['color']},
+      style: "background-color:#{vertical["color"]}" %>
 
     <% end %>
 

@@ -15,12 +15,24 @@ class Game < ActiveRecord::Base
     8.times do |i|
       game_board << []
       8.times do |j|
-        game_board[i] << { color: "blue", coordX: "#{i}", coordY: "#{j}"}
+        game_board[i] << { color: "#{random_color}", coordX: "#{i}", coordY: "#{j}", letter: "#{random_letter}"}
       end
     end
     game_board.to_json
     self.gamestate = game_board
   end
+
+  def random_letter
+    letters = ["e", "e", "e", "e", "e", "e", "e", "e", "e", "e", "e", "e", "e", "t", "t", "t", "t", "t", "t", "t", "t", "t", "a", "a", "a", "a", "a", "a", "a", "a", "o", "o", "o", "o", "o", "o", "o", "o", "i", "i", "i", "i", "i", "i", "i", "n", "n", "n", "n", "n", "n", "n", "s", "s", "s", "s", "s", "s", "h", "h", "h", "h", "h", "h", "r", "r", "r", "r", "r", "r", "d", "d", "d", "d", "l", "l", "l", "l", "c", "c", "c", "u", "u", "u", "m", "m", "w", "w", "f", "f", "g", "g", "y", "y", "p", "p", "b", "b", "v", "k", "j", "x", "q", "z"]
+    letters.sample
+  end
+
+
+  def random_color
+    colors = ['blue', 'green', 'red', 'orange']
+    colors.sample
+  end
+
 
 #     self.gamestate = {
 #    "board_state":{
