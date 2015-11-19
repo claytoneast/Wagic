@@ -61,28 +61,37 @@ class Game < ActiveRecord::Base
 
   def get_letters(space, user)
     block = getBlock(space)
-    letters_to_hand(block, user)
+    binding.pry
+    # letters_to_hand(block, user)
   end
 
   def letters_to_hand(spaces, user)
-    spaces.each do |space|
-      #loop through spaces, find each one in db, remove it from the map.
-      working_column = self.gamestate["board_state"]["array"][space[:coordX].to_i]
-      json_user = which_player(user)
-      gotten_space = working_column.delete_at(space[:coordY].to_i)
-      self.gamestate[json_user][json_user + 'hand'] << gotten_space
-      working_column.each do |change_space|
-        # if the change_space Y index is...lower than the Y index of gotten_space, then we push its coordinates up by one
-        if change_space["coordY"] < gotten_space["coordY"]
+    json_user = which_player(user) # find the player
+    spaces.each do |space| # for each space to be added to hand
+      working_column = self.gamestate["board_state"]["array"][space["coordX"].to_i] #find out which column its in on the board
+      gotten_space = working_column.delete_at(space[:coordY].to_i) # take the space out of the column
+      self.gamestate[json_user][json_user + 'hand'] << gotten_space # push the space into the users hand
+      working_column.each do |change_space| # now, for each space left in the column
+        if change_space["coordY"].to_i < gotten_space["coordY"].to_i # if the space was higher than the remove spaced
           y = change_space["coordY"].to_i
           y += 1
-          change_space["coordY"] = y.to_s
+          change_space["coordY"] = y.to_s # increment the spaces coordY by one, pushing it down the board for data sake
         end
       end
-      self.save
-      #then, each space above it, iterate those coords by one
-      #then push in a new space above
+      # now, we've removed a space. one space. if we remove another in the same column, it will increment
+      # above it as it should.
     end
+    #now the amount of spaces we'e removed, we need to push back in
+    # spaces_back = spaces.length + 1 #how many times to push in a new space
+    # spaces_back.times {self.add_space(space["coordX"].to_i)} # pass in the x coord for the column
+    self.save
+  end
+
+  def add_space(column_coordX)
+    column = self.gamestate["board_state"]["array"][column_coordX]
+    # if removed 2, array is 6 elements long. 0-5 index. coords are 2-7 next element needs to be index of 1. 7- length of array.
+    column.unshift({ color: "#{random_color}", coordX: "#{column_coordX}", coordY: "#{column.length - 1}", letter: "#{random_letter}"})
+    self.save
   end
 
   def which_player(user)
@@ -103,7 +112,6 @@ class Game < ActiveRecord::Base
         end
       end
     end
-
     masterBlock = []
     recursiveGetBlock([space], masterBlock)
     return masterBlock
@@ -114,6 +122,7 @@ class Game < ActiveRecord::Base
   end
 
   def coordsToSpace(coords)
+
     self.gamestate["board_state"]["array"][coords[0]][coords[1]]
   end
 
@@ -130,6 +139,7 @@ class Game < ActiveRecord::Base
     end
     if intCoords[0]-1 >= 0
       left = [intCoords[0]-1, intCoords[1]]
+
       neighbors << coordsToSpace(left)
     end
     if intCoords[0]+1 <= 7
@@ -144,6 +154,7 @@ class Game < ActiveRecord::Base
     same_neighbors = []
     all_neighbors.each do |neighbor|
       same_neighbors << neighbor if neighbor["color"] == colorQueryAgainst
+      binding.pry
     end
     return same_neighbors
   end
