@@ -11,7 +11,12 @@ class Game < ActiveRecord::Base
         ]
       },
       "player1": {
-        "player1id": ""
+        "player1id": "",
+        "player1hand": []
+      },
+      "player2": {
+        "player2id": "",
+        "player2hand": []
       }
     }
     game_board = initial_board[:board_state][:array]
@@ -23,7 +28,6 @@ class Game < ActiveRecord::Base
     end
     game_board.to_json
     self.gamestate = initial_board
-    binding.pry
   end
 
   def random_letter
@@ -38,18 +42,52 @@ class Game < ActiveRecord::Base
   end
 
   def user_check(check_user)
-    self.users.each do |user|
-      if user == check_user
-        return true
-      else
-        return false
+    return true if self.users.include?(check_user)
+    return false if !self.users.include?(check_user)
+  end
+
+  def add_player(user)
+    unless user_check(user)
+      self.users.push(user)
+      if self.gamestate["player1"]["player1id"] == ""
+        self.gamestate["player1"]["player1id"] = user.id
+      elsif
+        self.gamestate["player2"]["player2id"] == ""
+          self.gamestate["player2"]["player2id"] = user.id
       end
+    end
+    self.save
+  end
+
+  def get_letters(space, user)
+    block = getBlock(space)
+    letters_to_hand(block, user)
+  end
+
+  def letters_to_hand(spaces, user)
+    spaces.each do |space|
+      #loop through spaces, find each one in db, remove it from the map.
+      working_column = self.gamestate["board_state"]["array"][space[:coordX].to_i]
+      json_user = which_player(user)
+      gotten_space = working_column.delete_at(space[:coordY].to_i)
+      self.gamestate[json_user][json_user + 'hand'] << gotten_space
+      working_column.each do |change_space|
+        # if the change_space Y index is...lower than the Y index of gotten_space, then we push its coordinates up by one
+        if change_space["coordY"] < gotten_space["coordY"]
+          y = change_space["coordY"].to_i
+          y += 1
+          change_space["coordY"] = y.to_s
+        end
+      end
+      self.save
+      #then, each space above it, iterate those coords by one
+      #then push in a new space above
     end
   end
 
-  def update_board(space, user)
-    block = getBlock(space)
-    binding.pry
+  def which_player(user)
+      return "player1" if self.gamestate["player1"]["player1id"] == user.id
+      return "player2" if self.gamestate["player2"]["player2id"] == user.id
   end
 
   def getBlock(space)
@@ -76,7 +114,7 @@ class Game < ActiveRecord::Base
   end
 
   def coordsToSpace(coords)
-    self.gamestate[coords[0]][coords[1]]
+    self.gamestate["board_state"]["array"][coords[0]][coords[1]]
   end
 
   def getNeighbors(space)
@@ -98,7 +136,7 @@ class Game < ActiveRecord::Base
       right = [intCoords[0]+1, intCoords[1]]
       neighbors << coordsToSpace(right)
     end
-    return neighbors
+    return neighbors.compact
   end
 
   def sameColorNeighbors(all_neighbors, space)
