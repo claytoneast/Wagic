@@ -33,67 +33,6 @@ class Game < ActiveRecord::Base
     colors.sample
   end
 
-
-#     self.gamestate = {
-#    "board_state":{
-#       "array":[
-#          [
-#             {
-#                "state":"blue",
-#                "coordX":"0",
-#                "coordY":"0"
-#             },
-#             {
-#                "state":"blue",
-#                "coordX":"0",
-#                "coordY":"1"
-#             },
-#             {
-#                "state":"blue",
-#                "coordX":"0",
-#                "coordY":"2"
-#             }
-#          ],
-#          [
-#             {
-#                "state":"red",
-#                "coordX":"1",
-#                "coordY":"0"
-#             },
-#             {
-#                "state":"red",
-#                "coordX":"1",
-#                "coordY":"1"
-#             },
-#             {
-#                "state":"red",
-#                "coordX":"1",
-#                "coordY":"2"
-#             }
-#          ],
-#          [
-#             {
-#                "state":"green",
-#                "coordX":"2",
-#                "coordY":"0"
-#             },
-#             {
-#                "state":"green",
-#                "coordX":"2",
-#                "coordY":"1"
-#             },
-#             {
-#                "state":"green",
-#                "coordX":"2",
-#                "coordY":"2"
-#             }
-#          ]
-#       ]
-#    }
-# }
-
-
-
   def user_check(check_user)
     self.users.each do |user|
       if user == check_user
@@ -102,6 +41,69 @@ class Game < ActiveRecord::Base
         return false
       end
     end
+  end
+
+  def update_board(space, user)
+    block = getBlock(space)
+    binding.pry
+  end
+
+  def getBlock(space)
+    def recursiveGetBlock(spaces, masterBlock)
+      colorBlock = []
+      spaces.each do |space|
+        unless masterBlock.include?(space)
+          masterBlock << space
+          colorBlock << space
+          neighbors = getNeighbors(space)
+          sameNeighbors = sameColorNeighbors(neighbors, space) #now we have db objects of same neighbors
+          recursiveGetBlock(sameNeighbors, masterBlock) if sameNeighbors.length > 0
+        end
+      end
+    end
+
+    masterBlock = []
+    recursiveGetBlock([space], masterBlock)
+    return masterBlock
+  end
+
+  def spaceToCoords(space)
+    coords = [space["coordX"].to_i, space["coordY"].to_i]
+  end
+
+  def coordsToSpace(coords)
+    self.gamestate[coords[0]][coords[1]]
+  end
+
+  def getNeighbors(space)
+    intCoords = spaceToCoords(space)
+    neighbors = []
+    if intCoords[1]-1 >= 0
+      above = [intCoords[0], intCoords[1]-1]
+      neighbors << coordsToSpace(above)
+    end
+    if intCoords[1]+1 <= 7
+      below = [intCoords[0], intCoords[1]+1]
+      neighbors << coordsToSpace(below)
+    end
+    if intCoords[0]-1 >= 0
+      left = [intCoords[0]-1, intCoords[1]]
+      neighbors << coordsToSpace(left)
+    end
+    if intCoords[0]+1 <= 7
+      right = [intCoords[0]+1, intCoords[1]]
+      neighbors << coordsToSpace(right)
+    end
+    return neighbors
+  end
+
+  def sameColorNeighbors(all_neighbors, space)
+    colorQueryAgainst = space[:color]
+    same_neighbors = []
+    all_neighbors.each do |neighbor|
+      same_neighbors << neighbor if neighbor["color"] == colorQueryAgainst
+    end
+    return same_neighbors
   end
 
 end

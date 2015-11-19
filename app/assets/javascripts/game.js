@@ -1,19 +1,48 @@
 console.log('init')
 $(document).ready(function(){
-  $('a').hover(function(){
+
+  $(".tile-wrapper").on({
+    mouseenter: function() {
+      space = $(this);
+      sameNeighbors = arrayCheckLayer(space);
+      sameNeighbors.forEach(function(neighbor) {
+        neighbor = neighbor.split(",");
+        $("#coordX" + neighbor[0] + "coordY" + neighbor[1]).toggleClass("selected");
+      });
+    },
+    mouseleave: function() {
+      space = $(this);
+      sameNeighbors = arrayCheckLayer(space);
+      sameNeighbors.forEach(function(neighbor) {
+        neighbor = neighbor.split(",");
+        $("#coordX" + neighbor[0] + "coordY" + neighbor[1]).toggleClass("selected");
+      });
+    }
+  }, ".tile");
+
+  $('.tile-wrapper').on("click", ".tile", function() {
     space = $(this)
+    neighborShiftInfo = []
     sameNeighbors = arrayCheckLayer(space);
     sameNeighbors.forEach(function(neighbor) {
       neighbor = neighbor.split(",");
-      $("#coordX" + neighbor[0] + "coordY" + neighbor[1]).toggleClass("selected");
-    })
+      neighborShiftInfo.push(neighbor);
+      $("#coordX" + neighbor[0] + "coordY" + neighbor[1]).remove();
+    });
 
   });
+
+
 });
+
+function updateBoard(deletedBlocks) {
+  // this function needs to go into the json of the game board object,
+  // and then figure out how to modify that data. how do I get this json here...
+}
 
 function arrayCheckLayer(space) {
   masterCheckArray = [];
-  adjSpaces = getBlock([space]);
+  getBlock([space]);
   function getBlock(spaces) {
     colorBlock = [];
     spaces.forEach(function(space) {

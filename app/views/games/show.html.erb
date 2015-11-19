@@ -12,8 +12,9 @@
 <br>
 <br>
 
+<div class="flex-wrap tile-wrapper">
 <% @game_state.each do |horizontal| %>
-<div class="col-lg-1 col-md-1 col-sm-1 col-xs-1" id="row<%= horizontal.first['coordX'] %> ">
+<div class="flex-box" id="row<%= horizontal.first['coordX'] %> ">
     <% horizontal.each do |vertical| %>
       <%= link_to vertical['letter'],
       game_path(data: vertical),
@@ -30,3 +31,19 @@
 
   </div>
 <% end %>
+</div>
+
+<style media="screen">
+  .flex-box {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+  }
+  .flex-wrap {
+    display: flex;
+    flex-direction: row;
+  }
+  .tile {
+    transition: border .1s;
+  }
+</style>
