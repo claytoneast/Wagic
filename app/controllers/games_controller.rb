@@ -26,6 +26,6 @@ class GamesController < ApplicationController
     game = Game.find(params[:id])
     game.update_board(params[:data], current_user)
     @game_state = game.gamestate
-    render
+
   end
 end

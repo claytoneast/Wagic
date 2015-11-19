@@ -16,7 +16,6 @@ gem 'bootstrap-sass'
 
 
 
-
 group :development, :test do
   gem 'web-console', '~> 2.0'
   gem 'quiet_assets'

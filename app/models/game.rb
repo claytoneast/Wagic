@@ -1,14 +1,17 @@
 class Game < ActiveRecord::Base
   has_and_belongs_to_many :users
 
-  before_create :populate_board
-  def populate_board
+  before_create :set_gamestate
+  def set_gamestate
 
     initial_board = {
       "board_state": {
         "array": [
 
         ]
+      },
+      "player1": {
+        "player1id": ""
       }
     }
     game_board = initial_board[:board_state][:array]
@@ -19,7 +22,8 @@ class Game < ActiveRecord::Base
       end
     end
     game_board.to_json
-    self.gamestate = game_board
+    self.gamestate = initial_board
+    binding.pry
   end
 
   def random_letter

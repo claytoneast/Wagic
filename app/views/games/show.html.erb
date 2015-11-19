@@ -13,7 +13,7 @@
 <br>
 
 <div class="flex-wrap tile-wrapper">
-<% @game_state.each do |horizontal| %>
+<% @game_state["board_state"]["array"].each do |horizontal| %>
 <div class="flex-box" id="row<%= horizontal.first['coordX'] %> ">
     <% horizontal.each do |vertical| %>
       <%= link_to vertical['letter'],
