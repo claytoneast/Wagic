@@ -61,15 +61,15 @@ class Game < ActiveRecord::Base
 
   def get_letters(space, user)
     block = getBlock(space)
-    binding.pry
-    # letters_to_hand(block, user)
+    letters_to_hand(block, user)
   end
 
   def letters_to_hand(spaces, user)
+    spaces.sort! { |a,b | a["coordY"] <=> b["coordY"] }
     json_user = which_player(user) # find the player
     spaces.each do |space| # for each space to be added to hand
       working_column = self.gamestate["board_state"]["array"][space["coordX"].to_i] #find out which column its in on the board
-      gotten_space = working_column.delete_at(space[:coordY].to_i) # take the space out of the column
+      gotten_space = working_column.delete_at(space["coordY"].to_i) # take the space out of the column
       self.gamestate[json_user][json_user + 'hand'] << gotten_space # push the space into the users hand
       working_column.each do |change_space| # now, for each space left in the column
         if change_space["coordY"].to_i < gotten_space["coordY"].to_i # if the space was higher than the remove spaced
@@ -78,9 +78,15 @@ class Game < ActiveRecord::Base
           change_space["coordY"] = y.to_s # increment the spaces coordY by one, pushing it down the board for data sake
         end
       end
-      # now, we've removed a space. one space. if we remove another in the same column, it will increment
-      # above it as it should.
     end
+
+    spaces.each do |space| # for each space to be added to hand
+      working_column = self.gamestate["board_state"]["array"][space["coordX"].to_i] #find out which column its in on the board
+      # then run add space for however many times the column is short of spaces
+      times_to_run = 8-working_column.length # if 6 long, 0-5, will run twice
+      times_to_run.times {add_space(space["coordX"].to_i)}
+    end
+    # do the same loop through spaces again, but this time push in new spaces at their proper place
     #now the amount of spaces we'e removed, we need to push back in
     # spaces_back = spaces.length + 1 #how many times to push in a new space
     # spaces_back.times {self.add_space(space["coordX"].to_i)} # pass in the x coord for the column
@@ -90,7 +96,7 @@ class Game < ActiveRecord::Base
   def add_space(column_coordX)
     column = self.gamestate["board_state"]["array"][column_coordX]
     # if removed 2, array is 6 elements long. 0-5 index. coords are 2-7 next element needs to be index of 1. 7- length of array.
-    column.unshift({ color: "#{random_color}", coordX: "#{column_coordX}", coordY: "#{column.length - 1}", letter: "#{random_letter}"})
+    column.unshift({ "color": "#{random_color}", "coordX": "#{column_coordX}", "coordY": "#{7 - column.length}", "letter": "#{random_letter}"})
     self.save
   end
 
@@ -150,13 +156,33 @@ class Game < ActiveRecord::Base
   end
 
   def sameColorNeighbors(all_neighbors, space)
-    colorQueryAgainst = space[:color]
+    colorQueryAgainst = space["color"]
     same_neighbors = []
     all_neighbors.each do |neighbor|
       same_neighbors << neighbor if neighbor["color"] == colorQueryAgainst
-      binding.pry
     end
     return same_neighbors
   end
 
 end
+
+# currently trying to figure out why the fuck sameneighbors aren't returning everything there
+# colorQueryAgainst was using space[:color] instead of space["color"] which sometimes works sometimes doesnt
+# binding line 157 very useful. ++++++++++++++ FIXED
+
+# now, why isn't it pushing the correct colors into the block. is it because the board is fucked from the previous move?
+# block works the first time, gets totally fucked up the second time because of board being incomplete
+# board needs to push in new pieces the first time, that should fix it.
+
+# first time, it always works and repopulates correctly
+# second time, it is grabbing the spaces correctly, previous to pushing them to the hand
+# pushed to hand correctly on opposite side of board from the first move.
+# third time, grabbed correct
+
+# its breaking when it goes to push these letters into the hand.
+# its deleting the previous space, making the coordinates go wonk if there
+# is another space in that column it has to delete. It needs to sort the spaces
+# so that the first ones it encounters are the ones on top
+
+# also, when in database, nothing is actually JSON its all hash notation stuff. So....all of that
+# needs to be JSON somehow. Store in JSON. Work with it in object notation, parsed JSON. then parsedit back
