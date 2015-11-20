@@ -64,33 +64,58 @@ class Game < ActiveRecord::Base
     letters_to_hand(block, user)
   end
 
+  # take space, copy it to hand
+  #
+
   def letters_to_hand(spaces, user)
     spaces.sort! { |a,b | a["coordY"] <=> b["coordY"] }
-    json_user = which_player(user) # find the player
-    spaces.each do |space| # for each space to be added to hand
-      working_column = self.gamestate["board_state"]["array"][space["coordX"].to_i] #find out which column its in on the board
-      gotten_space = working_column.delete_at(space["coordY"].to_i) # take the space out of the column
-      self.gamestate[json_user][json_user + 'hand'] << gotten_space # push the space into the users hand
-      working_column.each do |change_space| # now, for each space left in the column
-        if change_space["coordY"].to_i < gotten_space["coordY"].to_i # if the space was higher than the remove spaced
-          y = change_space["coordY"].to_i
-          y += 1
-          change_space["coordY"] = y.to_s # increment the spaces coordY by one, pushing it down the board for data sake
+    spaces.each do |space|
+      board_column = self.gamestate["board_state"]["array"][space["coordX"].to_i]
+      json_user = which_player(user) # find the player
+      self.gamestate[json_user][json_user + 'hand'] << space # copy space to player
+      # then for each space above that space, change it
+      board_column.each do |move_space|
+        ## needs to move spaces down, and for each number of spaces moved in that column, randomized that many on top
+        if move_space["coordY"].to_i < space["coordY"].to_i #is this space above original?
+          move_space_above = board_column[space["coordY"].to_i - 1]# get the space just above it
+          if move_space_above == board_column.last  # if the space is negativeindexed last space, randomized the space
+            move_space["letter"] = random_letter
+            move_space["color"] = random_color
+          else #otherwise
+            move_space["color"] = move_space_above["color"] #overwrite that fucking thing with whavter is above it OH FUCK
+            move_space["letter"] = move_space_above["letter"] #overwrite that fucking thing with whavter is above it OH FUCK
+          end
+        else #otherwise do fucking nothing
         end
       end
-    end
-
-    spaces.each do |space| # for each space to be added to hand
-      working_column = self.gamestate["board_state"]["array"][space["coordX"].to_i] #find out which column its in on the board
-      # then run add space for however many times the column is short of spaces
-      times_to_run = 8-working_column.length # if 6 long, 0-5, will run twice
-      times_to_run.times {add_space(space["coordX"].to_i)}
-    end
-    # do the same loop through spaces again, but this time push in new spaces at their proper place
-    #now the amount of spaces we'e removed, we need to push back in
-    # spaces_back = spaces.length + 1 #how many times to push in a new space
-    # spaces_back.times {self.add_space(space["coordX"].to_i)} # pass in the x coord for the column
     self.save
+    end
+    # spaces.each do |space| # for each space to be added to hand
+    #   working_column = self.gamestate["board_state"]["array"][space["coordX"].to_i] #find out which column its in on the board
+    #   gotten_space = working_column[space["coordY"].to_i] # take the space out of the column
+    #   self.gamestate[json_user][json_user + 'hand'] << gotten_space # push the space into the users hand
+    #   working_column.each do |change_space| # now, for each space left in the column
+    #     binding.pry
+    #     if change_space["coordY"].to_i < gotten_space["coordY"].to_i # if the space was higher than the remove spaced
+    #       y = change_space["coordY"].to_i
+    #       y += 1
+    #       change_space["coordY"] = y.to_s # increment the spaces coordY by one, pushing it down the board for data sake
+    #     end
+    #     binding.pry
+    #   end
+    # end
+    # spaces.each do |space| # for each space to be added to hand
+    #   working_column = self.gamestate["board_state"]["array"][space["coordX"].to_i] #find out which column its in on the board
+    #   located_space = working_column.find { |i| i["coordY"] == "#{space["coordY"]}"}
+    #   working_column.delete(located_space)
+    # end
+    # spaces.each do |space| # for each space to be added to hand
+    #   working_column = self.gamestate["board_state"]["array"][space["coordX"].to_i] #find out which column its in on the board
+    #   # then run add space for however many times the column is short of spaces
+    #   times_to_run = 8-working_column.length # if 6 long, 0-5, will run twice
+    #   times_to_run.times {add_space(space["coordX"].to_i)}
+    # end
+    # self.save
   end
 
   def add_space(column_coordX)
@@ -165,24 +190,3 @@ class Game < ActiveRecord::Base
   end
 
 end
-
-# currently trying to figure out why the fuck sameneighbors aren't returning everything there
-# colorQueryAgainst was using space[:color] instead of space["color"] which sometimes works sometimes doesnt
-# binding line 157 very useful. ++++++++++++++ FIXED
-
-# now, why isn't it pushing the correct colors into the block. is it because the board is fucked from the previous move?
-# block works the first time, gets totally fucked up the second time because of board being incomplete
-# board needs to push in new pieces the first time, that should fix it.
-
-# first time, it always works and repopulates correctly
-# second time, it is grabbing the spaces correctly, previous to pushing them to the hand
-# pushed to hand correctly on opposite side of board from the first move.
-# third time, grabbed correct
-
-# its breaking when it goes to push these letters into the hand.
-# its deleting the previous space, making the coordinates go wonk if there
-# is another space in that column it has to delete. It needs to sort the spaces
-# so that the first ones it encounters are the ones on top
-
-# also, when in database, nothing is actually JSON its all hash notation stuff. So....all of that
-# needs to be JSON somehow. Store in JSON. Work with it in object notation, parsed JSON. then parsedit back
