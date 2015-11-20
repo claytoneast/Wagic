@@ -41,6 +41,10 @@ class Game < ActiveRecord::Base
     colors.sample
   end
 
+  def random_space_in_column(column)
+    jspace = JSON.parse({ "color": "#{random_color}", "coordX": "#{column}", "coordY": "", "letter": "#{random_letter}"}.to_json)
+  end
+
   def user_check(check_user)
     return true if self.users.include?(check_user)
     return false if !self.users.include?(check_user)
@@ -62,6 +66,7 @@ class Game < ActiveRecord::Base
   def get_letters(space, user)
     block = getBlock(space)
     letters_to_hand(block, user)
+    binding.pry
   end
 
   # take space, copy it to hand
@@ -70,47 +75,34 @@ class Game < ActiveRecord::Base
   def letters_to_hand(spaces, user)
     spaces.sort! { |a,b | a["coordY"] <=> b["coordY"] }
     json_user = which_player(user) # find the players json identifer
-    # column count for each one. whichever column its in, push a number to that array index of a column array
-    column_count = Array.new(8) {Hash[count: 0, max_index: 0]}
+    hand = self.gamestate[json_user][json_user + 'hand'] #get player hand
     spaces.each do |space|
       board_column = self.gamestate["board_state"]["array"][space["coordX"].to_i]
-      column_count[space["coordX"].to_i][:count] += 1 #increment column count
-      if column_count[space["coordX"].to_i][:max_index] < space["coordY"].to_i
-        column_count[space["coordX"].to_i][:max_index] = space["coordY"].to_i
-      end
-      self.gamestate[json_user][json_user + 'hand'] << space # copy space to player
-      # # then for each space above that space, change it
-      # board_column.each do |move_space|
-      #   ## needs to move spaces down, and for each number of spaces moved in that column, randomized that many on top
-      #   if move_space["coordY"].to_i < space["coordY"].to_i #is this space above original?
-      #     move_space_above = board_column[space["coordY"].to_i - 1]# get the space just above it
-      #     if move_space_above == board_column.last  # if the space is negativeindexed last space, randomized the space
-      #       move_space["letter"] = random_letter
-      #       move_space["color"] = random_color
-      #     else #otherwise
-      #       move_space["color"] = move_space_above["color"] #overwrite that fucking thing with whavter is above it
-      #       move_space["letter"] = move_space_above["letter"] #overwrite that fucking thing with whavter is above it
-      #     end
-      #   else #otherwise do fucking nothing
-      #   end
-      # end
+      board_column.delete_if { |item| hand << item if item["coordY"] == space["coordY"]}
     end
     self.save
-    move_space(column_count)
+    add_spaces
+    adjust_spaces
+    binding.pry
+
   end
 
-  def delete_spaces(column_count)
-    column_count.each_with_index do |column, i|
-      db_column = self.gamestate["board_state"]["array"][i]
-      column[:count].times {db_column[column[:max_index]]}
+  def adjust_spaces
+      board = self.gamestate["board_state"]["array"]
+      board.each do |column|
+          column.each_with_index do |space, index|
+            space["coordY"] = (index.to_s)
+          end
+      end
+  end
+
+  def add_spaces
+    board = self.gamestate["board_state"]["array"]
+    board.each_with_index do |column, index|
+      if column.length < 8
+        (8-column.length).times {column.unshift(random_space_in_column(index))}
+      end
     end
-
-  end
-
-  def add_space(column_coordX)
-    column = self.gamestate["board_state"]["array"][column_coordX]
-    # if removed 2, array is 6 elements long. 0-5 index. coords are 2-7 next element needs to be index of 1. 7- length of array.
-    column.unshift({ "color": "#{random_color}", "coordX": "#{column_coordX}", "coordY": "#{7 - column.length}", "letter": "#{random_letter}"})
     self.save
   end
 
