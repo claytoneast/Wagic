@@ -66,11 +66,8 @@ class Game < ActiveRecord::Base
   def get_letters(space, user)
     block = getBlock(space)
     letters_to_hand(block, user)
-    binding.pry
+    self.save
   end
-
-  # take space, copy it to hand
-  #
 
   def letters_to_hand(spaces, user)
     spaces.sort! { |a,b | a["coordY"] <=> b["coordY"] }
@@ -83,8 +80,6 @@ class Game < ActiveRecord::Base
     self.save
     add_spaces
     adjust_spaces
-    binding.pry
-
   end
 
   def adjust_spaces
