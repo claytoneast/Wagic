@@ -36,7 +36,18 @@ class GamesController < ApplicationController
   def choose_letters
     @game = Game.find(params[:game_id])
     @game.get_letters(params[:data], current_user)
-    redirect_to game_path(@game)
+    respond_to do |format|
+      format.js
+      format.json
+      format.html {redirect_to game_path(@game)}
+    end
+  end
+
+  def game_board
+    @game = Game.find(params[:game_id])
+    respond_to do |format|
+      format.json { render :json => @game }
+    end
   end
 
   def make_word

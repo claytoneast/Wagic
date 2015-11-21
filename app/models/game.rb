@@ -129,7 +129,6 @@ class Game < ActiveRecord::Base
   end
 
   def coordsToSpace(coords)
-
     self.gamestate["board_state"]["array"][coords[0]][coords[1]]
   end
 
@@ -163,6 +162,10 @@ class Game < ActiveRecord::Base
       same_neighbors << neighbor if neighbor["color"] == colorQueryAgainst
     end
     return same_neighbors
+  end
+
+  def as_json(opts={})
+    { data: gamestate, board: gamestate["board_state"]["array"] }
   end
 
 end

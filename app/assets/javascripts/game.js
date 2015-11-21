@@ -1,6 +1,24 @@
 console.log('init')
 $(document).ready(function(){
 
+  var id = parseInt($("#game-id").text())
+  // $.get("/games/" + id + "/game_board", function(data, status) {
+  //   alert('made a request');
+  // });
+
+  $.ajax({
+    url: "/games/" + id + "/game_board",
+    type: "GET",
+    dataType: "json",
+    success: function(data) {
+      showBoard(data);
+    }
+  });
+
+
+
+
+
   $(".tile-wrapper").on({
     mouseenter: function() {
       space = $(this);
@@ -35,9 +53,24 @@ $(document).ready(function(){
 
 });
 
-function updateBoard(deletedBlocks) {
-  // this function needs to go into the json of the game board object,
-  // and then figure out how to modify that data. how do I get this json here...
+
+function showBoard(game) {
+  game.board.forEach(function(column, xIndex) {
+    var make_column = '<div class="flex-box" id="row' + xIndex + '"></div>'
+    $("#board").append(
+      make_column
+    );
+    column.forEach(function(space, yIndex) {
+      $("#row" + xIndex).append(
+        '<button class="btn btn-game tile btn-primary"' +
+        'data-coordX="' + xIndex + '"' +
+        'data-coordY="' + yIndex + '"' +
+        'data-color="' + space.color + '"' +
+        'style="background-color:' + space.color + '"' +
+        '>' + space.letter + '</button>'
+      );
+    });
+  });
 }
 
 function arrayCheckLayer(space) {

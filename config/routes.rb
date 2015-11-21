@@ -5,6 +5,7 @@ Rails.application.routes.draw do
   resources :games do
     get 'choose_letters' => 'games#choose_letters'
     get 'join_game' => 'games#join_game'
+    get 'game_board' => 'games#game_board'
   end
 
   # The priority is based upon order of creation: first created -> highest priority.
