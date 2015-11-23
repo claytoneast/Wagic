@@ -1,35 +1,27 @@
-console.log('init')
+console.log('init');
+
+// Don't forget to add ; to the end of all your statements. js linters are great for this
+
 $(document).ready(function(){
 
-  $(".tile-wrapper").on({
-    mouseenter: function() {
-      space = $(this);
-      sameNeighbors = arrayCheckLayer(space);
-      sameNeighbors.forEach(function(neighbor) {
-        neighbor = neighbor.split(",");
-        $("#coordX" + neighbor[0] + "coordY" + neighbor[1]).toggleClass("selected");
-      });
-    },
-    mouseleave: function() {
-      space = $(this);
-      sameNeighbors = arrayCheckLayer(space);
-      sameNeighbors.forEach(function(neighbor) {
-        neighbor = neighbor.split(",");
-        $("#coordX" + neighbor[0] + "coordY" + neighbor[1]).toggleClass("selected");
-      });
-    }
-  }, ".tile");
-
-  $('.tile-wrapper').on("click", ".tile", function() {
-    space = $(this)
-    neighborShiftInfo = []
-    sameNeighbors = arrayCheckLayer(space);
-    sameNeighbors.forEach(function(neighbor) {
+  // Hover will cover both mouseenter & mouseleave if they are the same function
+  $(".tile").on("hover", function() {
+    // space = $(this);  //redundant, just use 'this'
+    var neighbors = getNeighbors(this);
+    neighbors.forEach(function(neighbor) {
       neighbor = neighbor.split(",");
-      neighborShiftInfo.push(neighbor);
-      $("#coordX" + neighbor[0] + "coordY" + neighbor[1]).remove();
+      $("#x" + neighbor[0] + "y" + neighbor[1]).toggleClass("selected");
     });
+  });
 
+  $('.tile').on("click", function() {
+    var neighborShiftInfo = []; // Is this being used for anything?
+    var neighbors = getNeighbors(this);
+    neighbors.forEach(function(neighbor) {
+      neighbor = neighbor.split(",");
+      neighborShiftInfo.push(neighbor); // ?
+      $("#x" + neighbor[0] + "y" + neighbor[1]).remove();
+    });
   });
 
 
@@ -40,76 +32,70 @@ function updateBoard(deletedBlocks) {
   // and then figure out how to modify that data. how do I get this json here...
 }
 
-function arrayCheckLayer(space) {
-  masterCheckArray = [];
+function getNeighbors(space) {
+  var checkArray = []; //Be sure to declare your variables in js
   getBlock([space]);
+
   function getBlock(spaces) {
-    colorBlock = [];
+    var colorBlock = [];
     spaces.forEach(function(space) {
-      // if space isn't already in the masterCheckArray, then push it there, then check it. else nothing.
-      if (masterCheckArray.indexOf(flatSpace(space)) <= -1) { // if not in there do this
-        masterCheckArray.push(flatSpace(space)); // push into check array
+      if (checkArray.indexOf(String(getCoords(space))) <= -1) { // if not in there do this
+        checkArray.push(String(getCoords(space))); // push into check array
         colorBlock.push(space);
         neighbors = findAllNeighbors(space); // returns coordinates, not UI objects
         sameNeighbors = colorNeighbors(neighbors, getColor(space)); // returns an array
         if (sameNeighbors.length > 0) { // if this array has something in it then send it to getBlock
           getBlock(sameNeighbors);
         } else {
-          return
+          return;
         }
       } else {
-        return
+        return;
       }
     });
     return colorBlock;
   }
-  console.log(masterCheckArray)
-  return masterCheckArray
-}
-
-function flatSpace(space) {
-  return getCoords(space).toString();
+  console.log(checkArray);
+  return checkArray;
 }
 
 var colorNeighbors = function (neighbors, color) {
-  var sameColorNeighbors = []
+  var sameColorNeighbors = [];
   neighbors.forEach(function(neighbor) {
-    foundNeighbor = $('#coordX' + neighbor[1] + 'coordY' + neighbor[2])
+    foundNeighbor = $('#x' + neighbor[1] + 'y' + neighbor[2]);
     if (getColor(foundNeighbor) == color) {
-      sameColorNeighbors.push(foundNeighbor)
+      sameColorNeighbors.push(foundNeighbor);
     }
   });
-  return sameColorNeighbors
-}
+  return sameColorNeighbors;
+};
 
 var findAllNeighbors = function (space) {
   var neighbors = [];
   coords = getCoords(space);
+  // Use Else If's to prevent js from reading every line each time. If it find's the matching 'else-if' it will skip all others below.
   if (coords[1]-1 >= 0) {
-    nAbove = ['above', coords[0], coords[1]-1]
-    neighbors.push(nAbove)
+    nAbove = ['above', coords[0], coords[1]-1];
+    neighbors.push(nAbove);
+  } else if (coords[1]+1 <= 7) {
+    nBelow = ['below', coords[0], coords[1]+1];
+    neighbors.push(nBelow);
+  } else if (coords[0]-1 >= 0) {
+    nLeft = ['left', coords[0]-1, coords[1]];
+    neighbors.push(nLeft);
+  } else if (coords[0]+1 <= 7) {
+    nRight = ['right', coords[0]+1, coords[1]];
+    neighbors.push(nRight);
   }
-  if (coords[1]+1 <= 7) {
-    nBelow = ['below', coords[0], coords[1]+1]
-    neighbors.push(nBelow)
-  }
-  if (coords[0]-1 >= 0) {
-    nLeft = ['left', coords[0]-1, coords[1]]
-    neighbors.push(nLeft)
-  }
-  if (coords[0]+1 <= 7) {
-    nRight = ['right', coords[0]+1, coords[1]]
-    neighbors.push(nRight)
-  }
-  return neighbors
-}
+  return neighbors;
+};
 
 var getCoords = function(element) {
-  coordX = parseInt($(element).attr('data-coordX'));
-  coordY = parseInt($(element).attr('data-coordY'));
-  return [coordX, coordY];
-}
+  x = parseInt($(element).attr('data-x'));
+  y = parseInt($(element).attr('data-y'));
+  return [x, y];
+};
+
 var getColor = function(element) {
-  color = $(element).attr('data-color');
-  return color;
-}
+  return $(element).attr('data-color');
+};

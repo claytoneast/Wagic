@@ -19,13 +19,15 @@ class GamesController < ApplicationController
     @games = Game.all
   end
 
-  def create
+  # rails will automatically create these if they dont exist
+  
+  # def create
 
-  end
+  # end
 
-  def update
+  # def update
 
-  end
+  # end
 
   def join_game
     @game = Game.find(params[:game_id])
@@ -33,7 +35,7 @@ class GamesController < ApplicationController
     redirect_to game_path(@game)
   end
 
-  def choose_letters
+  def add_tiles
     @game = Game.find(params[:game_id])
     @game.get_letters(params[:data], current_user)
     redirect_to game_path(@game)

@@ -3,7 +3,7 @@ Rails.application.routes.draw do
   devise_for :users
   root 'games#index'
   resources :games do
-    get 'choose_letters' => 'games#choose_letters'
+    get 'add_tiles' => 'games#add_tiles'
     get 'join_game' => 'games#join_game'
   end
 

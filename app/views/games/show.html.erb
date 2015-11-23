@@ -1,58 +1,44 @@
-<% if user_signed_in? && @game.user_check(current_user) %>
-  You are part of this game!
-<% elsif user_signed_in? && !@game.user_check(current_user) && @game.users.length < 3 %>
-  you are not part of this game
-  <%= link_to "Join this game", game_join_game_path(@game) %>
-<% end %>
+<div class="wgc-board">
 
-<% @game.users.each do |user| %>
-  <%= user.email %>
-<% end %>
-<br>
-<br>
+  <% if user_signed_in? && @game.user_check(current_user) %>
+    You are part of this game!
+  <% elsif user_signed_in? && !@game.user_check(current_user) && @game.users.length < 3 %>
+    you are not part of this game
+    <%= link_to "Join this game", game_join_game_path(@game) %>
+  <% end %>
 
-<div class="flex-wrap tile-wrapper">
-<% @game_state["board_state"]["array"].each do |horizontal| %>
-<div class="flex-box" id="row<%= horizontal.first['coordX'] %> ">
-    <% horizontal.each do |vertical| %>
-      <a href=""></a>
-      <%= link_to vertical['letter'],
-      game_choose_letters_path(@game.id, data: vertical),
-      class: 'btn btn-primary btn-game tile',
-      id: "coordX#{vertical["coordX"]}coordY#{vertical["coordY"]}",
-      data: {
-        coordX: vertical['coordX'],
-        coordY: vertical['coordY'],
-        color: vertical['color']},
-      style: "background-color:#{vertical["color"]}" %>
+  <% @game.users.each do |user| %>
+    <%= user.email %>
+  <% end %>
+
+  <!-- You had the 'horizontal' representing columns so I switched it. Also shortned many of your variable names. 
+       Always use the shortest possible name that makes sense -->
+  <div class="tile-wrap"> 
+    <% @game_state["board_state"]["array"].each do |col| %> 
+    <div class="flex-box" id="col-<%= col.first['x'] %> ">
+        <% col.each do |tile| %>
+          <%= link_to tile['letter'],
+          game_add_tiles_path(@game.id, data: tile),
+          class: "btn btn-primary btn-game tile #{tile["color"]}",
+          id: "x#{tile["x"]}y#{tile["y"]}",
+          data: {
+            x: tile['x'],
+            y: tile['y'],
+            color: tile['color']} %>
+        <% end %>
+      </div>
     <% end %>
   </div>
-<% end %>
+  <!-- Your ERB code otherwise looks very clean, good job! -->
+
+  <div class="letters-wrap">
+      <%= current_user.email %><br>
+      <ul>
+        Hand:
+        <% @game_state[@json_user][@json_user + "hand"].each do |letter| %>
+          <li>letter: <%= letter %> </li>
+        <% end %>
+      </ul>
+  </div>
+
 </div>
-
-<div class="letters-wrapper">
-
-    <%= current_user.email %><br>
-    <ul>
-      Hand:
-      <% @game_state[@json_user][@json_user + "hand"].each do |letter| %>
-        <li>letter: <%= letter %> </li>
-      <% end %>
-    </ul>
-
-</div>
-
-<style media="screen">
-  .flex-box {
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-end;
-  }
-  .flex-wrap {
-    display: flex;
-    flex-direction: row;
-  }
-  .tile {
-    transition: border .1s;
-  }
-</style>

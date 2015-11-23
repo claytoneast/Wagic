@@ -1,18 +1,42 @@
-.btn-game {
-  width: 60px;
-  height: 60px;
+//Made better use of SASS style sheets
+
+.wgc-board { //Wrap your styles by page so there's no overlap. Any general styling goes outside
+  .tile-wrap {
+    margin-top: 20px;
+    display: flex;
+    flex-direction: row;
+
+    .flex-box {
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+
+      .tile {
+        transition: border .1s;
+        width: 60px;
+        height: 60px;
+
+        &.selected {
+          border: 5px solid #000;
+        }
+
+        //Using classes for color instead of inline styling will give you more options later on like hover colors etc
+        &.green { background: green } 
+        &.blue { background: blue }
+        &.orange { background: orange }
+        &.red { background: red }
+      }
+    }
+  }
 }
 
-.col-lg-1 {
-  padding: 0;
-  width: 62px;
-}
 // .vcenter {
 //     display: inline-block;
 //     vertical-align: middle;
 //     float: none;
 // }
 
-.selected {
-  border: 5px solid black;
-}
+// .col-lg-1 {
+//   padding: 0;
+//   width: 62px;
+// }
