@@ -1,6 +1,5 @@
-console.log('init')
 $(document).ready(function(){
-
+  console.log("document ready")
   var id = parseInt($("#game-id").text())
   // $.get("/games/" + id + "/game_board", function(data, status) {
   //   alert('made a request');
@@ -11,32 +10,37 @@ $(document).ready(function(){
     type: "GET",
     dataType: "json",
     success: function(data) {
-      showBoard(data);
+      initBoard(data);
+    console.log("init board")
     }
   });
 
+  function initBoard(data) {
+    showBoard(data);
+    spaceBindings();
+  }
 
 
-
-
-  $(".tile-wrapper").on({
-    mouseenter: function() {
-      space = $(this);
-      sameNeighbors = arrayCheckLayer(space);
-      sameNeighbors.forEach(function(neighbor) {
-        neighbor = neighbor.split(",");
-        $("#coordX" + neighbor[0] + "coordY" + neighbor[1]).toggleClass("selected");
-      });
-    },
-    mouseleave: function() {
-      space = $(this);
-      sameNeighbors = arrayCheckLayer(space);
-      sameNeighbors.forEach(function(neighbor) {
-        neighbor = neighbor.split(",");
-        $("#coordX" + neighbor[0] + "coordY" + neighbor[1]).toggleClass("selected");
-      });
-    }
-  }, ".tile");
+  function spaceBindings() {
+    $(".tile-wrapper").on({
+      mouseenter: function() {
+        space = $(this);
+        sameNeighbors = arrayCheckLayer(space);
+        sameNeighbors.forEach(function(neighbor) {
+          neighbor = neighbor.split(",");
+          $("#coordX" + neighbor[0] + "coordY" + neighbor[1]).toggleClass("selected");
+        });
+      },
+      mouseleave: function() {
+        space = $(this);
+        sameNeighbors = arrayCheckLayer(space);
+        sameNeighbors.forEach(function(neighbor) {
+          neighbor = neighbor.split(",");
+          $("#coordX" + neighbor[0] + "coordY" + neighbor[1]).toggleClass("selected");
+        });
+      }
+    }, ".tile");
+  }
 
   $('.tile-wrapper').on("click", ".tile", function() {
     space = $(this)
@@ -51,7 +55,7 @@ $(document).ready(function(){
   });
 
 
-});
+
 
 
 function showBoard(game) {
@@ -146,3 +150,5 @@ var getColor = function(element) {
   color = $(element).attr('data-color');
   return color;
 }
+
+});

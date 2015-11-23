@@ -14,27 +14,6 @@
 <br>
 <br>
 
-<div class="flex-wrap tile-wrapper">
-<% @game_state["board_state"]["array"].each do |horizontal| %>
-  <div class="flex-box" id="row<%= horizontal.first['coordX'] %> ">
-    <% horizontal.each do |vertical| %>
-      <a href=""></a>
-      <%= button_to vertical['letter'],
-      game_choose_letters_path(@game.id, data: vertical),
-      class: 'btn btn-primary btn-game tile',
-      id: "coordX#{vertical["coordX"]}coordY#{vertical["coordY"]}",
-      data: {
-        coordX: vertical['coordX'],
-        coordY: vertical['coordY'],
-        color: vertical['color']},
-      style: "background-color:#{vertical["color"]}" %>
-    <% end %>
-
-  </div>
-<% end %>
-</div>
-
-<button data-button='{"option1": "value1", "option2": "value2"}' class='btn btn-game tile' id="coords" name="button"></button>
 
 <div class="flex-wrap tile-wrapper" id="board">
 
@@ -66,3 +45,5 @@
     transition: border .1s;
   }
 </style>
+
+<%= javascript_include_tag "game" %>
