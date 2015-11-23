@@ -1,9 +1,6 @@
-$(document).ready(function(){
-  console.log("document ready")
-  var id = parseInt($("#game-id").text())
-  // $.get("/games/" + id + "/game_board", function(data, status) {
-  //   alert('made a request');
-  // });
+
+  console.log("document ready");
+  var id = parseInt($("#game-id").text());
 
   $.ajax({
     url: "/games/" + id + "/game_board",
@@ -11,144 +8,122 @@ $(document).ready(function(){
     dataType: "json",
     success: function(data) {
       initBoard(data);
-    console.log("init board")
+      console.log("init board");
     }
   });
 
   function initBoard(data) {
     showBoard(data);
+  }
+
+  function spaceBindings(){
+    $(document).ready(function(){
+      $('.tile').hover(function(){
+        var neighbors = getNeighbors(this);
+
+        neighbors.forEach(function(neighbor) {
+          neighbor = neighbor.split(",");
+          $("#x" + neighbor[0] + "y" + neighbor[1]).toggleClass("selected");
+        });
+      });
+
+      $('.tile').on("click", function() {
+        var neighborShiftInfo = []; // Is this being used for anything?
+        var neighbors = getNeighbors(this);
+        neighbors.forEach(function(neighbor) {
+          neighbor = neighbor.split(",");
+          neighborShiftInfo.push(neighbor); // ?
+          $("#x" + neighbor[0] + "y" + neighbor[1]).remove();
+        });
+        $.ajax({
+          
+        });
+      });
+    });
+  }
+
+  function showBoard(game) {
+    game.board.forEach(function(column, x) {
+      var make_column = '<div class="flex-box" id="row' + x + '"></div>';
+      $("#board").append(
+        make_column
+      );
+      column.forEach(function(space, y) {
+        $("#row" + x).append(
+          '<button class="btn btn-game tile btn-primary"' +
+          'data-x="' + x + '"' +
+          'data-y="' + y + '"' +
+          'data-color="' + space.color + '"' +
+          'style="background-color:' + space.color + '"' +
+          'id="x' + x + 'y' + y + '"' +
+          '>' + space.letter + '</button>'
+        );
+      });
+    });
     spaceBindings();
   }
 
+  function getNeighbors(space) {
+    var checkArray = [];
 
-  function spaceBindings() {
-    $(".tile-wrapper").on({
-      mouseenter: function() {
-        space = $(this);
-        sameNeighbors = arrayCheckLayer(space);
-        sameNeighbors.forEach(function(neighbor) {
-          neighbor = neighbor.split(",");
-          $("#coordX" + neighbor[0] + "coordY" + neighbor[1]).toggleClass("selected");
-        });
-      },
-      mouseleave: function() {
-        space = $(this);
-        sameNeighbors = arrayCheckLayer(space);
-        sameNeighbors.forEach(function(neighbor) {
-          neighbor = neighbor.split(",");
-          $("#coordX" + neighbor[0] + "coordY" + neighbor[1]).toggleClass("selected");
-        });
-      }
-    }, ".tile");
-  }
+    getBlock([space]);
+    function getBlock(spaces) {
+      var colorBlock = [];
 
-  $('.tile-wrapper').on("click", ".tile", function() {
-    space = $(this)
-    neighborShiftInfo = []
-    sameNeighbors = arrayCheckLayer(space);
-    sameNeighbors.forEach(function(neighbor) {
-      neighbor = neighbor.split(",");
-      neighborShiftInfo.push(neighbor);
-      $("#coordX" + neighbor[0] + "coordY" + neighbor[1]).remove();
-    });
-
-  });
-
-
-
-
-
-function showBoard(game) {
-  game.board.forEach(function(column, xIndex) {
-    var make_column = '<div class="flex-box" id="row' + xIndex + '"></div>'
-    $("#board").append(
-      make_column
-    );
-    column.forEach(function(space, yIndex) {
-      $("#row" + xIndex).append(
-        '<button class="btn btn-game tile btn-primary"' +
-        'data-coordX="' + xIndex + '"' +
-        'data-coordY="' + yIndex + '"' +
-        'data-color="' + space.color + '"' +
-        'style="background-color:' + space.color + '"' +
-        '>' + space.letter + '</button>'
-      );
-    });
-  });
-}
-
-function arrayCheckLayer(space) {
-  masterCheckArray = [];
-  getBlock([space]);
-  function getBlock(spaces) {
-    colorBlock = [];
-    spaces.forEach(function(space) {
-      // if space isn't already in the masterCheckArray, then push it there, then check it. else nothing.
-      if (masterCheckArray.indexOf(flatSpace(space)) <= -1) { // if not in there do this
-        masterCheckArray.push(flatSpace(space)); // push into check array
-        colorBlock.push(space);
-        neighbors = findAllNeighbors(space); // returns coordinates, not UI objects
-        sameNeighbors = colorNeighbors(neighbors, getColor(space)); // returns an array
-        if (sameNeighbors.length > 0) { // if this array has something in it then send it to getBlock
-          getBlock(sameNeighbors);
+      spaces.forEach(function(space) {
+        if (checkArray.indexOf(String(getCoords(space))) <= -1) { // if not in there do this
+          checkArray.push(String(getCoords(space))); // push into check array
+          colorBlock.push(space);
+          neighbors = findAllNeighbors(space); // returns coordinates, not UI objects
+          sameNeighbors = colorNeighbors(neighbors, getColor(space)); // returns an array
+          if (sameNeighbors.length > 0) { // if this array has something in it then send it to getBlock
+            getBlock(sameNeighbors);
+          } else {
+            return;
+          }
         } else {
-          return
+          return;
         }
-      } else {
-        return
+      });
+      return colorBlock;
+    }
+    return checkArray;
+  }
+
+  var colorNeighbors = function (neighbors, color) {
+    var sameColorNeighbors = [];
+
+    neighbors.forEach(function(neighbor) {
+      foundNeighbor = $('#x' + neighbor[0] + 'y' + neighbor[1]);
+      if (getColor(foundNeighbor) == color) {
+        sameColorNeighbors.push(foundNeighbor);
       }
     });
-    return colorBlock;
-  }
-  console.log(masterCheckArray)
-  return masterCheckArray
-}
+    return sameColorNeighbors;
+  };
 
-function flatSpace(space) {
-  return getCoords(space).toString();
-}
+  var findAllNeighbors = function (space) {
+    var neighbors = [];
+    var x = getCoords(space)[0];
+    var y = getCoords(space)[1];
+    var nAbove = [x, y - 1];
+    var nBelow = [x, y + 1];
+    var nLeft = [x - 1, y];
+    var nRight = [x + 1, y];
 
-var colorNeighbors = function (neighbors, color) {
-  var sameColorNeighbors = []
-  neighbors.forEach(function(neighbor) {
-    foundNeighbor = $('#coordX' + neighbor[1] + 'coordY' + neighbor[2])
-    if (getColor(foundNeighbor) == color) {
-      sameColorNeighbors.push(foundNeighbor)
-    }
-  });
-  return sameColorNeighbors
-}
+    if (y >= -1) { neighbors.push(nAbove); }
+    if (y <= 8)  { neighbors.push(nBelow); }
+    if (x >= -1) { neighbors.push(nLeft); }
+    if (x <= 9)  { neighbors.push(nRight); }
+    return neighbors;
+  };
 
-var findAllNeighbors = function (space) {
-  var neighbors = [];
-  coords = getCoords(space);
-  if (coords[1]-1 >= 0) {
-    nAbove = ['above', coords[0], coords[1]-1]
-    neighbors.push(nAbove)
-  }
-  if (coords[1]+1 <= 7) {
-    nBelow = ['below', coords[0], coords[1]+1]
-    neighbors.push(nBelow)
-  }
-  if (coords[0]-1 >= 0) {
-    nLeft = ['left', coords[0]-1, coords[1]]
-    neighbors.push(nLeft)
-  }
-  if (coords[0]+1 <= 7) {
-    nRight = ['right', coords[0]+1, coords[1]]
-    neighbors.push(nRight)
-  }
-  return neighbors
-}
+  var getCoords = function(element) {
+    x = parseInt($(element).attr('data-x'));
+    y = parseInt($(element).attr('data-y'));
+    return [x, y];
+  };
 
-var getCoords = function(element) {
-  coordX = parseInt($(element).attr('data-coordX'));
-  coordY = parseInt($(element).attr('data-coordY'));
-  return [coordX, coordY];
-}
-var getColor = function(element) {
-  color = $(element).attr('data-color');
-  return color;
-}
-
-});
+  var getColor = function(element) {
+    return $(element).attr('data-color');
+  };
