@@ -17,15 +17,24 @@
       you are not part of this game
       <%= link_to "Join this game", game_join_game_path(@game) %>
     <% end %>
+  </div>
 
+  <div id='user-hand'>
+      <p>Hand:</p>
+        <div class="flex-box hand-wrapper">
 
-    <div id='user-hand'>
-        <p>Hand:</p>
-          <div class="flex-box letter-wrapper">
+        </div>
 
-          </div>
+  </div>
+
+  <div id='user-word'>
+    <p>
+      Create a word:
+    </p>
+    <div class="flex-box play-wrapper">
 
     </div>
+      <button id="wagic" class='btn btn-primary'>Wagic!</button>
   </div>
 
 </div>

@@ -54,7 +54,8 @@ class GamesController < ApplicationController
     end
   end
 
-  def make_word
-
+  def wagic_word
+    game = Game.find(params[:game_id])
+    game.wagic_word(params[:word], current_user)
   end
 end

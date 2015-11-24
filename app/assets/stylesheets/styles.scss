@@ -1,21 +1,24 @@
 .wgc-board { //Wrap your styles by page so there's no overlap. Any general styling goes outside
-  .letter-wrapper {
+  .letter-wrapper, .hand-wrapper, .word-wrapper {
     width: 480px;
   }
+  .hand-wrapper
   .tile {
     transition: border .1s;
     width: 60px;
     height: 60px;
+    text-transform: uppercase;
+    font-weight: 500;
 
     &.selected {
       border: 5px solid #000;
     }
 
     //Using classes for color instead of inline styling will give you more options later on like hover colors etc
-    &.green { background: green }
-    &.blue { background: blue }
-    &.orange { background: orange }
-    &.red { background: red }
+    &.green { background: #286D00 }
+    &.blue { background: #1798EA }
+    &.orange { background: #D2AD13 }
+    &.red { background: #790000 }
   }
   .tile-wrap {
     margin-top: 20px;

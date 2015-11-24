@@ -15,15 +15,17 @@
   function initBoard(data) {
     showBoard(data.game);
     showHand(data.user, data.game.players);
+    addHandBindings();
   }
 
   function showHand(user, playersHands) {
-    var hand = playersHands[user][user + 'hand']
-    $("#user-hand .letter-wrapper").empty();
+    var hand = playersHands[user][user + 'hand'];
+    $("#user-hand .hand-wrapper").empty();
     hand.forEach(function(tile) {
-      $("#user-hand .letter-wrapper").append(
-        '<button class="btn btn-game tile btn-primary ' + tile.color + '"' +
+      $("#user-hand .hand-wrapper").append(
+        '<button class="btn btn-game tile hand-tile btn-primary ' + tile.color + '"' +
         'data-color="' + tile.color + '"' +
+        'data-letter="' + tile.letter + '"' +
         '>' + tile.letter + '</button>'
       );
     });
@@ -33,7 +35,6 @@
     $(document).ready(function(){
       $('.tile').hover(function(){
         var neighbors = getNeighbors(this);
-
         neighbors.forEach(function(neighbor) {
           neighbor = neighbor.split(",");
           $("#x" + neighbor[0] + "y" + neighbor[1]).toggleClass("selected");
@@ -62,6 +63,38 @@
       });
     });
   }
+
+  function addHandBindings() {
+    $("#user-hand .hand-wrapper .tile").on("click", function() {
+      $(this).appendTo(".play-wrapper");
+      addPlayBindings();
+    });
+  }
+
+  function addPlayBindings() {
+    $("#user-word .play-wrapper .tile").on("click", function() {
+      $(this).appendTo(".hand-wrapper");
+      addHandBindings();
+    });
+  }
+
+  $("#wagic").on("click", function() {
+    var word = [];
+    var collection = $(".play-wrapper").children();
+    $.each(collection, function(index, tile) {
+      var coordSpace = (tile.getAttribute("data-color") + "." + tile.getAttribute("data-letter"));
+      word.push(coordSpace);
+    });
+    $.ajax({
+      url: "/games/" + id + "/wagic_word",
+      type: "PATCH",
+      data: "word=" + word,
+      dataType: "json",
+      success: function(data) {
+        console.log("Word sent successfully!");
+      }
+    });
+  });
 
   function showBoard(game) {
     game.board.forEach(function(column, x) {

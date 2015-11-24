@@ -64,6 +64,44 @@ class Game < ActiveRecord::Base
     self.save
   end
 
+  def wagic_word(word, user)
+    j_user = which_player(user)
+    concat_w =  []
+    hand = self.gamestate['players'][j_user][j_user + "hand"]
+
+    w = word.split(",")
+    w.map! { |l| l.split(".") }
+    w = w.each_with_index.map { |space, i| space = {color: space[0], letter: space[1]}}
+    valid_word = letters_against_hand(w, hand)
+    if valid_word != false
+      w.map {|item| concat_w << item[:letter]}
+      word?(concat_w.join)
+    else
+
+    end
+  end
+
+  def word?(word)
+    Word.exists?(name: word)
+  end
+
+  def letters_against_hand(word, hand)
+    found = []
+    word.each do |letter|
+      hand.each do |space|
+        if space["color"] == letter[:color] && space["letter"] == letter[:letter]
+          found << space
+          break
+        end
+      end
+    end
+    if found.length == word.length
+      return found
+    else
+      return false
+    end
+  end
+
   def get_letters(space, user)
     tileCoords = space.split(",")
     tileCoords.map! { |item| item.to_i}

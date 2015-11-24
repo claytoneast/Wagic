@@ -3,6 +3,7 @@ Rails.application.routes.draw do
   devise_for :users
   root 'games#index'
   resources :games do
+    patch 'wagic_word' => 'games#wagic_word'
     patch 'pick_letters' => 'games#pick_letters'
     get 'join_game' => 'games#join_game'
     get 'game_board' => 'games#game_board'
