@@ -1,41 +1,31 @@
 <div class="wgc-board">
-
-<div id="game-id">
-  <%= @game.id %>
-</div>
-<% @game.users.each do |user| %>
-  <%= user.email %>
-<% end %>
-
-
-<div class="flex-wrap tile-wrap" id="board">
-
-</div>
-
-<div class="letters-wrapper">
-  <% if user_signed_in? && @game.user_check(current_user) %>
-    You are part of this game!
-  <% elsif user_signed_in? && !@game.user_check(current_user) && @game.users.length < 3 %>
-    you are not part of this game
-    <%= link_to "Join this game", game_join_game_path(@game) %>
-  <% end %>
-
+  <div hidden id="game-id">
+    <%= @game.id %>
+  </div>
   <% @game.users.each do |user| %>
     <%= user.email %>
   <% end %>
 
-  <!-- You had the 'horizontal' representing columns so I switched it. Also shortned many of your variable names.
-       Always use the shortest possible name that makes sense -->
+  <div class="flex-wrap tile-wrap" id="board">
+
+  </div>
+
+  <div class="user-info">
+    <% if user_signed_in? && @game.user_check(current_user) %>
+      You are part of this game!
+    <% elsif user_signed_in? && !@game.user_check(current_user) && @game.users.length < 3 %>
+      you are not part of this game
+      <%= link_to "Join this game", game_join_game_path(@game) %>
+    <% end %>
 
 
-  <div class="letters-wrap">
-      <%= current_user.email %><br>
-      <ul>
-        Hand:
-        <% @game_state[@json_user][@json_user + "hand"].each do |letter| %>
-          <li>letter: <%= letter %> </li>
-        <% end %>
-      </ul>
+    <div id='user-hand'>
+        <p>Hand:</p>
+          <div class="flex-box letter-wrapper">
+
+          </div>
+
+    </div>
   </div>
 
 </div>

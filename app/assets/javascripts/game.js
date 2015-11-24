@@ -13,7 +13,20 @@
   });
 
   function initBoard(data) {
-    showBoard(data);
+    showBoard(data.game);
+    showHand(data.user, data.game.players);
+  }
+
+  function showHand(user, playersHands) {
+    var hand = playersHands[user][user + 'hand']
+    $("#user-hand .letter-wrapper").empty();
+    hand.forEach(function(tile) {
+      $("#user-hand .letter-wrapper").append(
+        '<button class="btn btn-game tile btn-primary ' + tile.color + '"' +
+        'data-color="' + tile.color + '"' +
+        '>' + tile.letter + '</button>'
+      );
+    });
   }
 
   function spaceBindings(){
@@ -28,6 +41,7 @@
       });
 
       $('.tile').on("click", function() {
+        var chosenTile = ($(this).attr('data-x') + $(this).attr('data-y')).split("");
         var neighborShiftInfo = []; // Is this being used for anything?
         var neighbors = getNeighbors(this);
         neighbors.forEach(function(neighbor) {
@@ -36,7 +50,14 @@
           $("#x" + neighbor[0] + "y" + neighbor[1]).remove();
         });
         $.ajax({
-          
+          url: "/games/" + id + "/pick_letters",
+          type: "PATCH",
+          data: "tile=" + chosenTile,
+          dataType: "json",
+          success: function(data) {
+            console.log("init board");
+            addSpaces(data);
+          }
         });
       });
     });
@@ -48,15 +69,14 @@
       $("#board").append(
         make_column
       );
-      column.forEach(function(space, y) {
+      column.forEach(function(tile, y) {
         $("#row" + x).append(
-          '<button class="btn btn-game tile btn-primary"' +
+          '<button class="btn btn-game tile btn-primary ' + tile.color + '"' +
           'data-x="' + x + '"' +
           'data-y="' + y + '"' +
-          'data-color="' + space.color + '"' +
-          'style="background-color:' + space.color + '"' +
+          'data-color="' + tile.color + '"' +
           'id="x' + x + 'y' + y + '"' +
-          '>' + space.letter + '</button>'
+          '>' + tile.letter + '</button>'
         );
       });
     });
@@ -111,10 +131,10 @@
     var nLeft = [x - 1, y];
     var nRight = [x + 1, y];
 
-    if (y >= -1) { neighbors.push(nAbove); }
-    if (y <= 8)  { neighbors.push(nBelow); }
-    if (x >= -1) { neighbors.push(nLeft); }
-    if (x <= 9)  { neighbors.push(nRight); }
+    if (y > 0) { neighbors.push(nAbove); }
+    if (y < 7)  { neighbors.push(nBelow); }
+    if (x > 0) { neighbors.push(nLeft); }
+    if (x < 7)  { neighbors.push(nRight); }
     return neighbors;
   };
 
@@ -127,3 +147,9 @@
   var getColor = function(element) {
     return $(element).attr('data-color');
   };
+
+
+  function addSpaces(newBoard) {
+    $("#board").empty();
+    initBoard(newBoard);
+  }

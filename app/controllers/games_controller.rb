@@ -37,18 +37,20 @@ class GamesController < ApplicationController
 
   def pick_letters
     @game = Game.find(params[:game_id])
-    @game.get_letters(params[:data], current_user)
+    user = @game.which_player(current_user)
+    @game.get_letters(params[:tile], current_user)
     respond_to do |format|
       format.js
-      format.json { render :json => @game }
+      format.json { render :json => {game: @game, user: user} }
       format.html {redirect_to game_path(@game)}
     end
   end
 
   def game_board
     @game = Game.find(params[:game_id])
+    user = @game.which_player(current_user)
     respond_to do |format|
-      format.json { render :json => @game }
+      format.json { render :json => {game: @game, user: user} }
     end
   end
 

@@ -1,6 +1,22 @@
-//Made better use of SASS style sheets
-
 .wgc-board { //Wrap your styles by page so there's no overlap. Any general styling goes outside
+  .letter-wrapper {
+    width: 480px;
+  }
+  .tile {
+    transition: border .1s;
+    width: 60px;
+    height: 60px;
+
+    &.selected {
+      border: 5px solid #000;
+    }
+
+    //Using classes for color instead of inline styling will give you more options later on like hover colors etc
+    &.green { background: green }
+    &.blue { background: blue }
+    &.orange { background: orange }
+    &.red { background: red }
+  }
   .tile-wrap {
     margin-top: 20px;
     display: flex;
@@ -10,23 +26,9 @@
       display: flex;
       flex-direction: column;
       justify-content: flex-end;
-
-      .tile {
-        transition: border .1s;
-        width: 60px;
-        height: 60px;
-
-        &.selected {
-          border: 5px solid #000;
-        }
-
-        //Using classes for color instead of inline styling will give you more options later on like hover colors etc
-        &.green { background: green } 
-        &.blue { background: blue }
-        &.orange { background: orange }
-        &.red { background: red }
-      }
     }
+
+
   }
 }
 
