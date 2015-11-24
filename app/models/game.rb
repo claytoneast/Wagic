@@ -7,23 +7,24 @@ class Game < ActiveRecord::Base
     initial_board = {
       "board_state": {
         "array": [
-
         ]
       },
-      "player1": {
-        "player1id": "",
-        "player1hand": []
-      },
-      "player2": {
+      "players": {
+        "player1": {
+          "player1id": "",
+          "player1hand": []
+        },
+        "player2": {
         "player2id": "",
         "player2hand": []
+        }
       }
     }
     game_board = initial_board[:board_state][:array]
     8.times do |i|
       game_board << []
       8.times do |j|
-        game_board[i] << { color: "#{random_color}", coordX: "#{i}", coordY: "#{j}", letter: "#{random_letter}"}
+        game_board[i] << { color: "#{random_color}", x: "#{i}", y: "#{j}", letter: "#{random_letter}"}
       end
     end
     game_board.to_json
@@ -42,7 +43,7 @@ class Game < ActiveRecord::Base
   end
 
   def random_space_in_column(column)
-    jspace = JSON.parse({ "color": "#{random_color}", "coordX": "#{column}", "coordY": "", "letter": "#{random_letter}"}.to_json)
+    jspace = JSON.parse({ "color": "#{random_color}", "x": "#{column}", "y": "", "letter": "#{random_letter}"}.to_json)
   end
 
   def user_check(check_user)
@@ -53,29 +54,44 @@ class Game < ActiveRecord::Base
   def add_player(user)
     unless user_check(user)
       self.users.push(user)
-      if self.gamestate["player1"]["player1id"] == ""
-        self.gamestate["player1"]["player1id"] = user.id
+      if self.gamestate["players"]["player1"]["player1id"] == ""
+        self.gamestate["players"]["player1"]["player1id"] = user.id
       elsif
-        self.gamestate["player2"]["player2id"] == ""
-          self.gamestate["player2"]["player2id"] = user.id
+        self.gamestate["players"]["player2"]["player2id"] == ""
+          self.gamestate["players"]["player2"]["player2id"] = user.id
       end
     end
     self.save
   end
 
   def get_letters(space, user)
-    block = getBlock(space)
+    tileCoords = space.split(",")
+    tileCoords.map! { |item| item.to_i}
+    block = getBlock(coordsToSpace(tileCoords))
     letters_to_hand(block, user)
     self.save
   end
 
   def letters_to_hand(spaces, user)
-    spaces.sort! { |a,b | a["coordY"] <=> b["coordY"] }
     json_user = which_player(user) # find the players json identifer
-    hand = self.gamestate[json_user][json_user + 'hand'] #get player hand
-    spaces.each do |space|
-      board_column = self.gamestate["board_state"]["array"][space["coordX"].to_i]
-      board_column.delete_if { |item| hand << item if item["coordY"] == space["coordY"]}
+    hand = self.gamestate["players"][json_user][json_user + 'hand'] #get player hand
+    spaces.sort! { |a,b | a["y"] <=> b["y"] }
+    def push_spaces(chosen_spaces, hand)
+      chosen_spaces.each do |space|
+        board_column = self.gamestate["board_state"]["array"][space["x"].to_i]
+        board_column.delete_if { |item| hand << item if item["y"] == space["y"] }
+        if hand.length > 14
+          (hand.length - 14).times { hand.shift }
+        end
+      end
+    end
+    if hand.empty?
+      push_spaces(spaces, hand)
+    elsif hand.first["color"] == spaces.first["color"]
+      push_spaces(spaces, hand)
+    else
+      hand.clear
+      push_spaces(spaces, hand)
     end
     self.save
     add_spaces
@@ -86,7 +102,7 @@ class Game < ActiveRecord::Base
       board = self.gamestate["board_state"]["array"]
       board.each do |column|
           column.each_with_index do |space, index|
-            space["coordY"] = (index.to_s)
+            space["y"] = (index.to_s)
           end
       end
   end
@@ -102,8 +118,8 @@ class Game < ActiveRecord::Base
   end
 
   def which_player(user)
-      return "player1" if self.gamestate["player1"]["player1id"] == user.id
-      return "player2" if self.gamestate["player2"]["player2id"] == user.id
+      return "player1" if self.gamestate["players"]["player1"]["player1id"] == user.id
+      return "player2" if self.gamestate["players"]["player2"]["player2id"] == user.id
   end
 
   def getBlock(space)
@@ -125,7 +141,7 @@ class Game < ActiveRecord::Base
   end
 
   def spaceToCoords(space)
-    coords = [space["coordX"].to_i, space["coordY"].to_i]
+    coords = [space["x"].to_i, space["y"].to_i]
   end
 
   def coordsToSpace(coords)
@@ -135,23 +151,14 @@ class Game < ActiveRecord::Base
   def getNeighbors(space)
     intCoords = spaceToCoords(space)
     neighbors = []
-    if intCoords[1]-1 >= 0
-      above = [intCoords[0], intCoords[1]-1]
-      neighbors << coordsToSpace(above)
-    end
-    if intCoords[1]+1 <= 7
-      below = [intCoords[0], intCoords[1]+1]
-      neighbors << coordsToSpace(below)
-    end
-    if intCoords[0]-1 >= 0
-      left = [intCoords[0]-1, intCoords[1]]
-
-      neighbors << coordsToSpace(left)
-    end
-    if intCoords[0]+1 <= 7
-      right = [intCoords[0]+1, intCoords[1]]
-      neighbors << coordsToSpace(right)
-    end
+    above = [intCoords[0], intCoords[1]-1]
+    below = [intCoords[0], intCoords[1]+1]
+    left = [intCoords[0]-1, intCoords[1]]
+    right = [intCoords[0]+1, intCoords[1]]
+    neighbors << coordsToSpace(above)  if intCoords[1] > 0
+    neighbors << coordsToSpace(below)  if intCoords[1] < 7
+    neighbors << coordsToSpace(left)   if intCoords[0] > 0
+    neighbors << coordsToSpace(right)  if intCoords[0] < 7
     return neighbors.compact
   end
 
@@ -165,7 +172,7 @@ class Game < ActiveRecord::Base
   end
 
   def as_json(opts={})
-    { data: gamestate, board: gamestate["board_state"]["array"] }
+    { board: gamestate["board_state"]["array"], players: gamestate["players"] }
   end
 
 end
