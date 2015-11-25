@@ -2,28 +2,57 @@
   .letter-wrapper, .hand-wrapper, .word-wrapper {
     width: 480px;
   }
-  .hand-wrapper
   .tile {
     transition: border .1s;
+    position: relative;
     width: 60px;
     height: 60px;
     text-transform: uppercase;
     font-weight: 500;
+    transition: -webkit-filter .3s;
+    border-radius: 10px;
+    margin: 1px;
+    border-width: 0px;
+
+    span {
+      color: #fff;
+      text-align: center;
+      // transition: transform .3s;
+    }
 
     &.selected {
-      border: 5px solid #000;
+      -webkit-filter: brightness(120%);
+      span {
+        transform: scale(1.5);
+      }
     }
 
     //Using classes for color instead of inline styling will give you more options later on like hover colors etc
-    &.green { background: #286D00 }
-    &.blue { background: #1798EA }
-    &.orange { background: #D2AD13 }
-    &.red { background: #790000 }
+    &.green {
+        background: #A3A948;
+        border-color: #5B5F28;
+      }
+    &.blue {
+        background: #009989;
+        border-color: #005048;
+    }
+    &.orange {
+        background: #EDB92E;
+        border-color: #826517;
+    }
+    &.red {
+        background: #CE1836;
+        border-color: #770C1D;
+    }
   }
   .tile-wrap {
     margin-top: 20px;
     display: flex;
     flex-direction: row;
+    background: #444;
+    border-radius: 10px;
+    padding: 5px;
+    width: 505px;
 
     .flex-box {
       display: flex;

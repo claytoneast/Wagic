@@ -66,22 +66,72 @@ class Game < ActiveRecord::Base
 
   def wagic_word(word, user)
     j_user = which_player(user)
-    concat_w =  []
     hand = self.gamestate['players'][j_user][j_user + "hand"]
-
-    w = word.split(",")
-    w.map! { |l| l.split(".") }
-    w = w.each_with_index.map { |space, i| space = {color: space[0], letter: space[1]}}
-    valid_word = letters_against_hand(w, hand)
-    if valid_word != false
-      w.map {|item| concat_w << item[:letter]}
-      word?(concat_w.join)
+    word = word.split(",")
+    word.map! { |l| l.split(".") }
+    word = word.each_with_index.map { |space, i| space = {color: space[0], letter: space[1]}}
+    parsed_word = word_array_to_string(word)
+    if letters_against_hand(word, hand) != false && scrabble_word?(parsed_word)
+        score_word(parsed_word)
+        remove_letters_from_hand(word, hand)
+        return parsed_word
     else
-
+      return false
     end
   end
 
-  def word?(word)
+  def word_array_to_string(word)
+    concat_w =  []
+    word.map {|item| concat_w << item[:letter]}
+    parsed_word = concat_w.join
+  end
+
+  def remove_letters_from_hand(word, hand)
+    word.each do |letter|
+      hand.each do |space|
+        if space["color"] == letter[:color] && space["letter"] == letter[:letter]
+          hand.delete(space)
+         break
+       end
+      end
+    end
+  end
+
+  def score_word(word)
+    word = word.split('')
+    score = 0
+    scores = {  'a': 1,
+                'b': 3,
+                'c': 3,
+                'd': 2,
+                'e': 1,
+                'f': 4,
+                'g': 2,
+                'h': 4,
+                'i': 1,
+                'j': 8,
+                'k': 5,
+                'l': 1,
+                'm': 3,
+                'n': 1,
+                'o': 1,
+                'p': 3,
+                'q': 10,
+                'r': 1,
+                's': 1,
+                't': 1,
+                'u': 1,
+                'v': 4,
+                'w': 4,
+                'x': 8,
+                'y': 4,
+                'z': 10
+              }
+  word.each { |letter| score += scores[letter.to_sym] }
+  return score
+  end
+
+  def scrabble_word?(word)
     Word.exists?(name: word)
   end
 

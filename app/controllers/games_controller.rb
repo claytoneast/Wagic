@@ -19,16 +19,6 @@ class GamesController < ApplicationController
     @games = Game.all
   end
 
-  # rails will automatically create these if they dont exist
-
-  # def create
-
-  # end
-
-  # def update
-
-  # end
-
   def join_game
     @game = Game.find(params[:game_id])
     @game.add_player(current_user)
@@ -56,6 +46,17 @@ class GamesController < ApplicationController
 
   def wagic_word
     game = Game.find(params[:game_id])
-    game.wagic_word(params[:word], current_user)
+    valid_word = game.wagic_word(params[:word], current_user)
+    if valid_word.nil?
+      respond_to do |format|
+        format.json { render :json => false }
+      end
+    else
+      game.save
+      respond_to do |format|
+        format.json { render :json => valid_word.to_json }
+      end
+    end
   end
+
 end

@@ -91,7 +91,11 @@
       data: "word=" + word,
       dataType: "json",
       success: function(data) {
-        console.log("Word sent successfully!");
+        if (data === false) {
+          alert("That word is not allowed")
+        } else {
+          alert("Word scored!")
+        }
       }
     });
   });
@@ -104,12 +108,12 @@
       );
       column.forEach(function(tile, y) {
         $("#row" + x).append(
-          '<button class="btn btn-game tile btn-primary ' + tile.color + '"' +
+          '<button class="tile ' + tile.color + '"' +
           'data-x="' + x + '"' +
           'data-y="' + y + '"' +
           'data-color="' + tile.color + '"' +
           'id="x' + x + 'y' + y + '"' +
-          '>' + tile.letter + '</button>'
+          '><span>' + tile.letter + '</span></button>'
         );
       });
     });
