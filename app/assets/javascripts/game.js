@@ -8,20 +8,44 @@
     dataType: "json",
     success: function(data) {
       initBoard(data);
-      console.log("initial board request");
+      console.log("initial board request successful");
     }
   });
 
   function initBoard(data) {
     showBoard(data.game);
-    showGameMeta(data.game);
+    showGameMeta(data);
     if (data.game.turn == data.user) {
-      spaceBindings();
-      showHand(data.user, data.game.players);
-      playBindings();
-    } else {
-      killListeners();
+      showHand(data, data.user);
+      loadBoardListeners();
+      loadHandListeners();
+      loadActionListeners();
     }
+  }
+
+  function refreshBoard(data) {
+    if (data.game.turn == data.user) {
+
+    } else {
+      showBoard(data.game);
+      showGameMeta(data);
+    }
+  }
+
+  function lettersToHand(data) {
+    showBoard(data.game);
+    reloadBoardListeners();
+    showHand(data);
+    reloadHandListeners();
+  }
+
+  function handToPlayArea() {
+    reloadHandListeners();
+    reloadWordListeners();
+  }
+
+  function wagicWord(data) {
+    showGameMeta(data);
   }
 
   function killListeners() {
@@ -42,29 +66,7 @@
     });
   }
 
-  function refreshBoard(data) {
-    if (data.game.turn == data.user) {
-
-    } else {
-      showBoard(data.game);
-      showGameMeta(data.game);
-    }
-  }
-
-  function showHand(user, playersHands) {
-    var hand = playersHands[user]['hand'];
-    $("#user-hand .hand-wrapper").empty();
-    hand.forEach(function(tile) {
-      $("#user-hand .hand-wrapper").append(
-        '<button class="btn btn-game tile hand-tile btn-primary ' + tile.color + '"' +
-        'data-color="' + tile.color + '"' +
-        'data-letter="' + tile.letter + '"' +
-        '>' + tile.letter + '</button>'
-      );
-    });
-  }
-
-  function spaceBindings(){
+  function loadBoardListeners(){
     $(document).ready(function(){
       $('#board .tile').hover(function(){
         var neighbors = getNeighbors(this);
@@ -89,23 +91,19 @@
           data: "tile=" + chosenTile,
           dataType: "json",
           success: function(data) {
-            addSpaces(data);
+            lettersToHand(data);
           }
         });
       });
     });
   }
-
-  function playBindings() {
-    console.log('playBindings has fired')
-    addHandBindings();
-    addPlayBindings();
-    addActionBindings();
+  function reloadBoardListeners() {
+    $('#board .tile').off();
+    loadBoardListeners();
   }
 
-  function addActionBindings() {
+  function loadActionListeners() {
     $("#end-turn").on("click", function() {
-      console.log('click')
       switchTurn();
     });
 
@@ -125,50 +123,73 @@
           if (data === false) {
             alert("That word is not allowed");
           } else {
-            initBoard(data);
-            clearSpelledWord();
+            wagicWord(data);
           }
         }
       });
     });
   }
 
-  function addHandBindings() {
+  function loadHandListeners() {
     $("#user-hand .hand-wrapper .tile").on("click", function() {
       $(this).appendTo(".play-wrapper");
+      handToPlayArea();
     });
   }
+  function reloadHandListeners() {
+    $("#user-hand .hand-wrapper .tile").off();
+    loadHandListeners();
+  }
 
-  function addPlayBindings() {
-    $("#user-word .play-wrapper .tile").on("click", function() {
+  function loadWordListeners() {
+    $("#user-word .play-wrapper .tile").on("click.loadWordListeners", function() {
       $(this).appendTo(".hand-wrapper");
+      handToPlayArea();
     });
   }
+  function reloadWordListeners() {
+    $("#user-word .play-wrapper .tile").off();
+    loadWordListeners();
+  }
 
-  (function poll(previousTurn) {
-    setTimeout(function() {
-      $.ajax({
-        url: "/games/" + id + "/game_board",
-        type: "GET",
-        dataType: "json",
-        success: function(data) {
-          if (previousTurn == data.game.turn) {
-            refreshBoard(data);
-            poll(data.game.turn);
-          } else {
-            initBoard(data)
-            poll(data.game.turn)
-          }
-        }
-      });
-    }, 1000);
-  })();
+  // (function poll(previousTurn) {
+  //   setTimeout(function() {
+  //     $.ajax({
+  //       url: "/games/" + id + "/game_board",
+  //       type: "GET",
+  //       dataType: "json",
+  //       success: function(data) {
+  //         if (previousTurn == data.game.turn) {
+  //           refreshBoard(data);
+  //           poll(data.game.turn);
+  //         } else {
+  //           initBoard(data)
+  //           poll(data.game.turn)
+  //         }
+  //       }
+  //     });
+  //   }, 1000);
+  // })();
 
   function clearSpelledWord() {
     $('#user-word .play-wrapper').empty();
   }
+
+  function showHand(data) {
+    var hand = data.game.players[data.user]['hand']; // rewrite this shit so it gets it from the game data
+    $("#user-hand .hand-wrapper").empty();
+    hand.forEach(function(tile) {
+      $("#user-hand .hand-wrapper").append(
+        '<button class="btn btn-game tile hand-tile btn-primary ' + tile.color + '"' +
+        'data-color="' + tile.color + '"' +
+        'data-letter="' + tile.letter + '"' +
+        '>' + tile.letter + '</button>'
+      );
+    });
+  }
+
   function showBoard(game) {
-      $('#board').empty();
+    $('#board').empty();
     game.board.forEach(function(column, x) {
       var make_column = '<div class="flex-box" id="row' + x + '"></div>';
       $("#board").append(
@@ -187,9 +208,9 @@
     });
   }
 
-  function showGameMeta(game) {
-    var p1 = game.players.player1;
-    var p2 = game.players.player2;
+  function showGameMeta(data) {
+    var p1 = data.game.players.player1;
+    var p2 = data.game.players.player2;
     $(".game-header").html(
       '<div class="player-header" id="player1-header">' +
        '<span>' + p1.name + '</span>' +
@@ -269,9 +290,3 @@
   var getColor = function(element) {
     return $(element).attr('data-color');
   };
-
-
-  function addSpaces(newBoard) {
-    $("#board").empty();
-    initBoard(newBoard);
-  }
