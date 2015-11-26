@@ -8,18 +8,51 @@
     dataType: "json",
     success: function(data) {
       initBoard(data);
-      console.log("init board");
+      console.log("initial board request");
     }
   });
 
   function initBoard(data) {
     showBoard(data.game);
-    showHand(data.user, data.game.players);
-    addHandBindings();
+    showGameMeta(data.game);
+    if (data.game.turn == data.user) {
+      spaceBindings();
+      showHand(data.user, data.game.players);
+      playBindings();
+    } else {
+      killListeners();
+    }
+  }
+
+  function killListeners() {
+    $(".tile").off();
+    $("#wagic").off();
+    $("#end-turn").off();
+  }
+
+  function switchTurn() {
+    $.ajax({
+      url: "/games/" + id + "/switch_turn",
+      type: "PATCH",
+      dataType: "json",
+      success: function(data) {
+          initBoard(data);
+          clearSpelledWord();
+      }
+    });
+  }
+
+  function refreshBoard(data) {
+    if (data.game.turn == data.user) {
+
+    } else {
+      showBoard(data.game);
+      showGameMeta(data.game);
+    }
   }
 
   function showHand(user, playersHands) {
-    var hand = playersHands[user][user + 'hand'];
+    var hand = playersHands[user]['hand'];
     $("#user-hand .hand-wrapper").empty();
     hand.forEach(function(tile) {
       $("#user-hand .hand-wrapper").append(
@@ -33,7 +66,7 @@
 
   function spaceBindings(){
     $(document).ready(function(){
-      $('.tile').hover(function(){
+      $('#board .tile').hover(function(){
         var neighbors = getNeighbors(this);
         neighbors.forEach(function(neighbor) {
           neighbor = neighbor.split(",");
@@ -41,7 +74,7 @@
         });
       });
 
-      $('.tile').on("click", function() {
+      $('#board .tile').on("click", function() {
         var chosenTile = ($(this).attr('data-x') + $(this).attr('data-y')).split("");
         var neighborShiftInfo = []; // Is this being used for anything?
         var neighbors = getNeighbors(this);
@@ -56,7 +89,6 @@
           data: "tile=" + chosenTile,
           dataType: "json",
           success: function(data) {
-            console.log("init board");
             addSpaces(data);
           }
         });
@@ -64,43 +96,79 @@
     });
   }
 
+  function playBindings() {
+    console.log('playBindings has fired')
+    addHandBindings();
+    addPlayBindings();
+    addActionBindings();
+  }
+
+  function addActionBindings() {
+    $("#end-turn").on("click", function() {
+      console.log('click')
+      switchTurn();
+    });
+
+    $("#wagic").on("click", function() {
+      var word = [];
+      var collection = $(".play-wrapper").children();
+      $.each(collection, function(index, tile) {
+        var coordSpace = (tile.getAttribute("data-color") + "." + tile.getAttribute("data-letter"));
+        word.push(coordSpace);
+      });
+      $.ajax({
+        url: "/games/" + id + "/wagic_word",
+        type: "PATCH",
+        data: "word=" + word,
+        dataType: "json",
+        success: function(data) {
+          if (data === false) {
+            alert("That word is not allowed");
+          } else {
+            initBoard(data);
+            clearSpelledWord();
+          }
+        }
+      });
+    });
+  }
+
   function addHandBindings() {
     $("#user-hand .hand-wrapper .tile").on("click", function() {
       $(this).appendTo(".play-wrapper");
-      addPlayBindings();
     });
   }
 
   function addPlayBindings() {
     $("#user-word .play-wrapper .tile").on("click", function() {
       $(this).appendTo(".hand-wrapper");
-      addHandBindings();
     });
   }
 
-  $("#wagic").on("click", function() {
-    var word = [];
-    var collection = $(".play-wrapper").children();
-    $.each(collection, function(index, tile) {
-      var coordSpace = (tile.getAttribute("data-color") + "." + tile.getAttribute("data-letter"));
-      word.push(coordSpace);
-    });
-    $.ajax({
-      url: "/games/" + id + "/wagic_word",
-      type: "PATCH",
-      data: "word=" + word,
-      dataType: "json",
-      success: function(data) {
-        if (data === false) {
-          alert("That word is not allowed")
-        } else {
-          alert("Word scored!")
+  (function poll(previousTurn) {
+    setTimeout(function() {
+      $.ajax({
+        url: "/games/" + id + "/game_board",
+        type: "GET",
+        dataType: "json",
+        success: function(data) {
+          if (previousTurn == data.game.turn) {
+            refreshBoard(data);
+            poll(data.game.turn);
+          } else {
+            initBoard(data)
+            poll(data.game.turn)
+          }
         }
-      }
-    });
-  });
+      });
+    }, 1000);
+  })();
 
+  function clearSpelledWord() {
+    $('#user-word .play-wrapper').empty();
+  }
   function showBoard(game) {
+      $('#board').empty();
     game.board.forEach(function(column, x) {
       var make_column = '<div class="flex-box" id="row' + x + '"></div>';
       $("#board").append(
@@ -117,7 +185,24 @@
         );
       });
     });
-    spaceBindings();
+  }
+
+  function showGameMeta(game) {
+    var p1 = game.players.player1;
+    var p2 = game.players.player2;
+    $(".game-header").html(
+      '<div class="player-header" id="player1-header">' +
+       '<span>' + p1.name + '</span>' +
+       '<div class="player-header-stats">' + p1.health + '</div>' +
+       '</div>' +
+
+       '<div class="versus-header"><h5>VS</h5></div>' +
+
+       '<div class="player-header" id="player2-header">' +
+        '<span>' + p2.name + '</span>' +
+        '<div class="player-header-stats">' + p2.health + '</div>' +
+        '</div>'
+    );
   }
 
   function getNeighbors(space) {

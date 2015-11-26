@@ -1,23 +1,39 @@
 <div class="wgc-board">
-  <div hidden id="game-id">
-    <%= @game.id %>
+  <div class="user-info">
+    <% if user_signed_in? && @game.user_check(current_user) %>
+      You, <%= current_user.email %> are part of this game!
+    <% elsif user_signed_in? && !@game.user_check(current_user) && @game.users.length < 2 %>
+      you are not part of this game
+      <%= link_to "Join this game", game_join_game_path(@game) %>
+    <% end %>
   </div>
-  <% @game.users.each do |user| %>
-    <%= user.email %>
-  <% end %>
+  <div hidden id="game-id"><%= @game.id %></div>
+  <div class="game-header">
+    <div class="player-header" id="player1-header">
+      <% user1 = @game.users[0] %>
+      <%= user1.email %>
+      <div class="player-header-stats">
+        Health: <%= @game.gamestate['players'][@game.which_player(user1)]['health'] %>
+      </div>
+    </div>
+    <div class="versus-header">
+      <h5>VS</h5>
+    </div>
+    <% if @game.users.length > 1 %>
+      <div class="player-header" id="player2-header">
+        <%= @game.users[1].email %>
+        <div class="player-header-stats">
+          Health:
+        </div>
+      </div>
+    <% end %>
+  </div>
 
   <div class="flex-wrap tile-wrap" id="board">
 
   </div>
 
-  <div class="user-info">
-    <% if user_signed_in? && @game.user_check(current_user) %>
-      You are part of this game!
-    <% elsif user_signed_in? && !@game.user_check(current_user) && @game.users.length < 3 %>
-      you are not part of this game
-      <%= link_to "Join this game", game_join_game_path(@game) %>
-    <% end %>
-  </div>
+
 
   <div id='user-hand'>
       <p>Hand:</p>
@@ -28,13 +44,12 @@
   </div>
 
   <div id='user-word'>
-    <p>
-      Create a word:
-    </p>
+    <p>Create a word:</p>
     <div class="flex-box play-wrapper">
 
     </div>
-      <button id="wagic" class='btn btn-primary'>Wagic!</button>
+    <button id="wagic" class='btn btn-primary'>Wagic!</button>
+    <button id="end-turn" class='btn btn-primary'>End Turn!</button>
   </div>
 
 </div>

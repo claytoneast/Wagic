@@ -9,14 +9,19 @@ class Game < ActiveRecord::Base
         "array": [
         ]
       },
+      "turn": "player1",
       "players": {
         "player1": {
-          "player1id": "",
-          "player1hand": []
+          "id": "",
+          "health": 50,
+          "name": "player1",
+          "hand": []
         },
         "player2": {
-        "player2id": "",
-        "player2hand": []
+        "id": "",
+        "health": 50,
+        "name": "player2",
+        "hand": []
         }
       }
     }
@@ -54,11 +59,11 @@ class Game < ActiveRecord::Base
   def add_player(user)
     unless user_check(user)
       self.users.push(user)
-      if self.gamestate["players"]["player1"]["player1id"] == ""
-        self.gamestate["players"]["player1"]["player1id"] = user.id
+      if self.gamestate["players"]["player1"]["id"] == ""
+        self.gamestate["players"]["player1"]["id"] = user.id
       elsif
-        self.gamestate["players"]["player2"]["player2id"] == ""
-          self.gamestate["players"]["player2"]["player2id"] = user.id
+        self.gamestate["players"]["player2"]["id"] == ""
+          self.gamestate["players"]["player2"]["id"] = user.id
       end
     end
     self.save
@@ -66,13 +71,13 @@ class Game < ActiveRecord::Base
 
   def wagic_word(word, user)
     j_user = which_player(user)
-    hand = self.gamestate['players'][j_user][j_user + "hand"]
+    hand = self.gamestate['players'][j_user]["hand"]
     word = word.split(",")
     word.map! { |l| l.split(".") }
     word = word.each_with_index.map { |space, i| space = {color: space[0], letter: space[1]}}
     parsed_word = word_array_to_string(word)
     if letters_against_hand(word, hand) != false && scrabble_word?(parsed_word)
-        score_word(parsed_word)
+        score_word(parsed_word, j_user)
         remove_letters_from_hand(word, hand)
         return parsed_word
     else
@@ -97,7 +102,7 @@ class Game < ActiveRecord::Base
     end
   end
 
-  def score_word(word)
+  def score_word(word, user)
     word = word.split('')
     score = 0
     scores = {  'a': 1,
@@ -128,7 +133,7 @@ class Game < ActiveRecord::Base
                 'z': 10
               }
   word.each { |letter| score += scores[letter.to_sym] }
-  return score
+  self.gamestate['players'][user]['health'] += score
   end
 
   def scrabble_word?(word)
@@ -162,7 +167,7 @@ class Game < ActiveRecord::Base
 
   def letters_to_hand(spaces, user)
     json_user = which_player(user) # find the players json identifer
-    hand = self.gamestate["players"][json_user][json_user + 'hand'] #get player hand
+    hand = self.gamestate["players"][json_user]['hand'] #get player hand
     spaces.sort! { |a,b | a["y"] <=> b["y"] }
     def push_spaces(chosen_spaces, hand)
       chosen_spaces.each do |space|
@@ -206,8 +211,16 @@ class Game < ActiveRecord::Base
   end
 
   def which_player(user)
-      return "player1" if self.gamestate["players"]["player1"]["player1id"] == user.id
-      return "player2" if self.gamestate["players"]["player2"]["player2id"] == user.id
+      return "player1" if self.gamestate["players"]["player1"]["id"] == user.id
+      return "player2" if self.gamestate["players"]["player2"]["id"] == user.id
+  end
+
+  def switch_turn
+    if self.gamestate['turn'] == "player1"
+      self.gamestate['turn'] = "player2"
+    elsif self.gamestate['turn'] == "player2"
+      self.gamestate['turn'] = "player1"
+    end
   end
 
   def getBlock(space)
@@ -260,7 +273,7 @@ class Game < ActiveRecord::Base
   end
 
   def as_json(opts={})
-    { board: gamestate["board_state"]["array"], players: gamestate["players"] }
+    { board: gamestate["board_state"]["array"], players: gamestate["players"], turn: gamestate["turn"] }
   end
 
 end
