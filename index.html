@@ -1,0 +1,183 @@
+<html>
+<head>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.3/jquery-ui.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <link rel="stylesheet" type="text/css" href="/css.css">
+</head>
+<body>
+    <div id="board">
+    </div>
+<br style="clear:both;">
+
+
+<div id="player1"></div>
+<br style="clear:both;">
+<div id="player2"></div>
+
+<ul id="messages"></ul>
+<form action="">
+  <input id="m" autocomplete="off" /><button>Send</button>
+</form>
+ 
+
+</body>
+
+
+</html>
+
+<script>
+    var socket = io();
+    var localBoard = {};
+    var selectedGroup = [];
+
+    $('form').submit(function(){
+        socket.emit('chat message', $('#m').val());
+        $('#m').val('');
+        return false;
+    });
+    socket.on('chat message', function(msg){
+        $('#messages').append($('<li>').text(msg));
+    });
+
+    socket.on('board setup', function(board){
+        drawBoard(board)
+    });
+
+        
+    function drawBoard(board){
+        localBoard={};
+        $.extend(true, localBoard, board);
+        var _index=0;
+        $("#board").html("");
+        for(r=0;r<localBoard.rows;r++){
+            for(c=0; c<localBoard.columns; c++){
+                var html="<div class=\"tile "+localBoard.colors[_index]+"\" data-pos=\""+(_index)+"\"><span class=\"letter\">"+localBoard.letters[_index];
+                +"</span></div>";
+                $("#board").append(html);
+                if(localBoard.letters[_index]=="qu")
+                    $(".tile[data-pos=\""+_index+"\"] .letter").css({"left":"10px","top":"12px"})
+                _index+=1;
+            }
+            $("#board").append("<br style='clear:both;'> ")
+
+        }
+
+        $(".tile").on("click", function(e){
+            $.each(selectedGroup, function(index, selected){
+                $(".tile[data-pos=\""+selected+"\"")
+                .css({"-webkit-transform":"rotate(360deg) scale(0)","transition":".3s"})
+                .addClass('empty')
+            });
+            findMoveable()
+        });
+
+        $(".tile").on("mouseenter", function(e){
+            e.preventDefault();
+            $(".tile").css("opacity",".6");
+
+            selectedGroup=[];
+                $(".tile").clearQueue();
+
+            $.extend(true, selectedGroup, findNeighbors($(this).attr("data-pos")*1));
+            selectedGroup.forEach(function(selected){
+                $(".tile[data-pos=\""+selected+"\"").css("opacity",1);
+                $(".tile[data-pos=\""+selected+"\"").addClass("selected");
+            });
+        });
+
+        $(".tile").on("mouseleave", function(e){
+            e.preventDefault();
+            $(".tile").removeClass("selected");
+            $(".tile").delay(500).queue(function(n){
+                $(".tile").removeClass("selected");
+                $(".tile").css({"opacity":1,"transition":".3s"});
+                selectedGroup=[];
+            });
+
+        });
+    };
+
+    function replaceLetter(pos){
+        localBoard.letters[pos.split(",")[2]]=alphabets[Math.floor((Math.random() * (alphabets.length-1)) )];
+        var tile = $(".tile[data-pos=\""+pos+"\"]");
+        tile.find(".letter").html(localBoard.letters[pos.split(",")[2]]);
+        tile.find(".letter").css("top","-40px");
+        if(localBoard.letters[pos.split(",")[2]]=="qu")tile.find(".letter").css("left","12px");
+        else
+            tile.find(".letter").css("left","20px")
+        tile.find(".letter").animate({
+            top:"+=55"
+        }, 300);
+    }
+
+    function findMoveable() {
+        var moveable = [];
+        moveable.blacklist = [];
+        var boardSize = localBoard.rows * localBoard.columns;
+ 
+        for(var t=boardSize; t > 0; t--) {
+            if($(".tile[data-pos=\""+t+"\"").hasClass('empty') && moveable.blacklist.indexOf(t) < 0) {
+                searchAbove(t, 1)
+            }
+        }
+
+        function updatePositions(){
+            // WORK IN PROGRESS
+            // for(var d=0;d < moveable.length; d++) {
+            //     $(".tile[data-pos=\""+moveable[d].pos+"\"").attr("data-pos", moveable[d].pos + (localBoard.rows * moveable[d].count))
+            // }
+            // setTimeout(function(){ $('.empty').remove(); }, 500);
+        }
+
+        function searchAbove(tile, count) {
+            var tileAbove = tile - localBoard.rows
+            if(tileAbove < 0) return;
+            if($(".tile[data-pos=\""+tileAbove +"\"").hasClass('empty')) {
+                moveable.blacklist.push(tileAbove);
+                searchAbove(tileAbove, count+=1)
+            } else {
+                moveable.push({pos: tileAbove, count: count});
+                searchAbove(tileAbove, count)
+            }
+        }
+        
+        for(var d=0;d < moveable.length; d++) {
+            $(".tile[data-pos=\""+moveable[d].pos+"\"")
+            .animate({ top: (70*moveable[d].count) }, {duration: 500, easing: 'easeOutBounce'});
+        }
+        
+        updatePositions();
+        return moveable;
+    }
+
+    function findNeighbors(pos) {
+        var neighbors = [pos];
+        var tileColor = localBoard.colors[pos]
+        var directions = [
+            function left(n) { return n - 1 },
+            function right(n) { return n + 1 },
+            function up(n) { return n - localBoard.rows },
+            function down(n) { return n + localBoard.rows  }
+        ]
+
+        wagicalSearch(pos)
+        return neighbors;
+
+        function wagicalSearch(tile) {
+            $.each(directions, function(index, neighbor){
+                if(neighbor(tile) < 0) return;
+                if(neighbor(tile) > ((localBoard.rows * localBoard.columns) - 1)) return;
+                if(localBoard.colors[neighbor(tile)] === tileColor) {
+                    if(neighbors.indexOf(neighbor(tile)) > -1 ) {
+                        return;
+                    } else {
+                        neighbors.push(neighbor(tile))
+                        wagicalSearch(neighbor(tile))
+                    }
+                }
+                
+            })
+        }
+    }
+</script>
