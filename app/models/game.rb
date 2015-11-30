@@ -10,6 +10,7 @@ class Game < ActiveRecord::Base
         ]
       },
       "turn": "player1",
+      "turn_state": "pick_letters",
       "players": {
         "player1": {
           "id": "",
@@ -79,6 +80,7 @@ class Game < ActiveRecord::Base
     if letters_against_hand(word, hand) != false && scrabble_word?(parsed_word)
         score_word(parsed_word, j_user)
         remove_letters_from_hand(word, hand)
+        self.gamestate["turn_state"] = "letters_picked"
         return parsed_word
     else
       return false
@@ -221,6 +223,7 @@ class Game < ActiveRecord::Base
     elsif self.gamestate['turn'] == "player2"
       self.gamestate['turn'] = "player1"
     end
+    self.gamestate["turn_state"] = "pick_letters"
   end
 
   def getBlock(space)
@@ -273,7 +276,7 @@ class Game < ActiveRecord::Base
   end
 
   def as_json(opts={})
-    { board: gamestate["board_state"]["array"], players: gamestate["players"], turn: gamestate["turn"] }
+    { board: gamestate["board_state"]["array"], players: gamestate["players"], turn: gamestate["turn"], turn_state: gamestate["turn_state"] }
   end
 
 end

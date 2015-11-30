@@ -17,24 +17,17 @@
     showGameMeta(data);
     if (data.game.turn == data.user) {
       showHand(data, data.user);
-      loadBoardListeners();
       loadHandListeners();
       loadActionListeners();
-    }
-  }
-
-  function refreshBoard(data) {
-    if (data.game.turn == data.user) {
-
-    } else {
-      showBoard(data.game);
-      showGameMeta(data);
+      if (data.game.turn_state == "pick_letters") {
+        loadBoardListeners();
+      }
     }
   }
 
   function lettersToHand(data) {
     showBoard(data.game);
-    reloadBoardListeners();
+    $(".tile").off();
     showHand(data);
     reloadHandListeners();
   }
@@ -46,6 +39,7 @@
 
   function wagicWord(data) {
     showGameMeta(data);
+    clearSpelledWord();
   }
 
   function killListeners() {
@@ -60,8 +54,7 @@
       type: "PATCH",
       dataType: "json",
       success: function(data) {
-          initBoard(data);
-          clearSpelledWord();
+          killListeners();
       }
     });
   }
@@ -151,25 +144,37 @@
     $("#user-word .play-wrapper .tile").off();
     loadWordListeners();
   }
+  function reloadActionListeners() {
+    $("#end-turn").off();
+    $("#wagic").off();
+    loadActionListeners();
+  }
 
-  // (function poll(previousTurn) {
-  //   setTimeout(function() {
-  //     $.ajax({
-  //       url: "/games/" + id + "/game_board",
-  //       type: "GET",
-  //       dataType: "json",
-  //       success: function(data) {
-  //         if (previousTurn == data.game.turn) {
-  //           refreshBoard(data);
-  //           poll(data.game.turn);
-  //         } else {
-  //           initBoard(data)
-  //           poll(data.game.turn)
-  //         }
-  //       }
-  //     });
-  //   }, 1000);
-  // })();
+  (function poll(previousTurn) {
+    setTimeout(function() {
+      $.ajax({
+        url: "/games/" + id + "/game_board",
+        type: "GET",
+        dataType: "json",
+        success: function(data) {
+          if (data.user == data.game.turn && data.game.turn != previousTurn && previousTurn != undefined) { // just became your turn
+            showBoard(data.game);
+            showGameMeta(data);
+            loadBoardListeners();
+            loadHandListeners();
+            reloadActionListeners();
+            poll(data.game.turn);
+          } else if (data.user == data.game.turn) { // your turn
+            poll(data.game.turn);
+          } else { // other persons turn
+            showBoard(data.game);
+            showGameMeta(data);
+            poll(data.game.turn);
+          }
+        }
+      });
+    }, 1000);
+  })();
 
   function clearSpelledWord() {
     $('#user-word .play-wrapper').empty();
@@ -224,6 +229,7 @@
         '<div class="player-header-stats">' + p2.health + '</div>' +
         '</div>'
     );
+    $(".game-header #" + data.game.turn + "-header").addClass("this-turn");
   }
 
   function getNeighbors(space) {

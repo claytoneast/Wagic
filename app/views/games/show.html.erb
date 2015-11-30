@@ -5,6 +5,8 @@
     <% elsif user_signed_in? && !@game.user_check(current_user) && @game.users.length < 2 %>
       you are not part of this game
       <%= link_to "Join this game", game_join_game_path(@game) %>
+    <% else %> %>
+      You are not logged in.
     <% end %>
   </div>
   <div hidden id="game-id"><%= @game.id %></div>

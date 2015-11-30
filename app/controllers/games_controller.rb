@@ -12,7 +12,9 @@ class GamesController < ApplicationController
   def show
     @game = Game.find(params[:id])
     @game_state = @game.gamestate
-    @json_user = @game.which_player(current_user)
+    if current_user
+      @json_user = @game.which_player(current_user)
+    end
   end
 
   def index
