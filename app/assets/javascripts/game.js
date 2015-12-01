@@ -233,7 +233,6 @@
     function activeTurn(id){
       if (data.game.turn === id) return 'active';
     }
-
     $.each(data.game.players, function(id, player){
       $('.game-header').append(
         '<div class="header">' +
@@ -242,7 +241,7 @@
             '<div class="stat health">' +
               'HP | ' +
               '<span class="bar-wrapper">' +
-                '<span class="bar" style="width:' + player.health + '%">' + player.health +'</span>' +
+                '<span class="bar" style="width:' + (player.current_health/player.max_health)*100 + '%">' + player.current_health + "/" + player.max_health +'</span>' +
               '</span>' +
             '</div>' +
             '<div class="stat xp">' +

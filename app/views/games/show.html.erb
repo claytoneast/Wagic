@@ -1,42 +1,43 @@
 <div class="wgc-board">
-  <div class="user-info">
-    <% if user_signed_in? && @game.user_check(current_user) %>
-      You, <%= current_user.email %> are part of this game!
-    <% elsif user_signed_in? && !@game.user_check(current_user) && @game.users.length < 2 %>
-      you are not part of this game
-      <%= link_to "Join this game", game_join_game_path(@game) %>
-    <% else %> %>
-      You are not logged in.
-    <% end %>
-  </div>
-  <div hidden id="game-id"><%= @game.id %></div>
-  
-  <div class="game-header">
-  </div>
+  <div class='board-wrapper'>
+    <div class="user-info">
+      <% if user_signed_in? && @game.user_check(current_user) %>
+        You, <%= current_user.email %> are part of this game!
+      <% elsif user_signed_in? && !@game.user_check(current_user) && @game.users.length < 2 %>
+        you are not part of this game
+        <%= link_to "Join this game", game_join_game_path(@game) %>
+      <% else %> %>
+        You are not logged in.
+      <% end %>
+    </div>
+    <div hidden id="game-id"><%= @game.id %></div>
 
-  <div class="flex-wrap tile-wrap" id="board">
+    <div class="game-header">
+    </div>
 
-  </div>
-
-
-
-  <div id='user-hand'>
-      <p>Hand:</p>
-        <div class="flex-box hand-wrapper">
-
-        </div>
-
-  </div>
-
-  <div id='user-word'>
-    <p>Create a word:</p>
-    <div class="flex-box play-wrapper">
+    <div class="flex-wrap tile-wrap" id="board">
 
     </div>
-    <button id="wagic" class='btn btn-primary'>Wagic!</button>
-    <button id="end-turn" class='btn btn-primary'>End Turn!</button>
-  </div>
 
+
+
+    <div id='user-hand'>
+        <p>Hand:</p>
+          <div class="flex-box hand-wrapper">
+
+          </div>
+
+    </div>
+
+    <div id='user-word'>
+      <p>Create a word:</p>
+      <div class="flex-box play-wrapper">
+
+      </div>
+      <button id="wagic" class='btn btn-primary'>Wagic!</button>
+      <button id="end-turn" class='btn btn-primary'>End Turn!</button>
+    </div>
+  </div>
 </div>
 
 <%= javascript_include_tag "game" %>

@@ -15,7 +15,8 @@ class Game < ActiveRecord::Base
       "players": {
         "player1": {
           "id": "",
-          "health": 100,
+          "current_health": 100,
+          "max_health": 100,
           "experience": 0,
           "gold": 0,
           "name": "player1",
@@ -23,7 +24,8 @@ class Game < ActiveRecord::Base
         },
         "player2": {
         "id": "",
-        "health": 100,
+        "current_health": 100,
+        "max_health": 100,
         "experience": 0,
         "gold": 0,
         "name": "player2",
@@ -102,9 +104,9 @@ class Game < ActiveRecord::Base
   def check_won
     p1 = self.gamestate['players']['player1']
     p2 = self.gamestate['players']['player2']
-    if p2["health"] < 1 || p1["gold"] == 200 || p1["experience"] == 200
+    if p2["current_health"] < 1 || p1["gold"] == 200 || p1["experience"] == 200
       self.gamestate['won'] = 'player1'
-    elsif p1["health"] < 1 || p2["gold"] == 200 || p2["experience"] == 200
+    elsif p1["current_health"] < 1 || p2["gold"] == 200 || p2["experience"] == 200
       self.gamestate['won'] = 'player2'
     end
     self.save
@@ -162,15 +164,21 @@ class Game < ActiveRecord::Base
   end
 
   def play_word(color, score, user)
+    player = self.gamestate['players'][user]
+    binding.pry
     if color == "green"
-      self.gamestate['players'][user]["health"] += score
+      if player["current_health"] < player["max_health"] && player["max_health"] % player["current_health"] > score
+        player["current_health"] += score
+      elsif player["current_health"] <= player["max_health"] && player["max_health"] % player["current_health"] < score
+        player["current_health"] = player["max_health"]
+      end
     elsif color == "red"
-      self.gamestate['players']["player2"]["health"] -= score if user == "player1"
-      self.gamestate['players']["player1"]["health"] -= score if user == "player2"
+      self.gamestate['players']["player2"]["current_health"] -= score if user == "player1"
+      self.gamestate['players']["player1"]["current_health"] -= score if user == "player2"
     elsif color == "orange"
-      self.gamestate['players'][user]["gold"] += score
+      player["gold"] += score
     elsif color == "blue"
-      self.gamestate['players'][user]["experience"] += score
+      player["experience"] += score
     end
   end
 
