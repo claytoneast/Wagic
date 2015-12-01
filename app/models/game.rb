@@ -93,7 +93,6 @@ class Game < ActiveRecord::Base
         remove_letters_from_hand(word, hand)
         check_won
         self.gamestate["turn_state"] = "letters_picked"
-        binding.pry
         return parsed_word
     else
       return false
@@ -102,13 +101,12 @@ class Game < ActiveRecord::Base
 
   def check_won
     p1 = self.gamestate['players']['player1']
-    p2 = self.gamestate['players']['player1']
+    p2 = self.gamestate['players']['player2']
     if p2["health"] < 1 || p1["gold"] == 200 || p1["experience"] == 200
       self.gamestate['won'] = 'player1'
     elsif p1["health"] < 1 || p2["gold"] == 200 || p2["experience"] == 200
       self.gamestate['won'] = 'player2'
     end
-    binding.pry
     self.save
   end
 
@@ -132,32 +130,32 @@ class Game < ActiveRecord::Base
   def score_word(word, user)
     word = word.split('')
     score = 0
-    scores = {  'a': 1,
-                'b': 3,
-                'c': 3,
-                'd': 2,
-                'e': 1,
-                'f': 4,
-                'g': 2,
-                'h': 4,
-                'i': 1,
-                'j': 8,
-                'k': 5,
-                'l': 1,
-                'm': 3,
-                'n': 1,
-                'o': 1,
-                'p': 3,
-                'q': 10,
-                'r': 1,
-                's': 1,
-                't': 1,
-                'u': 1,
-                'v': 4,
-                'w': 4,
-                'x': 8,
-                'y': 4,
-                'z': 10
+    scores = {  a: 1,
+                b: 3,
+                c: 3,
+                d: 2,
+                e: 1,
+                f: 4,
+                g: 2,
+                h: 4,
+                i: 1,
+                j: 8,
+                k: 5,
+                l: 1,
+                m: 3,
+                n: 1,
+                o: 1,
+                p: 3,
+                q: 10,
+                r: 1,
+                s: 1,
+                t: 1,
+                u: 1,
+                v: 4,
+                w: 4,
+                x: 8,
+                y: 4,
+                z: 10
               }
   word.each { |letter| score += scores[letter.to_sym] }
   return score
