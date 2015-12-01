@@ -1,11 +1,15 @@
 .wgc-board { //Wrap your styles by page so there's no overlap. Any general styling goes outside
-  width: 505px;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-content: center;
 
   .letter-wrapper, .hand-wrapper, .word-wrapper {
-    width: 480px;
+    // width: 480px;
   }
+
   .game-header {
-    height: 150px;
+    // height: 150px;
     background: #444;
     color: #afafaf;
     position: relative;
@@ -15,11 +19,11 @@
     .header {
       float: left;
       width: 50%;
-      height: 150px;
+      background: #444;
+      // height: 150px;
       display: inline-block;
 
       .player {
-        background: #444;
         text-align: center;
         text-transform: uppercase;
         font-size: 3em;
@@ -72,12 +76,14 @@
   .tile {
     transition: border .1s;
     position: relative;
-    width: 60px;
-    height: 60px;
+    height: 5.8vw;
+    width: 5.8vw;
+    max-height: 70px;
+    max-width: 70px;
     text-transform: uppercase;
     font-weight: 500;
     transition: -webkit-filter .3s;
-    border-radius: 10px;
+    border-radius: 10%;
     margin: 1px;
     border-width: 0px;
 
@@ -113,15 +119,14 @@
     }
   }
   .tile-wrap {
-    // margin-top: 20px;
     display: flex;
     flex-direction: row;
+    justify-content: center;
     background: #444;
     border-radius: 10px;
     border-top-right-radius: 0px;
     border-top-left-radius: 0px;
     padding: 5px;
-    width: 505px;
 
     .flex-box {
       display: flex;
@@ -133,13 +138,12 @@
   }
 }
 
-// .vcenter {
-//     display: inline-block;
-//     vertical-align: middle;
-//     float: none;
-// }
+@media screen and (max-width: 800px) {
+  .wgc-board {
+    .tile {
+      height: 10vw;
+      width: 10vw;
+    }
+  }
+} 
 
-// .col-lg-1 {
-//   padding: 0;
-//   width: 62px;
-// }
