@@ -1,50 +1,72 @@
 .wgc-board { //Wrap your styles by page so there's no overlap. Any general styling goes outside
+  width: 505px;
+
   .letter-wrapper, .hand-wrapper, .word-wrapper {
     width: 480px;
   }
   .game-header {
-    width: 505px;
     height: 150px;
     background: #444;
+    color: #fff;
     position: relative;
     border-top-left-radius: 10px;
     border-top-right-radius: 10px;
 
-    .player-header {
-      color: #fff;
+    .header {
+      float: left;
+      width: 50%;
       height: 150px;
-      width: 200px;
-      font-size: 3rem;
-      line-height: 50px;
-      position: absolute;
-      top: 0;
-      margin: 0 10px;
-      text-align: center;
-    }
-    .this-turn {
-      background: green;
-    }
-    #player1-header {
-      left: 0;
-    }
-    #player2-header {
-      right: 0;
-    }
-    .versus-header {
-      position: absolute;
-      top: 0;
-      width: 55px;
-      height: 150px;
-      text-align: center;
-      line-height: 50px;
-      left: 225px;
-      color: #fff;
-      h5 {
-        line-height: 28px;
+      display: inline-block;
+
+      .player {
+        background: #444;
+        text-align: center;
+        text-transform: uppercase;
+        font-size: 3em;
+
+        &.active {
+          background: #7B7B70;
+        }
       }
-    }
-    span {
-      display: block;
+
+      .stats {
+        padding: 0 10px;
+      }
+
+      .stat {
+        margin: 5px 0;
+        border-right: 3px solid #fff;
+        border-left: 3px solid #fff;
+        border-top: 1px solid #fff;
+        border-bottom: 1px solid #fff;
+        padding: 2px;
+        .bar-wrapper {
+          width: 85%;
+          display: inline-block;
+        }
+        .bar {
+          transition: width 0.2s ease;
+          height: 16px;
+          text-align: center;
+          line-height: 16px;
+          width: 100%;
+          display: inline-block;
+        }
+
+        &.health {
+          .bar {
+            background: #f00;
+          }
+        }
+
+        &.xp {
+          .bar {
+            background: #00f;
+          }
+        }
+        &.gold {
+        }
+      }
     }
   }
   .tile {

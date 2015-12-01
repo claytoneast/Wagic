@@ -10,25 +10,8 @@
     <% end %>
   </div>
   <div hidden id="game-id"><%= @game.id %></div>
+  
   <div class="game-header">
-    <div class="player-header" id="player1-header">
-      <% user1 = @game.users[0] %>
-      <%= user1.email %>
-      <div class="player-header-stats">
-        Health: <%= @game.gamestate['players'][@game.which_player(user1)]['health'] %>
-      </div>
-    </div>
-    <div class="versus-header">
-      <h5>VS</h5>
-    </div>
-    <% if @game.users.length > 1 %>
-      <div class="player-header" id="player2-header">
-        <%= @game.users[1].email %>
-        <div class="player-header-stats">
-          Health:
-        </div>
-      </div>
-    <% end %>
   </div>
 
   <div class="flex-wrap tile-wrap" id="board">

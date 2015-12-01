@@ -10,17 +10,22 @@ class Game < ActiveRecord::Base
         ]
       },
       "turn": "player1",
+      "won": "false",
       "turn_state": "pick_letters",
       "players": {
         "player1": {
           "id": "",
-          "health": 50,
+          "health": 100,
+          "experience": 0,
+          "gold": 0,
           "name": "player1",
           "hand": []
         },
         "player2": {
         "id": "",
-        "health": 50,
+        "health": 100,
+        "experience": 0,
+        "gold": 0,
         "name": "player2",
         "hand": []
         }
@@ -46,6 +51,11 @@ class Game < ActiveRecord::Base
   def random_color
     colors = ['blue', 'green', 'red', 'orange']
     colors.sample
+  end
+
+  def win_game
+    self.gamestate['players']['player1']['health'] -= 150
+    self.check_won
   end
 
   def random_space_in_column(column)
@@ -78,13 +88,28 @@ class Game < ActiveRecord::Base
     word = word.each_with_index.map { |space, i| space = {color: space[0], letter: space[1]}}
     parsed_word = word_array_to_string(word)
     if letters_against_hand(word, hand) != false && scrabble_word?(parsed_word)
-        score_word(parsed_word, j_user)
+        score = score_word(parsed_word, j_user)
+        play_word(word.first[:color], score, j_user)
         remove_letters_from_hand(word, hand)
+        check_won
         self.gamestate["turn_state"] = "letters_picked"
+        binding.pry
         return parsed_word
     else
       return false
     end
+  end
+
+  def check_won
+    p1 = self.gamestate['players']['player1']
+    p2 = self.gamestate['players']['player1']
+    if p2["health"] < 1 || p1["gold"] == 200 || p1["experience"] == 200
+      self.gamestate['won'] = 'player1'
+    elsif p1["health"] < 1 || p2["gold"] == 200 || p2["experience"] == 200
+      self.gamestate['won'] = 'player2'
+    end
+    binding.pry
+    self.save
   end
 
   def word_array_to_string(word)
@@ -135,7 +160,20 @@ class Game < ActiveRecord::Base
                 'z': 10
               }
   word.each { |letter| score += scores[letter.to_sym] }
-  self.gamestate['players'][user]['health'] += score
+  return score
+  end
+
+  def play_word(color, score, user)
+    if color == "green"
+      self.gamestate['players'][user]["health"] += score
+    elsif color == "red"
+      self.gamestate['players']["player2"]["health"] -= score if user == "player1"
+      self.gamestate['players']["player1"]["health"] -= score if user == "player2"
+    elsif color == "orange"
+      self.gamestate['players'][user]["gold"] += score
+    elsif color == "blue"
+      self.gamestate['players'][user]["experience"] += score
+    end
   end
 
   def scrabble_word?(word)
@@ -276,7 +314,11 @@ class Game < ActiveRecord::Base
   end
 
   def as_json(opts={})
-    { board: gamestate["board_state"]["array"], players: gamestate["players"], turn: gamestate["turn"], turn_state: gamestate["turn_state"] }
+    { board: gamestate["board_state"]["array"],
+      players: gamestate["players"],
+      turn: gamestate["turn"],
+      turn_state: gamestate["turn_state"],
+      won: gamestate["won"]}
   end
 
 end

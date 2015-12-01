@@ -15,8 +15,8 @@
   function initBoard(data) {
     showBoard(data.game);
     showGameMeta(data);
+    showHand(data);
     if (data.game.turn == data.user) {
-      showHand(data, data.user);
       loadHandListeners();
       loadActionListeners();
       if (data.game.turn_state == "pick_letters") {
@@ -48,6 +48,11 @@
     $("#end-turn").off();
   }
 
+  function resetHandPlayArea() {
+    tiles = $(".play-wrapper").children().detach();
+    $(".hand-wrapper").append(tiles);
+  }
+
   function switchTurn() {
     $.ajax({
       url: "/games/" + id + "/switch_turn",
@@ -55,6 +60,7 @@
       dataType: "json",
       success: function(data) {
           killListeners();
+          resetHandPlayArea();
       }
     });
   }
@@ -149,6 +155,10 @@
     $("#wagic").off();
     loadActionListeners();
   }
+  function gameWon(winning_player) {
+    killListeners();
+    alert("This game has been won by: " + winning_player);
+  }
 
   (function poll(previousTurn) {
     setTimeout(function() {
@@ -157,7 +167,10 @@
         type: "GET",
         dataType: "json",
         success: function(data) {
-          if (data.user == data.game.turn && data.game.turn != previousTurn && previousTurn != undefined) { // just became your turn
+          if (data.game.won != "false") {
+            gameWon(data.game.won);
+          }
+          else if (data.user == data.game.turn && data.game.turn != previousTurn && previousTurn !== undefined) { // just became your turn
             showBoard(data.game);
             showGameMeta(data);
             loadBoardListeners();
@@ -169,6 +182,7 @@
           } else { // other persons turn
             showBoard(data.game);
             showGameMeta(data);
+            showHand(data);
             poll(data.game.turn);
           }
         }
@@ -214,22 +228,51 @@
   }
 
   function showGameMeta(data) {
-    var p1 = data.game.players.player1;
-    var p2 = data.game.players.player2;
-    $(".game-header").html(
-      '<div class="player-header" id="player1-header">' +
-       '<span>' + p1.name + '</span>' +
-       '<div class="player-header-stats">' + p1.health + '</div>' +
-       '</div>' +
+    $('.game-header').empty();
 
-       '<div class="versus-header"><h5>VS</h5></div>' +
+    function activeTurn(id){
+      if (data.game.turn === id) return 'active';
+    }
 
-       '<div class="player-header" id="player2-header">' +
-        '<span>' + p2.name + '</span>' +
-        '<div class="player-header-stats">' + p2.health + '</div>' +
+    $.each(data.game.players, function(id, player){
+      $('.game-header').append(
+        '<div class="header">' +
+          '<div class="player '+ activeTurn(id) + '">' + player.name + '</div>' +
+          '<div class="stats">' +
+            '<div class="stat health">' +
+              'HP | ' +
+              '<span class="bar-wrapper">' +
+                '<span class="bar" style="width:' + player.health + '%">' + player.health +'</span>' +
+              '</span>' +
+            '</div>' +
+            '<div class="stat xp">' +
+              'XP | ' +
+              '<span class="bar" style="width:' + player.experience + 'px">' + player.experience + '</span>' +
+            '</div>' +
+            '<div class="stat gold">' +
+              'GOLD | ' +
+              '<span class="bar" style="width: 4rem">' + player.gold + '</span>' +
+            '</div>' +
+          '</div>' +
         '</div>'
-    );
-    $(".game-header #" + data.game.turn + "-header").addClass("this-turn");
+      );
+    });
+    // $(".game-header").html(
+    //   '<div class="header" id="p">' +
+    //      '<span class="player1-name">' + player.name + '</span>' +
+    //      '<div class="player-header-stats">' +
+    //       '<div class="health container">' +  "HP |  " +
+    //         '<span class="stat-bar" style="width:' + player.health + 'px"></span>' +
+    //       '</div>' +
+    //       '<div class="xp container">' +
+    //         "XP |  " +
+    //         '<span class="stat-bar" style="width:' + player.experience + 'px"></span>' +
+    //       '</div>' +
+    //       '<span class="stat-bar">Gold: ' + player.gold + '</span>' +
+    //      '</div>' +
+    //    '</div>'
+    // );
+    $(".game-header ." + data.game.turn + "-name").addClass("this-turn");
   }
 
   function getNeighbors(space) {

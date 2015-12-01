@@ -51,7 +51,7 @@ class GamesController < ApplicationController
     game = Game.find(params[:game_id])
     user = game.which_player(current_user)
     valid_word = game.wagic_word(params[:word], current_user)
-    if valid_word.nil?
+    if valid_word === false
       respond_to do |format|
         format.json { render :json => false }
       end
