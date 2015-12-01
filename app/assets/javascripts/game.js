@@ -245,7 +245,7 @@
             '</div>' +
             '<div class="stat xp">' +
               'XP | ' +
-              '<span class="bar" style="width:' + (player.experience % 20)/20*100 + '%">' + player.experience + "/" + (player.level + 1)*20 + '</span>' +
+              '<span class="bar" style="width:' + (player.experience % 30)/30*100 + '%">' + player.experience + "/" + (player.level)*30 + '</span>' +
             '</div>' +
             '<div class="stat gold">' +
               'GOLD | ' +
