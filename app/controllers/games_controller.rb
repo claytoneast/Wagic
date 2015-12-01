@@ -63,6 +63,15 @@ class GamesController < ApplicationController
     end
   end
 
+  def destroy_space
+    game = Game.find(params[:game_id])
+    user = game.which_player(current_user)
+    game.destroy_space(params[:tile])
+    respond_to do |format|
+      format.json { render :json => {game: game, user: user} }
+    end
+  end
+
   def switch_turn
     game = Game.find(params[:game_id])
     user = game.which_player(current_user)

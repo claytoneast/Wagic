@@ -212,11 +212,23 @@ class Game < ActiveRecord::Base
   end
 
   def get_letters(space, user)
-    tileCoords = space.split(",")
-    tileCoords.map! { |item| item.to_i}
-    block = getBlock(coordsToSpace(tileCoords))
+    block = getBlock(xy_to_space(parse_coords(space)))
     letters_to_hand(block, user)
     self.save
+  end
+
+  def destroy_space(space)
+    space = xy_to_space(parse_coords(space))
+    self.gamestate["board_state"]["array"].each do |column|
+      column.delete(space)
+    end
+    add_spaces
+    adjust_spaces
+  end
+
+  def parse_coords(space)
+    space = space.split(",")
+    space.map! { |item| item.to_i}
   end
 
   def letters_to_hand(spaces, user)
@@ -296,25 +308,25 @@ class Game < ActiveRecord::Base
     return masterBlock
   end
 
-  def spaceToCoords(space)
+  def space_to_xy(space)
     coords = [space["x"].to_i, space["y"].to_i]
   end
 
-  def coordsToSpace(coords)
+  def xy_to_space(coords)
     self.gamestate["board_state"]["array"][coords[0]][coords[1]]
   end
 
   def getNeighbors(space)
-    intCoords = spaceToCoords(space)
+    intCoords = space_to_xy(space)
     neighbors = []
     above = [intCoords[0], intCoords[1]-1]
     below = [intCoords[0], intCoords[1]+1]
     left = [intCoords[0]-1, intCoords[1]]
     right = [intCoords[0]+1, intCoords[1]]
-    neighbors << coordsToSpace(above)  if intCoords[1] > 0
-    neighbors << coordsToSpace(below)  if intCoords[1] < 7
-    neighbors << coordsToSpace(left)   if intCoords[0] > 0
-    neighbors << coordsToSpace(right)  if intCoords[0] < 7
+    neighbors << xy_to_space(above)  if intCoords[1] > 0
+    neighbors << xy_to_space(below)  if intCoords[1] < 7
+    neighbors << xy_to_space(left)   if intCoords[0] > 0
+    neighbors << xy_to_space(right)  if intCoords[0] < 7
     return neighbors.compact
   end
 

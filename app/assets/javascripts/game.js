@@ -32,6 +32,12 @@
     reloadHandListeners();
   }
 
+  function destroySpace(data) {
+    showBoard(data.game);
+    reloadBoardListeners();
+    $("#board .tile").off();
+  }
+
   function handToPlayArea() {
     reloadHandListeners();
     reloadWordListeners();
@@ -74,6 +80,29 @@
           $("#x" + neighbor[0] + "y" + neighbor[1]).toggleClass("selected");
         });
       });
+
+      var pressTimer;
+      $("#board .tile").mouseup(function(){
+        clearTimeout(pressTimer);
+        // Clear timeout
+        return false;
+      }).mousedown(function(){
+        var chosenTile = ($(this).attr('data-x') + $(this).attr('data-y')).split("");
+        pressTimer = window.setTimeout(function() {
+          $.ajax({
+            url: "/games/" + id + "/destroy_space",
+            type: "PATCH",
+            data: "tile=" + chosenTile,
+            dataType: "json",
+            success: function(data) {
+              destroySpace(data);
+            }
+          });
+        },1000);
+        return false;
+      });
+
+
 
       $('#board .tile').on("click", function() {
         var chosenTile = ($(this).attr('data-x') + $(this).attr('data-y')).split("");
@@ -255,21 +284,6 @@
         '</div>'
       );
     });
-    // $(".game-header").html(
-    //   '<div class="header" id="p">' +
-    //      '<span class="player1-name">' + player.name + '</span>' +
-    //      '<div class="player-header-stats">' +
-    //       '<div class="health container">' +  "HP |  " +
-    //         '<span class="stat-bar" style="width:' + player.health + 'px"></span>' +
-    //       '</div>' +
-    //       '<div class="xp container">' +
-    //         "XP |  " +
-    //         '<span class="stat-bar" style="width:' + player.experience + 'px"></span>' +
-    //       '</div>' +
-    //       '<span class="stat-bar">Gold: ' + player.gold + '</span>' +
-    //      '</div>' +
-    //    '</div>'
-    // );
     $(".game-header ." + data.game.turn + "-name").addClass("this-turn");
   }
 
