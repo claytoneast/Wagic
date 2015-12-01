@@ -7,7 +7,7 @@
   .game-header {
     height: 150px;
     background: #444;
-    color: #fff;
+    color: #afafaf;
     position: relative;
     border-top-left-radius: 10px;
     border-top-right-radius: 10px;
@@ -25,7 +25,7 @@
         font-size: 3em;
 
         &.active {
-          background: #7B7B70;
+          color: #fff;
         }
       }
 

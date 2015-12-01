@@ -18,6 +18,7 @@ class Game < ActiveRecord::Base
           "current_health": 100,
           "max_health": 100,
           "experience": 0,
+          "level": 1,
           "gold": 0,
           "name": "player1",
           "hand": []
@@ -27,6 +28,7 @@ class Game < ActiveRecord::Base
         "current_health": 100,
         "max_health": 100,
         "experience": 0,
+        "level": 1,
         "gold": 0,
         "name": "player2",
         "hand": []
@@ -94,6 +96,7 @@ class Game < ActiveRecord::Base
         play_word(word.first[:color], score, j_user)
         remove_letters_from_hand(word, hand)
         check_won
+        check_level
         self.gamestate["turn_state"] = "letters_picked"
         return parsed_word
     else
@@ -110,6 +113,12 @@ class Game < ActiveRecord::Base
       self.gamestate['won'] = 'player2'
     end
     self.save
+  end
+
+  def check_level
+    self.gamestate['players'].each do |player|
+      player[1]["level"] = (player[1]["experience"] / 20).floor if player[1]['experience'] > 0
+    end
   end
 
   def word_array_to_string(word)
@@ -165,7 +174,6 @@ class Game < ActiveRecord::Base
 
   def play_word(color, score, user)
     player = self.gamestate['players'][user]
-    binding.pry
     if color == "green"
       if player["current_health"] < player["max_health"] && player["max_health"] % player["current_health"] > score
         player["current_health"] += score
@@ -173,10 +181,10 @@ class Game < ActiveRecord::Base
         player["current_health"] = player["max_health"]
       end
     elsif color == "red"
-      self.gamestate['players']["player2"]["current_health"] -= score if user == "player1"
-      self.gamestate['players']["player1"]["current_health"] -= score if user == "player2"
+      self.gamestate['players']["player2"]["current_health"] -= score*player["level"] if user == "player1"
+      self.gamestate['players']["player1"]["current_health"] -= score*player["level"] if user == "player2"
     elsif color == "orange"
-      player["gold"] += score
+      player["gold"] += score * (0.8 + (0.2 * player["level"])).round
     elsif color == "blue"
       player["experience"] += score
     end

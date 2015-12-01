@@ -229,7 +229,6 @@
 
   function showGameMeta(data) {
     $('.game-header').empty();
-
     function activeTurn(id){
       if (data.game.turn === id) return 'active';
     }
@@ -246,7 +245,7 @@
             '</div>' +
             '<div class="stat xp">' +
               'XP | ' +
-              '<span class="bar" style="width:' + player.experience + 'px">' + player.experience + '</span>' +
+              '<span class="bar" style="width:' + (player.experience % 20)/20*100 + '%">' + player.experience + "/" + (player.level + 1)*20 + '</span>' +
             '</div>' +
             '<div class="stat gold">' +
               'GOLD | ' +
