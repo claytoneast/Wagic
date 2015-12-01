@@ -53,7 +53,7 @@ class Game < ActiveRecord::Base
 
 
   def random_color
-    colors = ['blue', 'green', 'red', 'orange']
+    colors = ['blue', 'red', 'orange']
     colors.sample
   end
 
