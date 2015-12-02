@@ -21,6 +21,7 @@ class Game < ActiveRecord::Base
           "level": 1,
           "gold": 0,
           "name": "player1",
+          "history": "",
           "hand": []
         },
         "player2": {
@@ -31,6 +32,7 @@ class Game < ActiveRecord::Base
         "level": 1,
         "gold": 0,
         "name": "player2",
+        "history": "",
         "hand": []
         }
       }
@@ -60,6 +62,33 @@ class Game < ActiveRecord::Base
   def win_game
     self.gamestate['players']['player1']['health'] -= 150
     self.check_won
+  end
+
+  def p1gold(i)
+    self.gamestate['players']["player1"]["gold"] += i
+    self.save
+  end
+  def p2gold(i)
+    self.gamestate['players']["player2"]["gold"] += i
+    self.save
+  end
+  def p1health(i)
+    self.gamestate['players']["player1"]["current_health"] += i
+    self.save
+  end
+  def p2health(i)
+    self.gamestate['players']["player2"]["current_health"] += i
+    self.save
+  end
+  def p1xp(i)
+    self.gamestate['players']["player1"]["experience"] += i
+    self.check_level
+    self.save
+  end
+  def p2xp(i)
+    self.gamestate['players']["player2"]["experience"] += i
+    self.check_level
+    self.save
   end
 
   def random_space_in_column(column)
@@ -98,6 +127,7 @@ class Game < ActiveRecord::Base
         check_won
         check_level
         self.gamestate["turn_state"] = "letters_picked"
+        self.gamestate['players'][j_user]["history"] = parsed_word
         return parsed_word
     else
       return false
@@ -117,7 +147,7 @@ class Game < ActiveRecord::Base
 
   def check_level
     self.gamestate['players'].each do |player|
-      player[1]["level"] = (player[1]["experience"] / 30.0).ceil if player[1]['experience'] > 0
+      player[1]["level"] = (player[1]["experience"] / 29.9).ceil if player[1]['experience'] > 0
     end
   end
 

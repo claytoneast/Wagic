@@ -1,4 +1,8 @@
+$hp : #962A3C;
+$xp: #4379E6;
+$gold: #D09802;
 .wgc-board { //Wrap your styles by page so there's no overlap. Any general styling goes outside
+  -webkit-font-smoothing: antialiased;
   display: flex;
   flex-direction: row;
   justify-content: center;
@@ -10,7 +14,7 @@
     padding: 5px;
     background-color: #444;
     color: #afafaf;
-    font-size: 2rem;
+    font-size: 3rem;
   }
 
   .game-header {
@@ -30,13 +34,22 @@
 
       .player {
         color: #afafaf;
-        text-align: center;
+        text-align: left;
         text-transform: uppercase;
-        font-size: 3em;
+        font-size: 1.5em;
+        padding-left: 2rem;
+
+        .word-spelled {
+          font-size: 1.5rem;
+        }
 
         &.active {
           color: #efefef;
         }
+      }
+      .hp-caption, .xp-caption {
+        width: 15%;
+        display: inline-block;
       }
 
       .stats {
@@ -65,13 +78,13 @@
 
         &.health {
           .bar {
-            background: #f00;
+            background: $hp;
           }
         }
 
         &.xp {
           .bar {
-            background: #00f;
+            background: $xp;
           }
         }
         &.gold {
@@ -80,6 +93,7 @@
     }
   }
   .tile {
+    font-size: 2.3rem;
     transition: border .1s;
     position: relative;
     height: 5.8vw;
@@ -92,6 +106,14 @@
     border-radius: 10%;
     margin: 1px;
     border-width: 0px;
+
+
+    .score {
+      position: absolute;
+      top: 0;
+      right: 6%;
+      font-size: 1.2rem;
+    }
 
     span {
       color: #efefef;
@@ -112,15 +134,15 @@
         border-color: #5B5F28;
       }
     &.blue {
-        background: #009989;
+        background: $xp;
         border-color: #005048;
     }
     &.orange {
-        background: #EDB92E;
+        background: $gold;
         border-color: #826517;
     }
     &.red {
-        background: #CE1836;
+        background: $hp;
         border-color: #770C1D;
     }
   }
@@ -149,6 +171,7 @@
     .tile {
       height: 10vw;
       width: 10vw;
+
     }
   }
 }

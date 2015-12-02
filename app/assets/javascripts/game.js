@@ -189,35 +189,35 @@
     alert("This game has been won by: " + winning_player);
   }
 
-  (function poll(previousTurn) {
-    setTimeout(function() {
-      $.ajax({
-        url: "/games/" + id + "/game_board",
-        type: "GET",
-        dataType: "json",
-        success: function(data) {
-          if (data.game.won != "false") {
-            gameWon(data.game.won);
-          }
-          else if (data.user == data.game.turn && data.game.turn != previousTurn && previousTurn !== undefined) { // just became your turn
-            showBoard(data.game);
-            showGameMeta(data);
-            loadBoardListeners();
-            loadHandListeners();
-            reloadActionListeners();
-            poll(data.game.turn);
-          } else if (data.user == data.game.turn) { // your turn
-            poll(data.game.turn);
-          } else { // other persons turn
-            showBoard(data.game);
-            showGameMeta(data);
-            showHand(data);
-            poll(data.game.turn);
-          }
-        }
-      });
-    }, 1000);
-  })();
+  // (function poll(previousTurn) {
+  //   setTimeout(function() {
+  //     $.ajax({
+  //       url: "/games/" + id + "/game_board",
+  //       type: "GET",
+  //       dataType: "json",
+  //       success: function(data) {
+  //         if (data.game.won != "false") {
+  //           gameWon(data.game.won);
+  //         }
+  //         else if (data.user == data.game.turn && data.game.turn != previousTurn && previousTurn !== undefined) { // just became your turn
+  //           showBoard(data.game);
+  //           showGameMeta(data);
+  //           loadBoardListeners();
+  //           loadHandListeners();
+  //           reloadActionListeners();
+  //           poll(data.game.turn);
+  //         } else if (data.user == data.game.turn) { // your turn
+  //           poll(data.game.turn);
+  //         } else { // other persons turn
+  //           showBoard(data.game);
+  //           showGameMeta(data);
+  //           showHand(data);
+  //           poll(data.game.turn);
+  //         }
+  //       }
+  //     });
+  //   }, 1000);
+  // })();
 
   function clearSpelledWord() {
     $('#user-word .play-wrapper').empty();
@@ -246,14 +246,48 @@
       column.forEach(function(tile, y) {
         $("#row" + x).append(
           '<button class="tile ' + tile.color + '"' +
-          'data-x="' + x + '"' +
-          'data-y="' + y + '"' +
-          'data-color="' + tile.color + '"' +
-          'id="x' + x + 'y' + y + '"' +
-          '><span>' + tile.letter + '</span></button>'
+            'data-x="' + x + '"' +
+            'data-y="' + y + '"' +
+            'data-color="' + tile.color + '"' +
+            'id="x' + x + 'y' + y + '">' +
+            '<span>' + tile.letter + '</span>' +
+            '<span class="score">' + letterScore(tile.letter) + '</span>' +
+          '</button>'
         );
       });
     });
+  }
+
+  function letterScore(letter) {
+    var scores = {
+      "a": 1,
+      "b": 3,
+      "c": 3,
+      "d": 2,
+      "e": 1,
+      "f": 4,
+      "g": 2,
+      "h": 4,
+      "i": 1,
+      "j": 8,
+      "k": 5,
+      "l": 1,
+      "m": 3,
+      "n": 1,
+      "o": 1,
+      "p": 3,
+      "q": 10,
+      "r": 1,
+      "s": 1,
+      "t": 1,
+      "u": 1,
+      "v": 4,
+      "w": 4,
+      "x": 8,
+      "y": 4,
+      "z": 10
+    };
+    return scores[letter];
   }
 
   function showGameMeta(data) {
@@ -264,17 +298,21 @@
     $.each(data.game.players, function(id, player){
       $('.game-header').append(
         '<div class="header">' +
-          '<div class="player '+ activeTurn(id) + '">' + player.name + '</div>' +
+          '<div class="player '+ activeTurn(id) + '">' + player.name + ' - ' +
+            '<span class="word-spelled">' + player.history + '<span>' +
+          '</div>' +
           '<div class="stats">' +
             '<div class="stat health">' +
-              'HP | ' +
+              '<span class="hp-caption">HP | ' + '</span>' +
               '<span class="bar-wrapper">' +
                 '<span class="bar" style="width:' + (player.current_health/player.max_health)*100 + '%">' + player.current_health + "/" + player.max_health +'</span>' +
               '</span>' +
             '</div>' +
             '<div class="stat xp">' +
-              'XP | ' +
-              '<span class="bar" style="width:' + (player.experience % 30)/30*100 + '%">' + player.experience + "/" + (player.level)*30 + '</span>' +
+              '<span class="xp-caption">XP | ' + '</span>' +
+              '<span class="bar-wrapper">' +
+                '<span class="bar" style="width:' + (player.experience % 30)/30*100 + '%">' + player.experience + "/" + (player.level)*30 + '</span>' +
+              '</span>' +
             '</div>' +
             '<div class="stat gold">' +
               'GOLD | ' +
