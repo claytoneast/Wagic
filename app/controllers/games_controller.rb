@@ -1,6 +1,6 @@
 class GamesController < ApplicationController
-
-  before_action :fetch_game_and_user, only: [:show, :join_game, :pick_letters, :game_board, :wagic_word, :destroy_space, :switch_turn]
+  before_action :validate_player, only: [ :pick_letters, :wagic_word, :destroy_space, :switch_turn ]
+  before_action :fetch_game_and_user, only: [ :show, :join_game, :pick_letters, :game_board, :wagic_word, :destroy_space, :switch_turn ]
 
   def create
     @game = Game.create
@@ -22,7 +22,7 @@ class GamesController < ApplicationController
   end
 
   def pick_letters
-    @game.get_letters(params[:tile], current_user)
+    @game.update_user_hand!(params[:tile], current_user)
     render json: {game: @game, user: @user}
   end
 
@@ -40,7 +40,7 @@ class GamesController < ApplicationController
   end
 
   def destroy_space
-    @game.destroy_space(params[:tile])
+    @game.destroy_space!(params[:tile])
     render json: {game: @game, user: @user}
   end
 
@@ -55,4 +55,10 @@ class GamesController < ApplicationController
     @user = @game.which_player(current_user) if current_user
   end
 
+  def validate_player
+    # check if current user is player 1 or player 2
+    # if
+    #   head :unauthorized && return
+    # end
+  end
 end

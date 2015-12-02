@@ -3,12 +3,9 @@ class Game < ActiveRecord::Base
 
   before_create :set_gamestate
   def set_gamestate
-
     initial_board = {
-      "board_state": {
-        "array": [
-        ]
-      },
+      board_state: [],
+
       "turn": "player1",
       "won": "false",
       "turn_state": "pick_letters",
@@ -37,14 +34,14 @@ class Game < ActiveRecord::Base
         }
       }
     }
-    game_board = initial_board[:board_state][:array]
+    game_board = []
     8.times do |i|
       game_board << []
       8.times do |j|
-        game_board[i] << { color: "#{random_color}", x: "#{i}", y: "#{j}", letter: "#{random_letter}"}
+        game_board[i] << { color: random_color, x: i, y: j, letter: random_letter }
       end
     end
-    game_board.to_json
+    initial_board[:board_state] = game_board
     self.gamestate = initial_board
   end
 
@@ -52,7 +49,6 @@ class Game < ActiveRecord::Base
     letters = ["e", "e", "e", "e", "e", "e", "e", "e", "e", "e", "e", "e", "e", "t", "t", "t", "t", "t", "t", "t", "t", "t", "a", "a", "a", "a", "a", "a", "a", "a", "o", "o", "o", "o", "o", "o", "o", "o", "i", "i", "i", "i", "i", "i", "i", "n", "n", "n", "n", "n", "n", "n", "s", "s", "s", "s", "s", "s", "h", "h", "h", "h", "h", "h", "r", "r", "r", "r", "r", "r", "d", "d", "d", "d", "l", "l", "l", "l", "c", "c", "c", "u", "u", "u", "m", "m", "w", "w", "f", "f", "g", "g", "y", "y", "p", "p", "b", "b", "v", "k", "j", "x", "q", "z"]
     letters.sample
   end
-
 
   def random_color
     colors = ['blue', 'red', 'orange']
@@ -96,8 +92,7 @@ class Game < ActiveRecord::Base
   end
 
   def user_check(check_user)
-    return true if self.users.include?(check_user)
-    return false if !self.users.include?(check_user)
+    self.users.include?(check_user)
   end
 
   def add_player(user)
@@ -196,8 +191,8 @@ class Game < ActiveRecord::Base
                 y: 4,
                 z: 10
               }
-  word.each { |letter| score += scores[letter.to_sym] }
-  return score
+    word.each { |letter| score += scores[letter.to_sym] }
+    return score
   end
 
   def play_word(color, score, user)
@@ -232,26 +227,24 @@ class Game < ActiveRecord::Base
         end
       end
     end
-    if found.length == word.length
-      return found
-    else
-      return false
-    end
+    return found if found.length == word.length
+    return false
   end
 
-  def get_letters(space, user)
+  def update_user_hand!(space, user)
     block = getBlock(xy_to_space(parse_coords(space)))
     letters_to_hand(block, user)
     self.save
   end
 
-  def destroy_space(space)
+  def destroy_space!(space)
     space = xy_to_space(parse_coords(space))
-    self.gamestate["board_state"]["array"].each do |column|
+    self.gamestate["board_state"].each do |column|
       column.delete(space)
     end
     add_spaces
     adjust_spaces
+    self.save
   end
 
   def parse_coords(space)
@@ -265,7 +258,7 @@ class Game < ActiveRecord::Base
     spaces.sort! { |a,b | a["y"] <=> b["y"] }
     def push_spaces(chosen_spaces, hand)
       chosen_spaces.each do |space|
-        board_column = self.gamestate["board_state"]["array"][space["x"].to_i]
+        board_column = self.gamestate["board_state"][space["x"].to_i]
         board_column.delete_if { |item| hand << item if item["y"] == space["y"] }
         if hand.length > 14
           (hand.length - 14).times { hand.shift }
@@ -280,33 +273,31 @@ class Game < ActiveRecord::Base
       hand.clear
       push_spaces(spaces, hand)
     end
-    self.save
     add_spaces
     adjust_spaces
   end
 
   def adjust_spaces
-      board = self.gamestate["board_state"]["array"]
-      board.each do |column|
-          column.each_with_index do |space, index|
-            space["y"] = (index.to_s)
-          end
+    board = self.gamestate["board_state"]
+    board.each do |column|
+      column.each_with_index do |space, index|
+        space["y"] = (index.to_s)
       end
+    end
   end
 
   def add_spaces
-    board = self.gamestate["board_state"]["array"]
+    board = self.gamestate["board_state"]
     board.each_with_index do |column, index|
       if column.length < 8
         (8-column.length).times {column.unshift(random_space_in_column(index))}
       end
     end
-    self.save
   end
 
   def which_player(user)
-      return "player1" if self.gamestate["players"]["player1"]["id"] == user.id
-      return "player2" if self.gamestate["players"]["player2"]["id"] == user.id
+    return "player1" if self.gamestate["players"]["player1"]["id"] == user.id
+    return "player2" if self.gamestate["players"]["player2"]["id"] == user.id
   end
 
   def switch_turn
@@ -342,7 +333,7 @@ class Game < ActiveRecord::Base
   end
 
   def xy_to_space(coords)
-    self.gamestate["board_state"]["array"][coords[0]][coords[1]]
+    self.gamestate["board_state"][coords[0]][coords[1]]
   end
 
   def getNeighbors(space)
@@ -369,11 +360,10 @@ class Game < ActiveRecord::Base
   end
 
   def as_json(opts={})
-    { board: gamestate["board_state"]["array"],
+    { board: gamestate["board_state"],
       players: gamestate["players"],
       turn: gamestate["turn"],
       turn_state: gamestate["turn_state"],
       won: gamestate["won"]}
   end
-
 end
