@@ -5,7 +5,7 @@
   </p>
   <% else %>
 
-    <%= link_to 'New Game', new_game_path, class: "btn btn-primary" %>
+    <%= link_to 'New Game', games_path, class: "btn btn-primary", method: :post %>
   <% end %>
   <ul>
     <% @games.each do |game| %>

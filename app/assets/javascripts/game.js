@@ -90,8 +90,8 @@
         var chosenTile = ($(this).attr('data-x') + $(this).attr('data-y')).split("");
         pressTimer = window.setTimeout(function() {
           $.ajax({
-            url: "/games/" + id + "/destroy_space",
-            type: "PATCH",
+            url: "/games/" + id + "/space",
+            type: "DELETE",
             data: "tile=" + chosenTile,
             dataType: "json",
             success: function(data) {

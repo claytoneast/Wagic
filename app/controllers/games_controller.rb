@@ -1,85 +1,58 @@
 class GamesController < ApplicationController
-  def new
+
+  before_action :fetch_game_and_user, only: [:show, :join_game, :pick_letters, :game_board, :wagic_word, :destroy_space, :switch_turn]
+
+  def create
     @game = Game.create
     @game.add_player(current_user)
-    if @game.save
-      redirect_to game_path(@game)
-    else
-      render 'index'
-    end
+    redirect_to game_path(@game)
   end
 
   def show
-    @game = Game.find(params[:id])
     @game_state = @game.gamestate
-    if current_user
-      @json_user = @game.which_player(current_user)
-    end
   end
 
   def index
-    @games = Game.all
+    @games = Game.limit(100)
   end
 
   def join_game
-    @game = Game.find(params[:game_id])
     @game.add_player(current_user)
-    @game.save
     redirect_to game_path(@game)
   end
 
   def pick_letters
-    @game = Game.find(params[:game_id])
-    user = @game.which_player(current_user)
     @game.get_letters(params[:tile], current_user)
-    respond_to do |format|
-      format.js
-      format.json { render :json => {game: @game, user: user} }
-      format.html { redirect_to game_path(@game) }
-    end
+    render json: {game: @game, user: @user}
   end
 
   def game_board
-    @game = Game.find(params[:game_id])
-    user = @game.which_player(current_user)
-    respond_to do |format|
-      format.json { render :json => {game: @game, user: user} }
-    end
+    render json: {game: @game, user: @user}
   end
 
   def wagic_word
-    game = Game.find(params[:game_id])
-    user = game.which_player(current_user)
-    valid_word = game.wagic_word(params[:word], current_user)
-    if valid_word === false
-      respond_to do |format|
-        format.json { render :json => false }
-      end
+    word = @game.wagic_word(params[:word], @user)
+    if word === false
+      render json: false
     else
-      game.save
-      respond_to do |format|
-        format.json { render :json => {game: game, user: user} }
-      end
+      render json: {game: @game, user: @user}
     end
   end
 
   def destroy_space
-    game = Game.find(params[:game_id])
-    user = game.which_player(current_user)
-    game.destroy_space(params[:tile])
-    respond_to do |format|
-      format.json { render :json => {game: game, user: user} }
-    end
+    @game.destroy_space(params[:tile])
+    render json: {game: @game, user: @user}
   end
 
   def switch_turn
-    game = Game.find(params[:game_id])
-    user = game.which_player(current_user)
-    game.switch_turn
-    game.save
-    respond_to do |format|
-      format.json { render :json => {game: game, user: user} }
-    end
+    @game.switch_turn
+    render json: {game: @game, user: @user}
+  end
+
+  private
+  def fetch_game_and_user
+    @game = Game.find(params[:game_id] || params[:id])
+    @user = @game.which_player(current_user) if current_user
   end
 
 end

@@ -105,30 +105,28 @@ class Game < ActiveRecord::Base
       self.users.push(user)
       if self.gamestate["players"]["player1"]["id"] == ""
         self.gamestate["players"]["player1"]["id"] = user.id
-      elsif
-        self.gamestate["players"]["player2"]["id"] == ""
-          self.gamestate["players"]["player2"]["id"] = user.id
+      elsif self.gamestate["players"]["player2"]["id"] == ""
+        self.gamestate["players"]["player2"]["id"] = user.id
       end
     end
     self.save
   end
 
   def wagic_word(word, user)
-    j_user = which_player(user)
-    hand = self.gamestate['players'][j_user]["hand"]
-    word = word.split(",")
-    word.map! { |l| l.split(".") }
-    word = word.each_with_index.map { |space, i| space = {color: space[0], letter: space[1]}}
+    hand = self.gamestate['players'][user]["hand"]
+    word = word.split(",").map { |l| l.split(".") }
+    word = word.map { |space| {color: space[0], letter: space[1]}}
     parsed_word = word_array_to_string(word)
     if letters_against_hand(word, hand) != false && scrabble_word?(parsed_word)
-        score = score_word(parsed_word, j_user)
-        play_word(word.first[:color], score, j_user)
-        remove_letters_from_hand(word, hand)
-        check_won
-        check_level
-        self.gamestate["turn_state"] = "letters_picked"
-        self.gamestate['players'][j_user]["history"] = parsed_word
-        return parsed_word
+      score = score_word(parsed_word, user)
+      play_word(word.first[:color], score, user)
+      remove_letters_from_hand(word, hand)
+      check_won
+      check_level
+      self.gamestate["turn_state"] = "letters_picked"
+      self.gamestate['players'][user]["history"] = parsed_word
+      self.save
+      return parsed_word
     else
       return false
     end
@@ -318,6 +316,7 @@ class Game < ActiveRecord::Base
       self.gamestate['turn'] = "player1"
     end
     self.gamestate["turn_state"] = "pick_letters"
+    self.save
   end
 
   def getBlock(space)
