@@ -1,11 +1,17 @@
 class GamesController < ApplicationController
-  before_action :validate_player, only: [ :pick_letters, :wagic_word, :destroy_space, :switch_turn ]
-  before_action :fetch_game_and_user, only: [ :show, :join_game, :pick_letters, :game_board, :wagic_word, :destroy_space, :switch_turn ]
+  before_action :validate_player, only: [ :pick_letters, :wagic_word, :destroy_space, :switch_turn, :play_card ]
+  before_action :fetch_game_and_user, only: [ :show, :join_game, :pick_letters, :game_board, :wagic_word, :destroy_space, :switch_turn, :play_card ]
+  before_action :fetch_card, only: [:play_card]
 
   def create
     @game = Game.create
     @game.add_player(current_user)
     redirect_to game_path(@game)
+  end
+
+  def play_card
+    @game.use_card!(@card, @user) if @game.can_use?(@card, current_user)
+    render json: {game: @game, user: @user, card: @card}
   end
 
   def show
@@ -50,6 +56,11 @@ class GamesController < ApplicationController
   end
 
   private
+
+  def fetch_card
+    @card = Card.find(params[:card_id])
+  end
+
   def fetch_game_and_user
     @game = Game.find(params[:game_id] || params[:id])
     @user = @game.which_player(current_user) if current_user

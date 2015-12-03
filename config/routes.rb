@@ -2,9 +2,11 @@ Rails.application.routes.draw do
 
   devise_for :users
   root 'games#index'
+  resources :cards, only: [:index]
   resources :games do
     delete 'space' => 'games#destroy_space'
     patch 'switch_turn' => 'games#switch_turn'
+    patch 'play_card' => 'games#play_card'
     patch 'wagic_word' => 'games#wagic_word'
     patch 'pick_letters' => 'games#pick_letters'
     get 'join_game' => 'games#join_game'

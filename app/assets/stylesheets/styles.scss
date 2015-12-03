@@ -86,8 +86,9 @@ $gold: #D09802;
           align-items: center;
         }
         .card {
-          height: 45%;
+          height: 65%;
           min-width: 20%;
+          max-width: 20%;
           border: 2px solid;
           margin: 2.5%;
           background: #444;
@@ -96,6 +97,22 @@ $gold: #D09802;
           transition: transform .3s;
           text-align: center;
           padding: 5px;
+          .card-info {
+            justify-content: space-around;
+            .card-name {
+              width: 100%;
+            }
+            .card-price {
+              margin-left: 70%;
+              color: $gold;
+            }
+            .card-effect {
+              padding-top: 0.5rem;
+              border-top: 2px solid;
+              margin-top: 0.5rem;
+            }
+          }
+
           &:hover {
             position: relative;
             background: #555;

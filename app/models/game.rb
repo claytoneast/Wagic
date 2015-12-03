@@ -198,11 +198,8 @@ class Game < ActiveRecord::Base
   def play_word(color, score, user)
     player = self.gamestate['players'][user]
     if color == "green"
-      if player["current_health"] < player["max_health"] && player["max_health"] % player["current_health"] > score
-        player["current_health"] += score
-      elsif player["current_health"] <= player["max_health"] && player["max_health"] % player["current_health"] < score
-        player["current_health"] = player["max_health"]
-      end
+      heal = score < (player["max_health"] - player["current_health"]) ? score : player["max_health"]
+      player["health"] += heal
     elsif color == "red"
       self.gamestate['players']["player2"]["current_health"] -= score*player["level"] if user == "player1"
       self.gamestate['players']["player1"]["current_health"] -= score*player["level"] if user == "player2"
@@ -214,7 +211,17 @@ class Game < ActiveRecord::Base
   end
 
   def scrabble_word?(word)
-    Word.exists?(name: word)
+    r = Regexp.new('^' + word + '$')
+    !!open("db/seeds/wordlist.txt") { |f| f.each_line.detect { |l| r.match(l) } }
+  end
+
+  def use_card!(card, user)
+    card.activate(self, user)
+    self.save
+  end
+
+  def can_use?(card, user)
+    self.gamestate['players'][which_player(user)]['gold'].to_i >= card.price
   end
 
   def letters_against_hand(word, hand)
@@ -367,3 +374,15 @@ class Game < ActiveRecord::Base
       won: gamestate["won"]}
   end
 end
+
+
+#
+# def self.populate_list
+#   Word.delete_all
+#   File.foreach("db/seeds/wordlist.txt").with_object([]) do |word|
+#     begin
+#       Word.create(name: word.chomp)
+#     rescue ActiveRecord::RecordNotUnique
+#     end
+#   end
+# end

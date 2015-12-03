@@ -1,0 +1,2 @@
+class CardCluster < Card
+end

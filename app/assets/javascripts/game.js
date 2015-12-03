@@ -1,6 +1,23 @@
 
-  console.log("document ready");
-  var id = parseInt($("#game-id").text());
+  $(document).ready(function() {
+    console.log("document ready");
+    getCards();
+  });
+  var id = parseInt($("#game-id").text()),
+      cards = [];
+
+
+  function getCards() {
+    $.ajax({
+      url: "/cards",
+      type: "GET",
+      dataType: "json",
+      async: false,
+      success: function(data) {
+        cards = data;
+      }
+    });
+  }
 
   $.ajax({
     url: "/games/" + id + "/game_board",
@@ -13,10 +30,12 @@
   });
 
   function initBoard(data) {
+    // getCards();
     showBoard(data.game);
     showGameMeta(data);
     showHand(data);
     spellCards(); // TAKE THIS OUT -----------------------------------------------
+    cardListeners(); // TAKE THIS THE FUCK OUT ------------------------------------
     if (data.game.turn == data.user) {
       loadHandListeners();
       loadActionListeners();
@@ -57,42 +76,52 @@
   }
 
   function cardListeners() {
-    $(".heal").on("click", function() {
-      healCard();
+    $(".card").on("click", function() {
+      var cardID = $(this).attr("id");
+      useCard(cardID);
     });
   }
 
-  function healCard() {
+  function useCard(card_id) {
     $.ajax({
-
+      url: "/games/" + id + "/play_card",
+      type: "PATCH",
+      data: "card_id=" + card_id,
+      dataType: "json",
+      success: function(data) {
+        fCard = findCard(card_id)
+        if (fCard.name == "Heal") {
+          healCard(data);
+        }
+      }
     });
   }
 
+  function findCard(card_id) {
+    var foundCard;
+    for (var i = 0; i < cards.length; i++) {
+      if (cards[i].id === parseInt(card_id)) {
+        foundCard = cards[i];
+        break;
+      }
+    }
+    return foundCard;
+  }
+
+  function healCard(data) {
+    showGameMeta(data);
+  }
 
   function spellCards() {
-      $("#board .cards").addClass("show-cards");
       $("#board .cards").empty();
+      $("#board .cards").addClass("show-cards");
       $("#board .cards").append(
         '<div class="mask"></div>' +
         '<div class="cards-content">' +
           '<div class="cards-top">' +
             '<div class="flex-row card-wrapper">' +
-              '<div class="card flex-column" id="heal">' +
-              'HEAL' +
-              '</div>' +
-              '<div class="card flex-column" id="doubledip">' +
-              'DOUBLEDIP' +
-              '</div>' +
-              '<div class="card flex-column" id="cluster">' +
-              'CLUSTER' +
-              '<img src="http://static.worldpoliticsreview.com/articles/1647/clusterbomb.jpg" class="card-img">' +
-              '</div>' +
-              '<div class="card flex-column" id="switcheroo">' +
-              'SWITCHEROO' +
-              '</div>' +
             '</div>' +
           '</div>' +
-
           '<div class="cards-bottom flex-column">' +
             '<div class="flex-row" id="user-word">' +
               '<div class="flex-row play-wrapper">' +
@@ -103,8 +132,18 @@
                 '<button id="end-turn" class="action-button">EndTurn</button>' +
             '</div>' +
           '</div>' +
-        '</div>'
-      );
+        '</div>');
+
+      cards.forEach(function(card) {
+        $('#board .cards .card-wrapper').append(
+          '<div class="card flex-column" id="'+ card.id + '">' +
+            '<div class="flex-row card-info">' +
+              '<span class="card-name">' + card.name + '</span>' +
+              '<span class="card-price">' + card.price + 'G</span>' +
+              '<span class="card-effect">' + card.effect + '<span>' +
+          '</div>'
+        );
+      });
   }
 
   function resetHandPlayArea() {
@@ -291,7 +330,7 @@
 
   function showBoard(game) {
     $('#board').empty();
-    $('#board').append('<div class="cards"></div>')
+    $('#board').append('<div class="cards"></div>');
     game.board.forEach(function(column, x) {
       var make_column = '<div class="flex-column" id="row' + x + '"></div>';
       $("#board").append(
