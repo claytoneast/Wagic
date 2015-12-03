@@ -16,6 +16,7 @@
     showBoard(data.game);
     showGameMeta(data);
     showHand(data);
+    spellCards(); // TAKE THIS OUT -----------------------------------------------
     if (data.game.turn == data.user) {
       loadHandListeners();
       loadActionListeners();
@@ -28,6 +29,7 @@
   function lettersToHand(data) {
     showBoard(data.game);
     $(".tile").off();
+    spellCards();
     showHand(data);
     reloadHandListeners();
   }
@@ -52,6 +54,57 @@
     $(".tile").off();
     $("#wagic").off();
     $("#end-turn").off();
+  }
+
+  function cardListeners() {
+    $(".heal").on("click", function() {
+      healCard();
+    });
+  }
+
+  function healCard() {
+    $.ajax({
+
+    });
+  }
+
+
+  function spellCards() {
+      $("#board .cards").addClass("show-cards");
+      $("#board .cards").empty();
+      $("#board .cards").append(
+        '<div class="mask"></div>' +
+        '<div class="cards-content">' +
+          '<div class="cards-top">' +
+            '<div class="flex-row card-wrapper">' +
+              '<div class="card flex-column" id="heal">' +
+              'HEAL' +
+              '</div>' +
+              '<div class="card flex-column" id="doubledip">' +
+              'DOUBLEDIP' +
+              '</div>' +
+              '<div class="card flex-column" id="cluster">' +
+              'CLUSTER' +
+              '<img src="http://static.worldpoliticsreview.com/articles/1647/clusterbomb.jpg" class="card-img">' +
+              '</div>' +
+              '<div class="card flex-column" id="switcheroo">' +
+              'SWITCHEROO' +
+              '</div>' +
+            '</div>' +
+          '</div>' +
+
+          '<div class="cards-bottom flex-column">' +
+            '<div class="flex-row" id="user-word">' +
+              '<div class="flex-row play-wrapper">' +
+              '</div>' +
+            '</div>' +
+            '<div class="flex-row spell-buttons">' +
+                '<button id="wagic" class="action-button">Wagic!</button>' +
+                '<button id="end-turn" class="action-button">EndTurn</button>' +
+            '</div>' +
+          '</div>' +
+        '</div>'
+      );
   }
 
   function resetHandPlayArea() {
@@ -238,8 +291,9 @@
 
   function showBoard(game) {
     $('#board').empty();
+    $('#board').append('<div class="cards"></div>')
     game.board.forEach(function(column, x) {
-      var make_column = '<div class="flex-box" id="row' + x + '"></div>';
+      var make_column = '<div class="flex-column" id="row' + x + '"></div>';
       $("#board").append(
         make_column
       );
