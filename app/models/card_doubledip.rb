@@ -1,5 +1,4 @@
 class CardDoubledip < Card
-  def use(game, user)
-
+  def activate(game, player)
   end
 end

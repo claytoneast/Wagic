@@ -118,7 +118,6 @@ class Game < ActiveRecord::Base
       remove_letters_from_hand(word, hand)
       check_won
       check_level
-      self.gamestate["turn_state"] = "letters_picked"
       self.gamestate['players'][user]["history"] = parsed_word
       self.save
       return parsed_word
@@ -130,9 +129,9 @@ class Game < ActiveRecord::Base
   def check_won
     p1 = self.gamestate['players']['player1']
     p2 = self.gamestate['players']['player2']
-    if p2["current_health"] < 1 || p1["gold"] == 200 || p1["experience"] == 200
+    if p2["current_health"] < 1 || p1["gold"] == 200
       self.gamestate['won'] = 'player1'
-    elsif p1["current_health"] < 1 || p2["gold"] == 200 || p2["experience"] == 200
+    elsif p1["current_health"] < 1 || p2["gold"] == 200
       self.gamestate['won'] = 'player2'
     end
     self.save
@@ -216,7 +215,7 @@ class Game < ActiveRecord::Base
   end
 
   def use_card!(card, user)
-    card.activate(self, user)
+    card.activate(self, self.gamestate['players'][user])
     self.save
   end
 
@@ -241,6 +240,7 @@ class Game < ActiveRecord::Base
   def update_user_hand!(space, user)
     block = getBlock(xy_to_space(parse_coords(space)))
     letters_to_hand(block, user)
+    self.gamestate['turn_state'] = 'letters_picked'
     self.save
   end
 

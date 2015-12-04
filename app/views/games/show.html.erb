@@ -1,3 +1,5 @@
+<%= link_to "Lobby", root_path, class: "btn btn-primary" %>
+
 <div class="wgc-board">
   <div class="board-wrapper">
     <div class="user-info">
@@ -6,7 +8,7 @@
       <% elsif user_signed_in? && !@game.user_check(current_user) && @game.users.length < 2 %>
         you are not part of this game
         <%= link_to "Join this game", game_join_game_path(@game) %>
-      <% else %> %>
+      <% else %>
         You are not logged in.
       <% end %>
     </div>
@@ -16,7 +18,9 @@
     </div>
 
     <div class="flex-wrap tile-wrap" id="board">
+      <div class="cards">
 
+      </div>
     </div>
 
 

@@ -30,27 +30,32 @@
   });
 
   function initBoard(data) {
-    // getCards();
     showBoard(data.game);
     showGameMeta(data);
-    showHand(data);
-    spellCards(); // TAKE THIS OUT -----------------------------------------------
-    cardListeners(); // TAKE THIS THE FUCK OUT ------------------------------------
-    if (data.game.turn == data.user) {
-      loadHandListeners();
-      loadActionListeners();
-      if (data.game.turn_state == "pick_letters") {
-        loadBoardListeners();
-      }
+    if (data.user !== null) {
+      showHand(data);
     }
+    if (data.game.turn == data.user && data.game.turn_state == "pick_letters") { // if users turn and needs to pick letters
+      // loadHandListeners();
+      // loadActionListeners();
+      loadBoardListeners();
+    } else if (data.game.turn == data.user && data.game.turn_state == "letters_picked") { // if its users turn and has picked letters
+        // show overlay
+        spellCards();
+        cardListeners();
+        loadHandListeners();
+        loadActionListeners();
+      }
   }
 
-  function lettersToHand(data) {
+  function lettersPicked(data) {
     showBoard(data.game);
     $(".tile").off();
     spellCards();
+    cardListeners();
     showHand(data);
     reloadHandListeners();
+    loadActionListeners();
   }
 
   function destroySpace(data) {
@@ -89,9 +94,15 @@
       data: "card_id=" + card_id,
       dataType: "json",
       success: function(data) {
-        fCard = findCard(card_id)
+        fCard = findCard(card_id);
         if (fCard.name == "Heal") {
           healCard(data);
+        } else if (fCard.name == "Cluster") {
+          clusterCard(data);
+        } else if (fCard.name == "Doubledip") {
+            doubledipCard(data);
+        } else if (fCard.name == "Switcheroo") {
+          switcherooCard(data);
         }
       }
     });
@@ -109,6 +120,17 @@
   }
 
   function healCard(data) {
+    showGameMeta(data);
+  }
+
+  function switcherooCard(data) {
+    showHand(data);
+    showGameMeta(data);
+    reloadHandListeners();
+  }
+
+  function clusterCard(data) {
+    showBoard(data.game);
     showGameMeta(data);
   }
 
@@ -159,8 +181,13 @@
       success: function(data) {
           killListeners();
           resetHandPlayArea();
+          hideCardOverlay();
       }
     });
+  }
+
+  function hideCardOverlay() {
+    $('#board .cards').empty();
   }
 
   function loadBoardListeners(){
@@ -211,7 +238,7 @@
           data: "tile=" + chosenTile,
           dataType: "json",
           success: function(data) {
-            lettersToHand(data);
+            lettersPicked(data);
           }
         });
       });
@@ -281,35 +308,37 @@
     alert("This game has been won by: " + winning_player);
   }
 
-  // (function poll(previousTurn) {
-  //   setTimeout(function() {
-  //     $.ajax({
-  //       url: "/games/" + id + "/game_board",
-  //       type: "GET",
-  //       dataType: "json",
-  //       success: function(data) {
-  //         if (data.game.won != "false") {
-  //           gameWon(data.game.won);
-  //         }
-  //         else if (data.user == data.game.turn && data.game.turn != previousTurn && previousTurn !== undefined) { // just became your turn
-  //           showBoard(data.game);
-  //           showGameMeta(data);
-  //           loadBoardListeners();
-  //           loadHandListeners();
-  //           reloadActionListeners();
-  //           poll(data.game.turn);
-  //         } else if (data.user == data.game.turn) { // your turn
-  //           poll(data.game.turn);
-  //         } else { // other persons turn
-  //           showBoard(data.game);
-  //           showGameMeta(data);
-  //           showHand(data);
-  //           poll(data.game.turn);
-  //         }
-  //       }
-  //     });
-  //   }, 1000);
-  // })();
+  (function poll(previousTurn) {
+    setTimeout(function() {
+      $.ajax({
+        url: "/games/" + id + "/game_board",
+        type: "GET",
+        dataType: "json",
+        success: function(data) {
+          if (data.game.won != "false") {
+            gameWon(data.game.won);
+          } else if (data.user === null) {
+            showBoard(data.game);
+            showGameMeta(data);
+            poll(data.game.turn);
+          } else if (data.user == data.game.turn && data.game.turn != previousTurn && previousTurn !== undefined) { // just became your turn
+            debugger;
+            showBoard(data.game);
+            showGameMeta(data);
+            loadBoardListeners();
+            poll(data.game.turn);
+          } else if (data.user == data.game.turn) { // your turn
+            poll(data.game.turn);
+          } else { // other persons turn
+            showBoard(data.game);
+            showGameMeta(data);
+            showHand(data);
+            poll(data.game.turn);
+          }
+        }
+      });
+    }, 1000);
+  })();
 
   function clearSpelledWord() {
     $('#user-word .play-wrapper').empty();
@@ -329,8 +358,7 @@
   }
 
   function showBoard(game) {
-    $('#board').empty();
-    $('#board').append('<div class="cards"></div>');
+    $('#board').children().not('.cards').remove();
     game.board.forEach(function(column, x) {
       var make_column = '<div class="flex-column" id="row' + x + '"></div>';
       $("#board").append(
