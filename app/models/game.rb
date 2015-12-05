@@ -267,9 +267,9 @@ class Game < ActiveRecord::Base
       chosen_spaces.each do |space|
         board_column = self.gamestate["board_state"][space["x"].to_i]
         board_column.delete_if { |item| hand << item if item["y"] == space["y"] }
-        if hand.length > 14
-          (hand.length - 14).times { hand.shift }
-        end
+        # if hand.length > 14
+        #   (hand.length - 14).times { hand.shift }
+        # end
       end
     end
     if hand.empty?
