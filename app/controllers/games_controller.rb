@@ -10,8 +10,12 @@ class GamesController < ApplicationController
   end
 
   def play_card
-    @game.use_card!(@card, @user) if @game.can_use?(@card, current_user)
-    render json: {game: @game, user: @user, card: @card}
+    if @game.can_use?(@card, current_user)
+      @game.use_card!(@card, @user)
+      render json: {game: @game, user: @user, card: @card}
+    else
+      render json: false
+    end
   end
 
   def show

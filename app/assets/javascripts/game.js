@@ -36,12 +36,9 @@
       showHand(data);
     }
     if (data.game.turn == data.user && data.game.turn_state == "pick_letters") { // if users turn and needs to pick letters
-      // loadHandListeners();
-      // loadActionListeners();
       loadBoardListeners();
-    } else if (data.game.turn == data.user && data.game.turn_state == "letters_picked") { // if its users turn and has picked letters
-        // show overlay
-        spellCards();
+    } else if (data.game.turn == data.user && data.game.turn_state == "picked_letters") { // if its users turn and has picked letters
+        spellOverlay();
         cardListeners();
         loadHandListeners();
         loadActionListeners();
@@ -50,8 +47,8 @@
 
   function lettersPicked(data) {
     showBoard(data.game);
-    $(".tile").off();
-    spellCards();
+    $('.tile').off();
+    spellOverlay();
     cardListeners();
     showHand(data);
     reloadHandListeners();
@@ -60,8 +57,11 @@
 
   function destroySpace(data) {
     showBoard(data.game);
-    reloadBoardListeners();
-    $("#board .tile").off();
+    $('#board .tile').off();
+    spellOverlay();
+    showHand(data);
+    loadHandListeners();
+    loadActionListeners();
   }
 
   function handToPlayArea() {
@@ -75,34 +75,39 @@
   }
 
   function killListeners() {
-    $(".tile").off();
-    $("#wagic").off();
-    $("#end-turn").off();
+    $('.tile').off();
+    $('#wagic').off();
+    $('#end-turn').off();
   }
 
   function cardListeners() {
-    $(".card").on("click", function() {
-      var cardID = $(this).attr("id");
+    $('.card').on('click', function() {
+      var cardID = $(this).attr('id');
       useCard(cardID);
     });
   }
 
   function useCard(card_id) {
     $.ajax({
-      url: "/games/" + id + "/play_card",
-      type: "PATCH",
-      data: "card_id=" + card_id,
-      dataType: "json",
+      url: '/games/' + id + '/play_card',
+      type: 'PATCH',
+      data: 'card_id=' + card_id,
+      dataType: 'json',
       success: function(data) {
         fCard = findCard(card_id);
-        if (fCard.name == "Heal") {
-          healCard(data);
-        } else if (fCard.name == "Cluster") {
-          clusterCard(data);
-        } else if (fCard.name == "Doubledip") {
-            doubledipCard(data);
-        } else if (fCard.name == "Switcheroo") {
-          switcherooCard(data);
+        if (data !== false) {
+          if (fCard.name == 'Heal') {
+            healCard(data);
+          } else if (fCard.name == 'Cluster') {
+            clusterCard(data);
+          } else if (fCard.name == 'Doubledip') {
+              doubledipCard(data);
+          } else if (fCard.name == 'Switcheroo') {
+            switcherooCard(data);
+          }
+
+        } else {
+          alert("You do not have the gold for that card.");
         }
       }
     });
@@ -134,10 +139,18 @@
     showGameMeta(data);
   }
 
-  function spellCards() {
-      $("#board .cards").empty();
-      $("#board .cards").addClass("show-cards");
-      $("#board .cards").append(
+  function doubledipCard(data) {
+    $('#board .cards').removeClass('show-cards').empty();
+    reloadBoardListeners();
+    // overlay goes away, event listeners for the board go on.
+    // game state goes back to pick letters in the backend
+    //
+  }
+
+  function spellOverlay() {
+      $('#board .cards').empty();
+      $('#board .cards').addClass('show-cards');
+      $('#board .cards').append(
         '<div class="mask"></div>' +
         '<div class="cards-content">' +
           '<div class="cards-top">' +
@@ -169,52 +182,50 @@
   }
 
   function resetHandPlayArea() {
-    tiles = $(".play-wrapper").children().detach();
-    $(".hand-wrapper").append(tiles);
+    tiles = $('.play-wrapper').children().detach();
+    $('.hand-wrapper').append(tiles);
   }
 
   function switchTurn() {
     $.ajax({
-      url: "/games/" + id + "/switch_turn",
-      type: "PATCH",
-      dataType: "json",
+      url: '/games/' + id + '/switch_turn',
+      type: 'PATCH',
+      dataType: 'json',
       success: function(data) {
           killListeners();
           resetHandPlayArea();
-          hideCardOverlay();
+          hideSpellOverlay();
       }
     });
   }
 
-  function hideCardOverlay() {
+  function hideSpellOverlay() {
     $('#board .cards').empty().removeClass('show-cards');
   }
 
   function loadBoardListeners(){
-    console.log('load board listneers is loaded')
     $(document).ready(function(){
-      console.log('load board listeners has reached document ready event')
       $('#board .tile').hover(function(){
         var neighbors = getNeighbors(this);
         neighbors.forEach(function(neighbor) {
-          neighbor = neighbor.split(",");
-          $("#x" + neighbor[0] + "y" + neighbor[1]).toggleClass("selected");
+          neighbor = neighbor.split(',');
+          $('#x' + neighbor[0] + 'y' + neighbor[1]).toggleClass('selected');
         });
       });
 
       var pressTimer;
-      $("#board .tile").mouseup(function(){
+      $('#board .tile').mouseup(function(){
         clearTimeout(pressTimer);
         // Clear timeout
         return false;
       }).mousedown(function(){
-        var chosenTile = ($(this).attr('data-x') + $(this).attr('data-y')).split("");
+        var chosenTile = ($(this).attr('data-x') + $(this).attr('data-y')).split('');
         pressTimer = window.setTimeout(function() {
           $.ajax({
-            url: "/games/" + id + "/space",
-            type: "DELETE",
-            data: "tile=" + chosenTile,
-            dataType: "json",
+            url: '/games/' + id + '/space',
+            type: 'DELETE',
+            data: 'tile=' + chosenTile,
+            dataType: 'json',
             success: function(data) {
               destroySpace(data);
             }
@@ -225,21 +236,22 @@
 
 
 
-      $('#board .tile').on("click", function() {
-        var chosenTile = ($(this).attr('data-x') + $(this).attr('data-y')).split("");
+      $('#board .tile').on('click', function() {
+        var chosenTile = ($(this).attr('data-x') + $(this).attr('data-y')).split('');
         var neighborShiftInfo = []; // Is this being used for anything?
         var neighbors = getNeighbors(this);
         neighbors.forEach(function(neighbor) {
-          neighbor = neighbor.split(",");
+          neighbor = neighbor.split(',');
           neighborShiftInfo.push(neighbor); // ?
-          $("#x" + neighbor[0] + "y" + neighbor[1]).remove();
+          $('#x' + neighbor[0] + 'y' + neighbor[1]).remove();
         });
         $.ajax({
-          url: "/games/" + id + "/pick_letters",
-          type: "PATCH",
-          data: "tile=" + chosenTile,
-          dataType: "json",
+          url: '/games/' + id + '/pick_letters',
+          type: 'PATCH',
+          data: 'tile=' + chosenTile,
+          dataType: 'json',
           success: function(data) {
+            debugger;
             lettersPicked(data);
           }
         });
@@ -252,25 +264,25 @@
   }
 
   function loadActionListeners() {
-    $("#end-turn").on("click", function() {
+    $('#end-turn').on('click', function() {
       switchTurn();
     });
 
-    $("#wagic").on("click", function() {
+    $('#wagic').on('click', function() {
       var word = [];
-      var collection = $(".play-wrapper").children();
+      var collection = $('.play-wrapper').children();
       $.each(collection, function(index, tile) {
-        var coordSpace = (tile.getAttribute("data-color") + "." + tile.getAttribute("data-letter"));
+        var coordSpace = (tile.getAttribute('data-color') + '.' + tile.getAttribute('data-letter'));
         word.push(coordSpace);
       });
       $.ajax({
-        url: "/games/" + id + "/wagic_word",
-        type: "PATCH",
-        data: "word=" + word,
-        dataType: "json",
+        url: '/games/' + id + '/wagic_word',
+        type: 'PATCH',
+        data: 'word=' + word,
+        dataType: 'json',
         success: function(data) {
           if (data === false) {
-            alert("That word is not allowed");
+            alert('That word is not allowed');
           } else {
             wagicWord(data);
           }
@@ -280,76 +292,76 @@
   }
 
   function loadHandListeners() {
-    $("#user-hand .hand-wrapper .tile").on("click", function() {
-      $(this).appendTo(".play-wrapper");
+    $('#user-hand .hand-wrapper .tile').on('click', function() {
+      $(this).appendTo('.play-wrapper');
       handToPlayArea();
     });
   }
   function reloadHandListeners() {
-    $("#user-hand .hand-wrapper .tile").off();
+    $('#user-hand .hand-wrapper .tile').off();
     loadHandListeners();
   }
 
   function loadWordListeners() {
-    $("#user-word .play-wrapper .tile").on("click.loadWordListeners", function() {
-      $(this).appendTo(".hand-wrapper");
+    $('#user-word .play-wrapper .tile').on('click.loadWordListeners', function() {
+      $(this).appendTo('.hand-wrapper');
       handToPlayArea();
     });
   }
   function reloadWordListeners() {
-    $("#user-word .play-wrapper .tile").off();
+    $('#user-word .play-wrapper .tile').off();
     loadWordListeners();
   }
   function reloadActionListeners() {
-    $("#end-turn").off();
-    $("#wagic").off();
+    $('#end-turn').off();
+    $('#wagic').off();
     loadActionListeners();
   }
   function gameWon(winning_player) {
     killListeners();
-    alert("This game has been won by: " + winning_player);
+    alert('This game has been won by: ' + winning_player);
   }
 
-  (function poll(previousTurn) {
-    setTimeout(function() {
-      $.ajax({
-        url: "/games/" + id + "/game_board",
-        type: "GET",
-        dataType: "json",
-        success: function(data) {
-          if (data.game.won != "false") {
-            gameWon(data.game.won);
-          } else if (data.user === null) {
-            showBoard(data.game);
-            showGameMeta(data);
-            poll(data.game.turn);
-          } else if (data.user == data.game.turn && data.game.turn != previousTurn && previousTurn !== undefined) { // just became your turn
-            showBoard(data.game);
-            showGameMeta(data);
-            reloadBoardListeners();
-            poll(data.game.turn);
-          } else if (data.user == data.game.turn) { // your turn
-            poll(data.game.turn);
-          } else { // other persons turn
-            showBoard(data.game);
-            showGameMeta(data);
-            showHand(data);
-            poll(data.game.turn);
-          }
-        }
-      });
-    }, 1000);
-  })();
+  // (function poll(previousTurn) {
+  //   setTimeout(function() {
+  //     $.ajax({
+  //       url: '/games/' + id + '/game_board',
+  //       type: 'GET',
+  //       dataType: 'json',
+  //       success: function(data) {
+  //         if (data.game.won != 'false') {
+  //           gameWon(data.game.won);
+  //         } else if (data.user === null) {
+  //           showBoard(data.game);
+  //           showGameMeta(data);
+  //           poll(data.game.turn);
+  //         } else if (data.user == data.game.turn && data.game.turn != previousTurn && previousTurn !== undefined) { // just became your turn
+  //           showBoard(data.game);
+  //           showGameMeta(data);
+  //           reloadBoardListeners();
+  //           poll(data.game.turn);
+  //         } else if (data.user == data.game.turn) { // your turn
+  //           poll(data.game.turn);
+  //         } else { // other persons turn
+  //           showBoard(data.game);
+  //           showGameMeta(data);
+  //           showHand(data);
+  //           poll(data.game.turn);
+  //         }
+  //       }
+  //     });
+  //   }, 1000);
+  // })();
 
   function clearSpelledWord() {
     $('#user-word .play-wrapper').empty();
   }
 
   function showHand(data) {
-    var hand = data.game.players[data.user]['hand']; // rewrite this shit so it gets it from the game data
-    $("#user-hand .hand-wrapper").empty();
+    var hand = data.game.players[data.user].hand; // rewrite this shit so it gets it from the game data
+    $('#user-hand .hand-wrapper').empty();
     hand.forEach(function(tile) {
-      $("#user-hand .hand-wrapper").append(
+      $('#user-hand .hand-wrapper').append(
         '<button class="btn btn-game tile hand-tile btn-primary ' + tile.color + '"' +
         'data-color="' + tile.color + '"' +
         'data-letter="' + tile.letter + '"' +
@@ -366,7 +378,7 @@
         make_column
       );
       column.forEach(function(tile, y) {
-        $("#row" + x).append(
+        $('#row' + x).append(
           '<button class="tile ' + tile.color + '"' +
             'data-x="' + x + '"' +
             'data-y="' + y + '"' +
@@ -382,32 +394,32 @@
 
   function letterScore(letter) {
     var scores = {
-      "a": 1,
-      "b": 3,
-      "c": 3,
-      "d": 2,
-      "e": 1,
-      "f": 4,
-      "g": 2,
-      "h": 4,
-      "i": 1,
-      "j": 8,
-      "k": 5,
-      "l": 1,
-      "m": 3,
-      "n": 1,
-      "o": 1,
-      "p": 3,
-      "q": 10,
-      "r": 1,
-      "s": 1,
-      "t": 1,
-      "u": 1,
-      "v": 4,
-      "w": 4,
-      "x": 8,
-      "y": 4,
-      "z": 10
+      'a': 1,
+      'b': 3,
+      'c': 3,
+      'd': 2,
+      'e': 1,
+      'f': 4,
+      'g': 2,
+      'h': 4,
+      'i': 1,
+      'j': 8,
+      'k': 5,
+      'l': 1,
+      'm': 3,
+      'n': 1,
+      'o': 1,
+      'p': 3,
+      'q': 10,
+      'r': 1,
+      's': 1,
+      't': 1,
+      'u': 1,
+      'v': 4,
+      'w': 4,
+      'x': 8,
+      'y': 4,
+      'z': 10
     };
     return scores[letter];
   }
@@ -444,7 +456,7 @@
         '</div>'
       );
     });
-    $(".game-header ." + data.game.turn + "-name").addClass("this-turn");
+    $('.game-header .' + data.game.turn + '-name').addClass('this-turn');
   }
 
   function getNeighbors(space) {

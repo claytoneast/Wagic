@@ -6,31 +6,31 @@ class Game < ActiveRecord::Base
     initial_board = {
       board_state: [],
 
-      "turn": "player1",
-      "won": "false",
-      "turn_state": "pick_letters",
-      "players": {
-        "player1": {
-          "id": "",
-          "current_health": 100,
-          "max_health": 100,
-          "experience": 0,
-          "level": 1,
-          "gold": 0,
-          "name": "player1",
-          "history": "",
-          "hand": []
+      turn: 'player1',
+      won: 'false',
+      turn_state: 'pick_letters',
+      players: {
+        player1: {
+          id: '',
+          current_health: 100,
+          max_health: 100,
+          experience: 0,
+          level: 1,
+          gold: 0,
+          name: 'player1',
+          history: '',
+          hand: []
         },
-        "player2": {
-        "id": "",
-        "current_health": 100,
-        "max_health": 100,
-        "experience": 0,
-        "level": 1,
-        "gold": 0,
-        "name": "player2",
-        "history": "",
-        "hand": []
+        player2: {
+        id: '',
+        current_health: 100,
+        max_health: 100,
+        experience: 0,
+        level: 1,
+        gold: 0,
+        name: 'player2',
+        history: '',
+        hand: []
         }
       }
     }
@@ -46,7 +46,7 @@ class Game < ActiveRecord::Base
   end
 
   def random_letter
-    letters = ["e", "e", "e", "e", "e", "e", "e", "e", "e", "e", "e", "e", "e", "t", "t", "t", "t", "t", "t", "t", "t", "t", "a", "a", "a", "a", "a", "a", "a", "a", "o", "o", "o", "o", "o", "o", "o", "o", "i", "i", "i", "i", "i", "i", "i", "n", "n", "n", "n", "n", "n", "n", "s", "s", "s", "s", "s", "s", "h", "h", "h", "h", "h", "h", "r", "r", "r", "r", "r", "r", "d", "d", "d", "d", "l", "l", "l", "l", "c", "c", "c", "u", "u", "u", "m", "m", "w", "w", "f", "f", "g", "g", "y", "y", "p", "p", "b", "b", "v", "k", "j", "x", "q", "z"]
+    letters = ['e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 't', 't', 't', 't', 't', 't', 't', 't', 't', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o', 'i', 'i', 'i', 'i', 'i', 'i', 'i', 'n', 'n', 'n', 'n', 'n', 'n', 'n', 's', 's', 's', 's', 's', 's', 'h', 'h', 'h', 'h', 'h', 'h', 'r', 'r', 'r', 'r', 'r', 'r', 'd', 'd', 'd', 'd', 'l', 'l', 'l', 'l', 'c', 'c', 'c', 'u', 'u', 'u', 'm', 'm', 'w', 'w', 'f', 'f', 'g', 'g', 'y', 'y', 'p', 'p', 'b', 'b', 'v', 'k', 'j', 'x', 'q', 'z']
     letters.sample
   end
 
@@ -61,34 +61,34 @@ class Game < ActiveRecord::Base
   end
 
   def p1gold(i)
-    self.gamestate['players']["player1"]["gold"] += i
+    self.gamestate['players']['player1']['gold'] += i
     self.save
   end
   def p2gold(i)
-    self.gamestate['players']["player2"]["gold"] += i
+    self.gamestate['players']['player2']['gold'] += i
     self.save
   end
   def p1health(i)
-    self.gamestate['players']["player1"]["current_health"] += i
+    self.gamestate['players']['player1']['current_health'] += i
     self.save
   end
   def p2health(i)
-    self.gamestate['players']["player2"]["current_health"] += i
+    self.gamestate['players']['player2']['current_health'] += i
     self.save
   end
   def p1xp(i)
-    self.gamestate['players']["player1"]["experience"] += i
+    self.gamestate['players']['player1']['experience'] += i
     self.check_level
     self.save
   end
   def p2xp(i)
-    self.gamestate['players']["player2"]["experience"] += i
+    self.gamestate['players']['player2']['experience'] += i
     self.check_level
     self.save
   end
 
   def random_space_in_column(column)
-    jspace = JSON.parse({ "color": "#{random_color}", "x": "#{column}", "y": "", "letter": "#{random_letter}"}.to_json)
+    jspace = { color: random_color, 'x': "#{column}", 'y': '', 'letter': random_letter }
   end
 
   def user_check(check_user)
@@ -98,18 +98,18 @@ class Game < ActiveRecord::Base
   def add_player(user)
     unless user_check(user)
       self.users.push(user)
-      if self.gamestate["players"]["player1"]["id"] == ""
-        self.gamestate["players"]["player1"]["id"] = user.id
-      elsif self.gamestate["players"]["player2"]["id"] == ""
-        self.gamestate["players"]["player2"]["id"] = user.id
+      if self.gamestate['players']['player1']['id'] == ''
+        self.gamestate['players']['player1']['id'] = user.id
+      elsif self.gamestate['players']['player2']['id'] == ''
+        self.gamestate['players']['player2']['id'] = user.id
       end
     end
     self.save
   end
 
   def wagic_word(word, user)
-    hand = self.gamestate['players'][user]["hand"]
-    word = word.split(",").map { |l| l.split(".") }
+    hand = self.gamestate['players'][user]['hand']
+    word = word.split(',').map { |l| l.split('.') }
     word = word.map { |space| {color: space[0], letter: space[1]}}
     parsed_word = word_array_to_string(word)
     if letters_against_hand(word, hand) != false && scrabble_word?(parsed_word)
@@ -118,7 +118,7 @@ class Game < ActiveRecord::Base
       remove_letters_from_hand(word, hand)
       check_won
       check_level
-      self.gamestate['players'][user]["history"] = parsed_word
+      self.gamestate['players'][user]['history'] = parsed_word
       self.save
       return parsed_word
     else
@@ -129,9 +129,9 @@ class Game < ActiveRecord::Base
   def check_won
     p1 = self.gamestate['players']['player1']
     p2 = self.gamestate['players']['player2']
-    if p2["current_health"] < 1 || p1["gold"] == 200
+    if p2['current_health'] < 1 || p1['gold'] == 200
       self.gamestate['won'] = 'player1'
-    elsif p1["current_health"] < 1 || p2["gold"] == 200
+    elsif p1['current_health'] < 1 || p2['gold'] == 200
       self.gamestate['won'] = 'player2'
     end
     self.save
@@ -139,7 +139,7 @@ class Game < ActiveRecord::Base
 
   def check_level
     self.gamestate['players'].each do |player|
-      player[1]["level"] = (player[1]["experience"] / 29.9).ceil if player[1]['experience'] > 0
+      player[1]['level'] = (player[1]['experience'] / 29.9).ceil if player[1]['experience'] > 0
     end
   end
 
@@ -152,7 +152,7 @@ class Game < ActiveRecord::Base
   def remove_letters_from_hand(word, hand)
     word.each do |letter|
       hand.each do |space|
-        if space["color"] == letter[:color] && space["letter"] == letter[:letter]
+        if space['color'] == letter[:color] && space['letter'] == letter[:letter]
           hand.delete(space)
          break
        end
@@ -196,22 +196,22 @@ class Game < ActiveRecord::Base
 
   def play_word(color, score, user)
     player = self.gamestate['players'][user]
-    if color == "green"
-      heal = score < (player["max_health"] - player["current_health"]) ? score : player["max_health"]
-      player["health"] += heal
-    elsif color == "red"
-      self.gamestate['players']["player2"]["current_health"] -= score*player["level"] if user == "player1"
-      self.gamestate['players']["player1"]["current_health"] -= score*player["level"] if user == "player2"
-    elsif color == "orange"
-      player["gold"] += score * (0.8 + (0.2 * player["level"])).round
-    elsif color == "blue"
-      player["experience"] += score
+    if color == 'green'
+      heal = score < (player['max_health'] - player['current_health']) ? score : player['max_health']
+      player['health'] += heal
+    elsif color == 'red'
+      self.gamestate['players']['player2']['current_health'] -= score*player['level'] if user == 'player1'
+      self.gamestate['players']['player1']['current_health'] -= score*player['level'] if user == 'player2'
+    elsif color == 'orange'
+      player['gold'] += score
+    elsif color == 'blue'
+      player['experience'] += score
     end
   end
 
   def scrabble_word?(word)
     r = Regexp.new('^' + word + '$')
-    !!open("db/seeds/wordlist.txt") { |f| f.each_line.detect { |l| r.match(l) } }
+    !!open('db/seeds/wordlist.txt') { |f| f.each_line.detect { |l| r.match(l) } }
   end
 
   def use_card!(card, user)
@@ -227,7 +227,7 @@ class Game < ActiveRecord::Base
     found = []
     word.each do |letter|
       hand.each do |space|
-        if space["color"] == letter[:color] && space["letter"] == letter[:letter]
+        if space['color'] == letter[:color] && space['letter'] == letter[:letter]
           found << space
           break
         end
@@ -240,33 +240,34 @@ class Game < ActiveRecord::Base
   def update_user_hand!(space, user)
     block = getBlock(xy_to_space(parse_coords(space)))
     letters_to_hand(block, user)
-    self.gamestate['turn_state'] = 'letters_picked'
+    self.gamestate['turn_state'] = 'picked_letters'
     self.save
   end
 
   def destroy_space!(space)
     space = xy_to_space(parse_coords(space))
-    self.gamestate["board_state"].each do |column|
+    self.gamestate['board_state'].each do |column|
       column.delete(space)
     end
     add_spaces
     adjust_spaces
+    self.gamestate['turn_state'] = 'picked_letters'
     self.save
   end
 
   def parse_coords(space)
-    space = space.split(",")
+    space = space.split(',')
     space.map! { |item| item.to_i}
   end
 
   def letters_to_hand(spaces, user)
     json_user = which_player(user) # find the players json identifer
-    hand = self.gamestate["players"][json_user]['hand'] #get player hand
-    spaces.sort! { |a,b | a["y"] <=> b["y"] }
+    hand = self.gamestate['players'][json_user]['hand'] #get player hand
+    spaces.sort! { |a,b | a['y'] <=> b['y'] }
     def push_spaces(chosen_spaces, hand)
       chosen_spaces.each do |space|
-        board_column = self.gamestate["board_state"][space["x"].to_i]
-        board_column.delete_if { |item| hand << item if item["y"] == space["y"] }
+        board_column = self.gamestate['board_state'][space['x'].to_i]
+        board_column.delete_if { |item| hand << item if item['y'] == space['y'] }
         # if hand.length > 14
         #   (hand.length - 14).times { hand.shift }
         # end
@@ -274,7 +275,7 @@ class Game < ActiveRecord::Base
     end
     if hand.empty?
       push_spaces(spaces, hand)
-    elsif hand.first["color"] == spaces.first["color"]
+    elsif hand.first['color'] == spaces.first['color']
       push_spaces(spaces, hand)
     else
       hand.clear
@@ -285,16 +286,16 @@ class Game < ActiveRecord::Base
   end
 
   def adjust_spaces
-    board = self.gamestate["board_state"]
+    board = self.gamestate['board_state']
     board.each do |column|
       column.each_with_index do |space, index|
-        space["y"] = (index.to_s)
+        space['y'] = (index.to_s)
       end
     end
   end
 
   def add_spaces
-    board = self.gamestate["board_state"]
+    board = self.gamestate['board_state']
     board.each_with_index do |column, index|
       if column.length < 8
         (8-column.length).times {column.unshift(random_space_in_column(index))}
@@ -303,17 +304,17 @@ class Game < ActiveRecord::Base
   end
 
   def which_player(user)
-    return "player1" if self.gamestate["players"]["player1"]["id"] == user.id
-    return "player2" if self.gamestate["players"]["player2"]["id"] == user.id
+    return 'player1' if self.gamestate['players']['player1']['id'] == user.id
+    return 'player2' if self.gamestate['players']['player2']['id'] == user.id
   end
 
   def switch_turn
-    if self.gamestate['turn'] == "player1"
-      self.gamestate['turn'] = "player2"
-    elsif self.gamestate['turn'] == "player2"
-      self.gamestate['turn'] = "player1"
+    if self.gamestate['turn'] == 'player1'
+      self.gamestate['turn'] = 'player2'
+    elsif self.gamestate['turn'] == 'player2'
+      self.gamestate['turn'] = 'player1'
     end
-    self.gamestate["turn_state"] = "pick_letters"
+    self.gamestate['turn_state'] = 'pick_letters'
     self.save
   end
 
@@ -336,11 +337,11 @@ class Game < ActiveRecord::Base
   end
 
   def space_to_xy(space)
-    coords = [space["x"].to_i, space["y"].to_i]
+    coords = [space['x'].to_i, space['y'].to_i]
   end
 
   def xy_to_space(coords)
-    self.gamestate["board_state"][coords[0]][coords[1]]
+    self.gamestate['board_state'][coords[0]][coords[1]]
   end
 
   def getNeighbors(space)
@@ -358,20 +359,20 @@ class Game < ActiveRecord::Base
   end
 
   def sameColorNeighbors(all_neighbors, space)
-    colorQueryAgainst = space["color"]
+    colorQueryAgainst = space['color']
     same_neighbors = []
     all_neighbors.each do |neighbor|
-      same_neighbors << neighbor if neighbor["color"] == colorQueryAgainst
+      same_neighbors << neighbor if neighbor['color'] == colorQueryAgainst
     end
     return same_neighbors
   end
 
   def as_json(opts={})
-    { board: gamestate["board_state"],
-      players: gamestate["players"],
-      turn: gamestate["turn"],
-      turn_state: gamestate["turn_state"],
-      won: gamestate["won"]}
+    { board: gamestate['board_state'],
+      players: gamestate['players'],
+      turn: gamestate['turn'],
+      turn_state: gamestate['turn_state'],
+      won: gamestate['won']}
   end
 end
 
@@ -379,7 +380,7 @@ end
 #
 # def self.populate_list
 #   Word.delete_all
-#   File.foreach("db/seeds/wordlist.txt").with_object([]) do |word|
+#   File.foreach('db/seeds/wordlist.txt').with_object([]) do |word|
 #     begin
 #       Word.create(name: word.chomp)
 #     rescue ActiveRecord::RecordNotUnique
