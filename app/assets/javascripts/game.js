@@ -187,11 +187,13 @@
   }
 
   function hideCardOverlay() {
-    $('#board .cards').empty();
+    $('#board .cards').empty().removeClass('show-cards');
   }
 
   function loadBoardListeners(){
+    console.log('load board listneers is loaded')
     $(document).ready(function(){
+      console.log('load board listeners has reached document ready event')
       $('#board .tile').hover(function(){
         var neighbors = getNeighbors(this);
         neighbors.forEach(function(neighbor) {
@@ -322,10 +324,9 @@
             showGameMeta(data);
             poll(data.game.turn);
           } else if (data.user == data.game.turn && data.game.turn != previousTurn && previousTurn !== undefined) { // just became your turn
-            debugger;
             showBoard(data.game);
             showGameMeta(data);
-            loadBoardListeners();
+            reloadBoardListeners();
             poll(data.game.turn);
           } else if (data.user == data.game.turn) { // your turn
             poll(data.game.turn);
