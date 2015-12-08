@@ -1,17 +1,16 @@
 <%= link_to "Lobby", root_path, class: "btn btn-primary" %>
 
-<div class="wgc-board">
-  <div class="board-wrapper">
     <div class="user-info">
       <% if user_signed_in? && @game.user_check(current_user) %>
         You, <%= current_user.email %> are part of this game!
       <% elsif user_signed_in? && !@game.user_check(current_user) && @game.users.length < 2 %>
         you are not part of this game
         <%= link_to "Join this game", game_join_game_path(@game) %>
-      <% else %>
-        You are not logged in.
       <% end %>
     </div>
+<div class="wgc-board">
+  <div class="board-wrapper">
+    <div class="overlay-image"></div>
     <div hidden id="game-id"><%= @game.id %></div>
 
     <div class="game-header">
@@ -25,7 +24,7 @@
 
 
       <div id='user-hand' class='flex-column'>
-            <div class="flex-column hand-wrapper flex-row">
+            <div class="hand-wrapper">
 
             </div>
             <img src="" alt="" />

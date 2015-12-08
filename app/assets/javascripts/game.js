@@ -148,37 +148,37 @@
   }
 
   function spellOverlay() {
-      $('#board .cards').empty();
-      $('#board .cards').addClass('show-cards');
-      $('#board .cards').append(
-        '<div class="mask"></div>' +
-        '<div class="cards-content">' +
-          '<div class="cards-top">' +
-            '<div class="flex-row card-wrapper">' +
-            '</div>' +
-          '</div>' +
-          '<div class="cards-bottom flex-column">' +
-            '<div class="flex-row" id="user-word">' +
-              '<div class="flex-row play-wrapper">' +
-              '</div>' +
-            '</div>' +
-            '<div class="flex-row spell-buttons">' +
-                '<button id="wagic" class="action-button">Wagic!</button>' +
-                '<button id="end-turn" class="action-button">EndTurn</button>' +
-            '</div>' +
-          '</div>' +
-        '</div>');
-
-      cards.forEach(function(card) {
-        $('#board .cards .card-wrapper').append(
-          '<div class="card flex-column" id="'+ card.id + '">' +
-            '<div class="flex-row card-info">' +
-              '<span class="card-name">' + card.name + '</span>' +
-              '<span class="card-price">' + card.price + 'G</span>' +
-              '<span class="card-effect">' + card.effect + '<span>' +
-          '</div>'
-        );
-      });
+      // $('#board .cards').empty();
+      // $('#board .cards').addClass('show-cards');
+      // $('#board .cards').append(
+      //   '<div class="mask"></div>' +
+      //   '<div class="cards-content">' +
+      //     '<div class="cards-top">' +
+      //       '<div class="flex-row card-wrapper">' +
+      //       '</div>' +
+      //     '</div>' +
+      //     '<div class="cards-bottom flex-column">' +
+      //       '<div class="flex-row" id="user-word">' +
+      //         '<div class="flex-row play-wrapper">' +
+      //         '</div>' +
+      //       '</div>' +
+      //       '<div class="flex-row spell-buttons">' +
+      //           '<button id="wagic" class="action-button">Wagic!</button>' +
+      //           '<button id="end-turn" class="action-button">EndTurn</button>' +
+      //       '</div>' +
+      //     '</div>' +
+      //   '</div>');
+      //
+      // cards.forEach(function(card) {
+      //   $('#board .cards .card-wrapper').append(
+      //     '<div class="card flex-column" id="'+ card.id + '">' +
+      //       '<div class="flex-row card-info">' +
+      //         '<span class="card-name">' + card.name + '</span>' +
+      //         '<span class="card-price">' + card.price + 'G</span>' +
+      //         '<span class="card-effect">' + card.effect + '<span>' +
+      //     '</div>'
+      //   );
+      // });
   }
 
   function resetHandPlayArea() {
@@ -431,28 +431,24 @@
     }
     $.each(data.game.players, function(id, player){
       $('.game-header').append(
-        '<div class="header">' +
-          '<div class="player '+ activeTurn(id) + '">' + player.name + ' - ' +
-            '<span class="word-spelled">' + player.history + '<span>' +
-          '</div>' +
-          '<div class="stats">' +
-            '<div class="stat health">' +
-              '<span class="hp-caption">HP | ' + '</span>' +
-              '<span class="bar-wrapper">' +
-                '<span class="bar" style="width:' + (player.current_health/player.max_health)*100 + '%">' + player.current_health + "/" + player.max_health +'</span>' +
-              '</span>' +
-            '</div>' +
-            '<div class="stat xp">' +
-              '<span class="xp-caption">XP | ' + '</span>' +
-              '<span class="bar-wrapper">' +
-                '<span class="bar" style="width:' + (player.experience % 30)/30*100 + '%">' + player.experience + "/" + (player.level)*30 + '</span>' +
-              '</span>' +
-            '</div>' +
-            '<div class="stat gold">' +
-              'GOLD | ' +
-              '<span class="bar" style="width: 4rem">' + player.gold + '</span>' +
-            '</div>' +
-          '</div>' +
+        '<div class="stats ' + player.name + '">' +
+          '<div class="xp"></div>' +
+          '<span class="bar-wrapper">' +
+            '<span class="bar" style="width:' + (player.current_health/player.max_health)*100 + '%">' + player.current_health + "/" + player.max_health +'</span>' +
+          '</span>' +
+        '</div>' +
+
+          //   '<div class="stat xp">' +
+          //     '<span class="xp-caption">XP | ' + '</span>' +
+          //     '<span class="bar-wrapper">' +
+          //       '<span class="bar" style="width:' + (player.experience % 30)/30*100 + '%">' + player.experience + "/" + (player.level)*30 + '</span>' +
+          //     '</span>' +
+          //   '</div>' +
+          //   '<div class="stat gold">' +
+          //     'GOLD | ' +
+          //     '<span class="bar" style="width: 4rem">' + player.gold + '</span>' +
+          //   '</div>' +
+          // '</div>' +
         '</div>'
       );
     });

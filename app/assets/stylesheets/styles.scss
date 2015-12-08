@@ -9,7 +9,21 @@ $gold: #D09802;
   align-content: center;
 
   .board-wrapper {
-    max-width: 585px;
+    background: url("../background.png") no-repeat;
+    position: relative;
+    width: 414px;
+    height: 736px;
+    .overlay-image {
+      background: url("../overlay2.png") no-repeat;
+      position:absolute;
+      width: 100%;
+      height: 100%;
+      top: 0;
+      left: 0;
+      z-index: 1;
+      opacity: 0.5;
+      pointer-events: none;
+    }
   }
   .flex-column {
     display: flex;
@@ -25,12 +39,26 @@ $gold: #D09802;
     position: relative;
   }
   #user-hand {
-    // max-width: 48vh;
+    margin-top: 10px;
+    justify-content: center;
     align-items:center;
     background: #444;
-    min-height: 11.6vw;
+    height: 130px;
     .hand-wrapper {
-      // max-width: 38.3vh;
+      margin-left: 13px;
+      justify-content: center;
+      overflow-y: hidden;
+      overflow-x: scroll;
+      white-space: nowrap;
+      width: 403px;
+      &::-webkit-scrollbar {
+        display: none;
+      }
+      .hand-tile {
+        width: 54px;
+        height: 54px;
+      }
+      // list items to display inline
     }
   }
 
@@ -128,64 +156,50 @@ $gold: #D09802;
         height: 7vh;
       }
     }
-    .mask {
-      width: 100%;
-      height: 100%;
-      background: #444;
-      opacity: 0.7;
-      z-index: 1;
-    }
+    // .mask {
+    //   width: 100%;
+    //   height: 100%;
+    //   background: #444;
+    //   opacity: 0.7;
+    //   z-index: 1;
+    // }
   }
 
   .game-header {
-    // height: 150px;
+    height: 183px;
     color: #CECBCB;
-    background: #444;
+    // background: #444;
     position: relative;
     border-top-left-radius: 10px;
     border-top-right-radius: 10px;
 
-    .header {
-      float: left;
-      width: 50%;
-      background: #444;
-      // height: 150px;
-      display: inline-block;
-
-      .player {
-        color: #afafaf;
-        text-align: left;
-        text-transform: uppercase;
-        font-size: 1.5em;
-        padding-left: 2rem;
-
-        .word-spelled {
-          font-size: 1.5rem;
-        }
-
-        &.active {
-          color: #24A52A;
-        }
-      }
-      .hp-caption, .xp-caption {
-        width: 15%;
-        display: inline-block;
-      }
-
       .stats {
-        padding: 0 10px;
-      }
-
-      .stat {
-        margin: 5px 0;
-        border-right: 3px solid #efefef;
-        border-left: 3px solid #efefef;
-        border-top: 1px solid #efefef;
-        border-bottom: 1px solid #efefef;
-        padding: 2px;
+        width: 50%;
+        height: 100%;
+        float: left;
+        z-index: 1;
+        position: relative;
         .bar-wrapper {
-          width: 85%;
-          display: inline-block;
+        height: 10%;
+        width: 70%;
+        display: inline-block;
+        position: absolute;
+        bottom: 18px;
+        background-color: #95130a;
+        font-size: 12px;
+        border: 2px solid #c88f3d;
+        border-radius: 7px;
+        }
+        // margin-top: 72%;
+        &.player1 {
+          .bar-wrapper {
+            right: 38px;
+          }
+        }
+        &.player2 {
+          .bar-wrapper {
+            left: 35px;
+          }
         }
         .bar {
           transition: width 0.2s ease;
@@ -210,14 +224,33 @@ $gold: #D09802;
         &.gold {
         }
       }
-    }
+
+      .player {
+        color: #afafaf;
+        text-align: left;
+        text-transform: uppercase;
+        font-size: 1.5em;
+        padding-left: 2rem;
+
+        .word-spelled {
+          font-size: 1.5rem;
+        }
+
+        &.active {
+          color: #24A52A;
+        }
+      }
+      .hp-caption, .xp-caption {
+        width: 15%;
+        display: inline-block;
+      }
   }
   .tile {
     font-size: 2.3rem;
     transition: border .1s;
     position: relative;
-    height: 5.8vw;
-    width: 5.8vw;
+    height: 47px;
+    width: 47px;
     max-height: 70px;
     max-width: 70px;
     text-transform: uppercase;
@@ -226,8 +259,7 @@ $gold: #D09802;
     border-radius: 10%;
     margin: 1px;
     border-width: 0px;
-
-
+    background-size: cover;
     .score {
       position: absolute;
       top: 0;
@@ -254,16 +286,14 @@ $gold: #D09802;
         border-color: #5B5F28;
       }
     &.blue {
-        background: $xp;
-        border-color: #005048;
+        background-image: url("../tile-blue.png");
     }
     &.orange {
-        background: $gold;
-        border-color: #826517;
+        background-image: url("../tile-yellow.png");
     }
     &.red {
-        background: $hp;
-        border-color: #770C1D;
+        background-image: url("../tile-red.png");
+        // border-color: #770C1D;
     }
   }
   .tile-wrap {
@@ -280,8 +310,8 @@ $gold: #D09802;
 @media screen and (max-width: 800px) {
   .wgc-board {
     .tile {
-      height: 10vw;
-      width: 10vw;
+      // height: 10vw;
+      // width: 10vw;
 
     }
   }
