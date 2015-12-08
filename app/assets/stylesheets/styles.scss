@@ -1,13 +1,11 @@
-$hp : #962A3C;
-$xp: #4379E6;
-$gold: #D09802;
-.wgc-board { //Wrap your styles by page so there's no overlap. Any general styling goes outside
+/* line 4, /Users/hello/Desktop/wagick/app/assets/stylesheets/styles.scss */
+
+.wgc-board {
   -webkit-font-smoothing: antialiased;
   display: flex;
   flex-direction: row;
   justify-content: center;
   align-content: center;
-
   .board-wrapper {
     background: url("../background.png") no-repeat;
     position: relative;
@@ -15,7 +13,7 @@ $gold: #D09802;
     height: 736px;
     .overlay-image {
       background: url("../overlay2.png") no-repeat;
-      position:absolute;
+      position: absolute;
       width: 100%;
       height: 100%;
       top: 0;
@@ -30,15 +28,23 @@ $gold: #D09802;
       height: 100%;
       width: 100%;
       pointer-events: none;
-      &.player1 { background: url("../player1.png");}
-      &.player2 { background: url("../player2.png");}
+      &.player1 {
+        background: url("../player1.png");
+      }
+      &.player2 {
+        background: url("../player2.png");
+      }
     }
     .xp {
-      position:absolute;
+      position: absolute;
       top: 15px;
       z-index: 3;
-      &.player1 { left: 16px; }
-      &.player2 { right: 16px;}
+      &.player1 {
+        left: 16px;
+      }
+      &.player2 {
+        right: 16px;
+      }
       .xp-text {
         font-size: 1.1rem;
         position: absolute;
@@ -62,14 +68,13 @@ $gold: #D09802;
     flex-direction: row;
     flex-wrap: wrap;
   }
-
   #board {
     position: relative;
   }
   #user-hand {
     margin-top: 10px;
     justify-content: center;
-    align-items:center;
+    align-items: center;
     background: #444;
     height: 130px;
     position: relative;
@@ -103,10 +108,8 @@ $gold: #D09802;
         width: 54px;
         height: 54px;
       }
-      // list items to display inline
     }
   }
-
   .show-cards {
     position: absolute;
     top: 0;
@@ -129,7 +132,6 @@ $gold: #D09802;
       width: 100%;
       height: 100%;
       justify-content: space-between;
-
       #user-word {
         min-width: 5.9vw;
         border-top: 1px solid #fff;
@@ -177,7 +179,7 @@ $gold: #D09802;
             }
             .card-price {
               margin-left: 70%;
-              color: $gold;
+              color: #D09802;
             }
             .card-effect {
               padding-top: 0.5rem;
@@ -185,7 +187,6 @@ $gold: #D09802;
               margin-top: 0.5rem;
             }
           }
-
           &:hover {
             position: relative;
             background: #555;
@@ -201,37 +202,30 @@ $gold: #D09802;
         height: 7vh;
       }
     }
-    // .mask {
-    //   width: 100%;
-    //   height: 100%;
-    //   background: #444;
-    //   opacity: 0.7;
-    //   z-index: 1;
-    // }
   }
-
   .game-header {
     height: 183px;
     color: #CECBCB;
-    // background: #444;
     position: relative;
     border-top-left-radius: 10px;
     border-top-right-radius: 10px;
-
-      .stats {
-        width: 50%;
-        height: 100%;
-        float: left;
-        z-index: 1;
-        position: relative;
-        .gold {
-          position: absolute;
-          bottom: 36px;
-          &.player1 {left: 44px; }
-          &.player2 {right: 27px;}
+    .stats {
+      width: 50%;
+      height: 100%;
+      float: left;
+      z-index: 1;
+      position: relative;
+      .gold {
+        position: absolute;
+        bottom: 36px;
+        &.player1 {
+          left: 44px;
         }
-
-        .bar-wrapper {
+        &.player2 {
+          right: 27px;
+        }
+      }
+      .bar-wrapper {
         height: 10%;
         width: 70%;
         display: inline-block;
@@ -249,49 +243,42 @@ $gold: #D09802;
           width: 100%;
           display: inline-block;
           background: #cb4940;
-          }
-        }
-
-        // margin-top: 72%;
-        &.player1 {
-          .bar-wrapper {
-            right: 38px;
-          }
-          .bar {
-            float: right;
-          }
-        }
-        &.player2 {
-          .bar-wrapper {
-            left: 35px;
-          }
-          .bar {
-            float: left;
-          }
-        }
-
-
-      }
-
-      .player {
-        color: #afafaf;
-        text-align: left;
-        text-transform: uppercase;
-        font-size: 1.5em;
-        padding-left: 2rem;
-
-        .word-spelled {
-          font-size: 1.5rem;
-        }
-
-        &.active {
-          color: #24A52A;
         }
       }
-      .hp-caption, .xp-caption {
-        width: 15%;
-        display: inline-block;
+      &.player1 {
+        .bar-wrapper {
+          right: 38px;
+        }
+        .bar {
+          float: right;
+        }
       }
+      &.player2 {
+        .bar-wrapper {
+          left: 35px;
+        }
+        .bar {
+          float: left;
+        }
+      }
+    }
+    .player {
+      color: #afafaf;
+      text-align: left;
+      text-transform: uppercase;
+      font-size: 1.5em;
+      padding-left: 2rem;
+      .word-spelled {
+        font-size: 1.5rem;
+      }
+      &.active {
+        color: #24A52A;
+      }
+    }
+    .hp-caption, .xp-caption {
+      width: 15%;
+      display: inline-block;
+    }
   }
   .tile {
     font-size: 2.3rem;
@@ -314,34 +301,28 @@ $gold: #D09802;
       right: 6%;
       font-size: 1.2rem;
     }
-
     span {
       color: #efefef;
       text-align: center;
-      // transition: transform .3s;
     }
-
     &.selected {
       -webkit-filter: brightness(120%);
       span {
         transform: scale(1.5);
       }
     }
-
-    //Using classes for color instead of inline styling will give you more options later on like hover colors etc
     &.green {
-        background: #A3A948;
-        border-color: #5B5F28;
-      }
+      background: #A3A948;
+      border-color: #5B5F28;
+    }
     &.blue {
-        background-image: url("../tile-blue.png");
+      background-image: url("../tile-blue.png");
     }
     &.orange {
-        background-image: url("../tile-yellow.png");
+      background-image: url("../tile-yellow.png");
     }
     &.red {
-        background-image: url("../tile-red.png");
-        // border-color: #770C1D;
+      background-image: url("../tile-red.png");
     }
     &.blank {
       background-image: url("../tile-blank.png");
@@ -353,17 +334,5 @@ $gold: #D09802;
     justify-content: center;
     background: #444;
     padding: 5px;
-
-
-  }
-}
-
-@media screen and (max-width: 800px) {
-  .wgc-board {
-    .tile {
-      // height: 10vw;
-      // width: 10vw;
-
-    }
   }
 }

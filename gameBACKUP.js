@@ -166,39 +166,39 @@
     //
   }
 
-  // function spellOverlay() {
-  //     $('#board .cards').empty();
-  //     $('#board .cards').addClass('show-cards');
-  //     $('#board .cards').append(
-  //       '<div class="mask"></div>' +
-  //       '<div class="cards-content">' +
-  //         '<div class="cards-top">' +
-  //           '<div class="flex-row card-wrapper">' +
-  //           '</div>' +
-  //         '</div>' +
-  //         '<div class="cards-bottom flex-column">' +
-  //           '<div class="flex-row" id="user-word">' +
-  //             '<div class="flex-row play-wrapper">' +
-  //             '</div>' +
-  //           '</div>' +
-  //           '<div class="flex-row spell-buttons">' +
-  //               '<button id="wagic" class="action-button">Wagic!</button>' +
-  //               '<button id="end-turn" class="action-button">EndTurn</button>' +
-  //           '</div>' +
-  //         '</div>' +
-  //       '</div>');
-  //
-  //     cards.forEach(function(card) {
-  //       $('#board .cards .card-wrapper').append(
-  //         '<div class="card flex-column" id="'+ card.id + '">' +
-  //           '<div class="flex-row card-info">' +
-  //             '<span class="card-name">' + card.name + '</span>' +
-  //             '<span class="card-price">' + card.price + 'G</span>' +
-  //             '<span class="card-effect">' + card.effect + '<span>' +
-  //         '</div>'
-  //       );
-  //     });
-  // }
+  function spellOverlay() {
+      // $('#board .cards').empty();
+      // $('#board .cards').addClass('show-cards');
+      // $('#board .cards').append(
+      //   '<div class="mask"></div>' +
+      //   '<div class="cards-content">' +
+      //     '<div class="cards-top">' +
+      //       '<div class="flex-row card-wrapper">' +
+      //       '</div>' +
+      //     '</div>' +
+      //     '<div class="cards-bottom flex-column">' +
+      //       '<div class="flex-row" id="user-word">' +
+      //         '<div class="flex-row play-wrapper">' +
+      //         '</div>' +
+      //       '</div>' +
+      //       '<div class="flex-row spell-buttons">' +
+      //           '<button id="wagic" class="action-button">Wagic!</button>' +
+      //           '<button id="end-turn" class="action-button">EndTurn</button>' +
+      //       '</div>' +
+      //     '</div>' +
+      //   '</div>');
+      //
+      // cards.forEach(function(card) {
+      //   $('#board .cards .card-wrapper').append(
+      //     '<div class="card flex-column" id="'+ card.id + '">' +
+      //       '<div class="flex-row card-info">' +
+      //         '<span class="card-name">' + card.name + '</span>' +
+      //         '<span class="card-price">' + card.price + 'G</span>' +
+      //         '<span class="card-effect">' + card.effect + '<span>' +
+      //     '</div>'
+      //   );
+      // });
+  }
 
   function resetHandPlayArea() {
     tiles = $('.play-wrapper').children().detach();
