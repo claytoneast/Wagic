@@ -20,9 +20,37 @@ $gold: #D09802;
       height: 100%;
       top: 0;
       left: 0;
-      z-index: 1;
-      opacity: 0.5;
+      z-index: 2;
+      opacity: 1;
       pointer-events: none;
+    }
+    .char {
+      position: absolute;
+      top: 0;
+      height: 100%;
+      width: 100%;
+      pointer-events: none;
+      &.player1 { background: url("../player1.png");}
+      &.player2 { background: url("../player2.png");}
+    }
+    .xp {
+      position:absolute;
+      top: 15px;
+      z-index: 3;
+      &.player1 { left: 16px; }
+      &.player2 { right: 16px;}
+      .xp-text {
+        font-size: 1.1rem;
+        position: absolute;
+        top: 6px;
+        left: 3px;
+        color: #EFEFEF;
+        .xp-num {
+          font-size: 2rem;
+          position: absolute;
+          bottom: -5px;
+        }
+      }
     }
   }
   .flex-column {
@@ -44,6 +72,20 @@ $gold: #D09802;
     align-items:center;
     background: #444;
     height: 130px;
+    position: relative;
+    .hand-overlay {
+      background: url("../hand-overlay.png") no-repeat;
+      width: 183px;
+      height: 29px;
+      position: absolute;
+      top: 50px;
+      left: 115px;
+      text-align: center;
+      line-height: 29px;
+      color: #EFEFEF;
+      text-transform: uppercase;
+      font-size: 1.3rem;
+    }
     .hand-wrapper {
       margin-left: 13px;
       justify-content: center;
@@ -53,6 +95,9 @@ $gold: #D09802;
       width: 403px;
       &::-webkit-scrollbar {
         display: none;
+      }
+      &.hand-mask {
+        opacity: 0.2;
       }
       .hand-tile {
         width: 54px;
@@ -179,6 +224,13 @@ $gold: #D09802;
         float: left;
         z-index: 1;
         position: relative;
+        .gold {
+          position: absolute;
+          bottom: 36px;
+          &.player1 {left: 44px; }
+          &.player2 {right: 27px;}
+        }
+
         .bar-wrapper {
         height: 10%;
         width: 70%;
@@ -189,50 +241,36 @@ $gold: #D09802;
         font-size: 12px;
         border: 2px solid #c88f3d;
         border-radius: 7px;
+        .bar {
+          transition: width 0.2s ease;
+          height: 14px;
+          text-align: center;
+          border-radius: 5px;
+          width: 100%;
+          display: inline-block;
+          background: #cb4940;
+          }
         }
-        .xp {
-          position:absolute;
-          top: 15px;
-        }
+
         // margin-top: 72%;
         &.player1 {
           .bar-wrapper {
             right: 38px;
           }
-          .xp {
-            left: 16px;
+          .bar {
+            float: right;
           }
         }
         &.player2 {
           .bar-wrapper {
             left: 35px;
           }
-          .xp {
-            right: 16px;
-          }
-        }
-        .bar {
-          transition: width 0.2s ease;
-          height: 16px;
-          text-align: center;
-          line-height: 16px;
-          width: 100%;
-          display: inline-block;
-        }
-
-        &.health {
           .bar {
-            background: $hp;
+            float: left;
           }
         }
 
-        &.xp {
-          .bar {
-            background: $xp;
-          }
-        }
-        &.gold {
-        }
+
       }
 
       .player {
@@ -304,6 +342,9 @@ $gold: #D09802;
     &.red {
         background-image: url("../tile-red.png");
         // border-color: #770C1D;
+    }
+    &.blank {
+      background-image: url("../tile-blank.png");
     }
   }
   .tile-wrap {

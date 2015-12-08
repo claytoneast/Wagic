@@ -37,12 +37,30 @@
     }
     if (data.game.turn == data.user && data.game.turn_state == "pick_letters") { // if users turn and needs to pick letters
       loadBoardListeners();
+      handOverlay();
     } else if (data.game.turn == data.user && data.game.turn_state == "picked_letters") { // if its users turn and has picked letters
         spellOverlay();
         cardListeners();
         loadHandListeners();
         loadActionListeners();
-      }
+    }
+  }
+
+  function handOverlay() {
+    $('#user-hand').append(
+      '<span class="hand-overlay">select a letter block</span>'
+    );
+    $('#user-hand .hand-wrapper').addClass('hand-mask');
+    for (var i=0; i<8; i++) {
+      $('#user-hand .hand-wrapper').append(
+        '<button class="tile hand-tile blank"></button>'
+      );
+    }
+  }
+
+  function removeHandOverlay() {
+    $('#user-hand .hand-wrapper').removeClass('hand-mask');
+    $('#user-hand .hand-overlay').remove();
   }
 
   function lettersPicked(data) {
@@ -51,6 +69,7 @@
     spellOverlay();
     cardListeners();
     showHand(data);
+    removeHandOverlay();
     reloadHandListeners();
     loadActionListeners();
   }
@@ -148,37 +167,37 @@
   }
 
   function spellOverlay() {
-      // $('#board .cards').empty();
-      // $('#board .cards').addClass('show-cards');
-      // $('#board .cards').append(
-      //   '<div class="mask"></div>' +
-      //   '<div class="cards-content">' +
-      //     '<div class="cards-top">' +
-      //       '<div class="flex-row card-wrapper">' +
-      //       '</div>' +
-      //     '</div>' +
-      //     '<div class="cards-bottom flex-column">' +
-      //       '<div class="flex-row" id="user-word">' +
-      //         '<div class="flex-row play-wrapper">' +
-      //         '</div>' +
-      //       '</div>' +
-      //       '<div class="flex-row spell-buttons">' +
-      //           '<button id="wagic" class="action-button">Wagic!</button>' +
-      //           '<button id="end-turn" class="action-button">EndTurn</button>' +
-      //       '</div>' +
-      //     '</div>' +
-      //   '</div>');
-      //
-      // cards.forEach(function(card) {
-      //   $('#board .cards .card-wrapper').append(
-      //     '<div class="card flex-column" id="'+ card.id + '">' +
-      //       '<div class="flex-row card-info">' +
-      //         '<span class="card-name">' + card.name + '</span>' +
-      //         '<span class="card-price">' + card.price + 'G</span>' +
-      //         '<span class="card-effect">' + card.effect + '<span>' +
-      //     '</div>'
-      //   );
-      // });
+      $('#board .cards').empty();
+      $('#board .cards').addClass('show-cards');
+      $('#board .cards').append(
+        '<div class="mask"></div>' +
+        '<div class="cards-content">' +
+          '<div class="cards-top">' +
+            '<div class="flex-row card-wrapper">' +
+            '</div>' +
+          '</div>' +
+          '<div class="cards-bottom flex-column">' +
+            '<div class="flex-row" id="user-word">' +
+              '<div class="flex-row play-wrapper">' +
+              '</div>' +
+            '</div>' +
+            '<div class="flex-row spell-buttons">' +
+                '<button id="wagic" class="action-button">Wagic!</button>' +
+                '<button id="end-turn" class="action-button">EndTurn</button>' +
+            '</div>' +
+          '</div>' +
+        '</div>');
+
+      cards.forEach(function(card) {
+        $('#board .cards .card-wrapper').append(
+          '<div class="card flex-column" id="'+ card.id + '">' +
+            '<div class="flex-row card-info">' +
+              '<span class="card-name">' + card.name + '</span>' +
+              '<span class="card-price">' + card.price + 'G</span>' +
+              '<span class="card-effect">' + card.effect + '<span>' +
+          '</div>'
+        );
+      });
   }
 
   function resetHandPlayArea() {
@@ -245,6 +264,7 @@
           neighborShiftInfo.push(neighbor); // ?
           $('#x' + neighbor[0] + 'y' + neighbor[1]).remove();
         });
+
         $.ajax({
           url: '/games/' + id + '/pick_letters',
           type: 'PATCH',
@@ -431,28 +451,21 @@
     $.each(data.game.players, function(id, player){
       $('.game-header').append(
         '<div class="stats ' + player.name + '">' +
-          '<div class="xp"></div>' +
           '<span class="bar-wrapper">' +
             '<span class="bar" style="width:' + (player.current_health/player.max_health)*100 + '%">' + player.current_health + "/" + player.max_health +'</span>' +
           '</span>' +
-        '</div>' +
-
-          //   '<div class="stat xp">' +
-          //     '<span class="xp-caption">XP | ' + '</span>' +
-          //     '<span class="bar-wrapper">' +
-          //       '<span class="bar" style="width:' + (player.experience % 30)/30*100 + '%">' + player.experience + "/" + (player.level)*30 + '</span>' +
-          //     '</span>' +
-          //   '</div>' +
-          //   '<div class="stat gold">' +
-          //     'GOLD | ' +
-          //     '<span class="bar" style="width: 4rem">' + player.gold + '</span>' +
-          //   '</div>' +
-          // '</div>' +
+          '<span class="gold ' + player.name + '">x' + player.gold + '</span>' +
         '</div>'
       );
+      $('.board-wrapper').append(
+        '<div class="xp ' + player.name + '">' +
+          '<span class="xp-text">lvl' + '<span class="xp-num">' + player.level + '</span><span>' +
+        '</div>' +
+        '<div class="char ' + player.name + '"></div>'
+      );
       $(document).ready(function(){
-          $('.xp').circleProgress({
-              value: 1,
+          $('.xp.' + player.name).circleProgress({
+              value: player.experience/(player.level * 30),
               startAngle: -1.57,
               size: 26,
               thickness: 13,
@@ -529,3 +542,13 @@
   var getColor = function(element) {
     return $(element).attr('data-color');
   };
+
+
+  // $('#board .tile').each(function(i, tile) {
+  //   neighbors.forEach(function(nTile) {
+  //     if (tile.getAttribute('data-x') == nTile[0] && tile.getAttribute('data-y') == nTile[1]) {
+  //     } else {
+  //       tile.style.background = 'url("../tile-blank.png")';
+  //     }
+  //   });
+  // });
