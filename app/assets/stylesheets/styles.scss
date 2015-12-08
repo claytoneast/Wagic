@@ -190,15 +190,25 @@ $gold: #D09802;
         border: 2px solid #c88f3d;
         border-radius: 7px;
         }
+        .xp {
+          position:absolute;
+          top: 15px;
+        }
         // margin-top: 72%;
         &.player1 {
           .bar-wrapper {
             right: 38px;
           }
+          .xp {
+            left: 16px;
+          }
         }
         &.player2 {
           .bar-wrapper {
             left: 35px;
+          }
+          .xp {
+            right: 16px;
           }
         }
         .bar {

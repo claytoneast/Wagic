@@ -450,16 +450,12 @@
           // '</div>' +
         '</div>'
       );
-      $(document).ready(function(){
-          $('.xp').circleProgress({
-              value: 1,
-              startAngle: -1.57,
-              size: 26,
-              thickness: 13,
-              fill: {
-                color: '#016289'
-              }
-          });
+      $(".xp").circleProgress({
+        value: 0.75,
+        size: 80,
+        thickness: 100,
+        lineCap: 'square',
+        fill: {color: '#0d6387'}
       });
     });
     $('.game-header .' + data.game.turn + '-name').addClass('this-turn');
