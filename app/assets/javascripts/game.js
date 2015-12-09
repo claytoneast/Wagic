@@ -39,10 +39,10 @@
       loadBoardListeners();
       handOverlay();
     } else if (data.game.turn == data.user && data.game.turn_state == "picked_letters") { // if its users turn and has picked letters
-        spellOverlay();
-        cardListeners();
-        loadHandListeners();
-        loadActionListeners();
+      spellOverlay();
+      cardListeners();
+      loadHandListeners();
+      loadActionListeners();
     }
   }
 
@@ -159,46 +159,41 @@
   }
 
   function doubledipCard(data) {
-    $('#board .cards').removeClass('show-cards').empty();
+    $('#board .spell-overlay').removeClass('show-cards').empty();
     reloadBoardListeners();
     // overlay goes away, event listeners for the board go on.
     // game state goes back to pick letters in the backend
     //
   }
 
-  // function spellOverlay() {
-  //     $('#board .cards').empty();
-  //     $('#board .cards').addClass('show-cards');
-  //     $('#board .cards').append(
-  //       '<div class="mask"></div>' +
-  //       '<div class="cards-content">' +
-  //         '<div class="cards-top">' +
-  //           '<div class="flex-row card-wrapper">' +
-  //           '</div>' +
-  //         '</div>' +
-  //         '<div class="cards-bottom flex-column">' +
-  //           '<div class="flex-row" id="user-word">' +
-  //             '<div class="flex-row play-wrapper">' +
-  //             '</div>' +
-  //           '</div>' +
-  //           '<div class="flex-row spell-buttons">' +
-  //               '<button id="wagic" class="action-button">Wagic!</button>' +
-  //               '<button id="end-turn" class="action-button">EndTurn</button>' +
-  //           '</div>' +
-  //         '</div>' +
-  //       '</div>');
-  //
-  //     cards.forEach(function(card) {
-  //       $('#board .cards .card-wrapper').append(
-  //         '<div class="card flex-column" id="'+ card.id + '">' +
-  //           '<div class="flex-row card-info">' +
-  //             '<span class="card-name">' + card.name + '</span>' +
-  //             '<span class="card-price">' + card.price + 'G</span>' +
-  //             '<span class="card-effect">' + card.effect + '<span>' +
-  //         '</div>'
-  //       );
-  //     });
-  // }
+  function spellOverlay() {
+      $('#board .spell-overlay').empty();
+      // $('#board .spell-overlay').addClass('show');
+      $('#board .spell-overlay').append(
+        '<span class="buy">Buy Items<span>' +
+        '<div class="cards flex-row">' +
+
+        '</div>' +
+
+        '<div class="spell">' +
+        '</div>' +
+
+        '<div class="actions">' +
+        '</div>'
+      );
+
+      cards.forEach(function(card) {
+        $('#board .spell-overlay .cards').append(
+          '<div class="card flex-column ' + card.name + '" id="' + card.id + '">' +
+            '<img src="../card-' + card.name + '.png" class="icon">' +
+            '<div class="price">' +
+              '<div class="gold"></div>' +
+              '<span class="cost">X' + card.price + '</span>' +
+            '</div>' +
+          '</div>'
+        );
+      });
+  }
 
   function resetHandPlayArea() {
     tiles = $('.play-wrapper').children().detach();
@@ -390,7 +385,7 @@
   }
 
   function showBoard(game) {
-    $('#board').children().not('.cards').remove();
+    $('#board').children().not('.spell-overlay').remove();
     game.board.forEach(function(column, x) {
       var make_column = '<div class="flex-column" id="row' + x + '"></div>';
       $("#board").append(
