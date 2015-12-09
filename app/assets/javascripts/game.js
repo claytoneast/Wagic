@@ -1,11 +1,11 @@
+    cards = [];
 
   $(document).ready(function() {
     console.log("document ready");
     getCards();
+    id = parseInt($("#game-id").text());
   });
-  var id = parseInt($("#game-id").text()),
-      cards = [];
-
+    debugger;
 
   function getCards() {
     $.ajax({
