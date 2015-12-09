@@ -167,37 +167,37 @@
   }
 
   function spellOverlay() {
-      // $('#board .cards').empty();
-      // $('#board .cards').addClass('show-cards');
-      // $('#board .cards').append(
-      //   '<div class="mask"></div>' +
-      //   '<div class="cards-content">' +
-      //     '<div class="cards-top">' +
-      //       '<div class="flex-row card-wrapper">' +
-      //       '</div>' +
-      //     '</div>' +
-      //     '<div class="cards-bottom flex-column">' +
-      //       '<div class="flex-row" id="user-word">' +
-      //         '<div class="flex-row play-wrapper">' +
-      //         '</div>' +
-      //       '</div>' +
-      //       '<div class="flex-row spell-buttons">' +
-      //           '<button id="wagic" class="action-button">Wagic!</button>' +
-      //           '<button id="end-turn" class="action-button">EndTurn</button>' +
-      //       '</div>' +
-      //     '</div>' +
-      //   '</div>');
-      //
-      // cards.forEach(function(card) {
-      //   $('#board .cards .card-wrapper').append(
-      //     '<div class="card flex-column" id="'+ card.id + '">' +
-      //       '<div class="flex-row card-info">' +
-      //         '<span class="card-name">' + card.name + '</span>' +
-      //         '<span class="card-price">' + card.price + 'G</span>' +
-      //         '<span class="card-effect">' + card.effect + '<span>' +
-      //     '</div>'
-      //   );
-      // });
+      $('#board .cards').empty();
+      $('#board .cards').addClass('show-cards');
+      $('#board .cards').append(
+        '<div class="mask"></div>' +
+        '<div class="cards-content">' +
+          '<div class="cards-top">' +
+            '<div class="flex-row card-wrapper">' +
+            '</div>' +
+          '</div>' +
+          '<div class="cards-bottom flex-column">' +
+            '<div class="flex-row" id="user-word">' +
+              '<div class="flex-row play-wrapper">' +
+              '</div>' +
+            '</div>' +
+            '<div class="flex-row spell-buttons">' +
+                '<button id="wagic" class="action-button">Wagic!</button>' +
+                '<button id="end-turn" class="action-button">EndTurn</button>' +
+            '</div>' +
+          '</div>' +
+        '</div>');
+
+      cards.forEach(function(card) {
+        $('#board .cards .card-wrapper').append(
+          '<div class="card flex-column" id="'+ card.id + '">' +
+            '<div class="flex-row card-info">' +
+              '<span class="card-name">' + card.name + '</span>' +
+              '<span class="card-price">' + card.price + 'G</span>' +
+              '<span class="card-effect">' + card.effect + '<span>' +
+          '</div>'
+        );
+      });
   }
 
   function resetHandPlayArea() {
@@ -341,36 +341,36 @@
     alert('This game has been won by: ' + winning_player);
   }
 
-  // (function poll(previousTurn) {
-  //   setTimeout(function() {
-  //     $.ajax({
-  //       url: '/games/' + id + '/game_board',
-  //       type: 'GET',
-  //       dataType: 'json',
-  //       success: function(data) {
-  //         if (data.game.won != 'false') {
-  //           gameWon(data.game.won);
-  //         } else if (data.user === null) {
-  //           showBoard(data.game);
-  //           showGameMeta(data);
-  //           poll(data.game.turn);
-  //         } else if (data.user == data.game.turn && data.game.turn != previousTurn && previousTurn !== undefined) { // just became your turn
-  //           showBoard(data.game);
-  //           showGameMeta(data);
-  //           reloadBoardListeners();
-  //           poll(data.game.turn);
-  //         } else if (data.user == data.game.turn) { // your turn
-  //           poll(data.game.turn);
-  //         } else { // other persons turn
-  //           showBoard(data.game);
-  //           showGameMeta(data);
-  //           showHand(data);
-  //           poll(data.game.turn);
-  //         }
-  //       }
-  //     });
-  //   }, 1000);
-  // })();
+  (function poll(previousTurn) {
+    setTimeout(function() {
+      $.ajax({
+        url: '/games/' + id + '/game_board',
+        type: 'GET',
+        dataType: 'json',
+        success: function(data) {
+          if (data.game.won != 'false') {
+            gameWon(data.game.won);
+          } else if (data.user === null) {
+            showBoard(data.game);
+            showGameMeta(data);
+            poll(data.game.turn);
+          } else if (data.user == data.game.turn && data.game.turn != previousTurn && previousTurn !== undefined) { // just became your turn
+            showBoard(data.game);
+            showGameMeta(data);
+            reloadBoardListeners();
+            poll(data.game.turn);
+          } else if (data.user == data.game.turn) { // your turn
+            poll(data.game.turn);
+          } else { // other persons turn
+            showBoard(data.game);
+            showGameMeta(data);
+            showHand(data);
+            poll(data.game.turn);
+          }
+        }
+      });
+    }, 1000);
+  })();
 
   function clearSpelledWord() {
     $('#user-word .play-wrapper').empty();
