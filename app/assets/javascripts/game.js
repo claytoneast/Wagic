@@ -470,15 +470,15 @@
       );
 
       $(document).ready(function(){
-          $('.xp.' + player.name).circleProgress({
-              value: player.experience/(player.level * 30),
-              startAngle: -1.57,
-              size: 26,
-              thickness: 13,
-              fill: {
-                color: '#016289'
-              }
-          });
+          // $('.xp.' + player.name).circleProgress({
+          //     value: player.experience/(player.level * 30),
+          //     startAngle: -1.57,
+          //     size: 26,
+          //     thickness: 13,
+          //     fill: {
+          //       color: '#016289'
+          //     }
+          // });
       });
     });
     $('.game-header .' + data.game.turn + '-name').addClass('this-turn');
