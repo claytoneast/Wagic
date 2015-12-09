@@ -1,12 +1,20 @@
     cards = [];
+    // id = '';
 
   $(document).ready(function() {
     console.log("document ready");
     getCards();
-    id = parseInt($("#game-id").text());
+    $.ajax({
+      url: "/games/" + id + "/game_board",
+      type: "GET",
+      dataType: "json",
+      success: function(data) {
+        initBoard(data);
+        console.log("initial board request successful");
+      }
+    });
+    // id = parseInt($("#game-id").text());
   });
-    debugger;
-
   function getCards() {
     $.ajax({
       url: "/cards",
@@ -19,15 +27,6 @@
     });
   }
 
-  $.ajax({
-    url: "/games/" + id + "/game_board",
-    type: "GET",
-    dataType: "json",
-    success: function(data) {
-      initBoard(data);
-      console.log("initial board request successful");
-    }
-  });
 
   function initBoard(data) {
     showBoard(data.game);
