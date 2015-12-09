@@ -39,3 +39,5 @@ group :test do
   gem 'capybara'
   gem 'shoulda-matchers', '3.0.0'
 end
+
+gem 'rails_12factor', group: :production
