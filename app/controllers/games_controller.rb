@@ -37,7 +37,9 @@ class GamesController < ApplicationController
   end
 
   def game_board
-    render json: {game: @game, user: @user}
+    if !params['ts'] || @game.gamestate['ts'].to_f > params['ts'].to_f
+      render json: {game: @game, user: @user}
+    end
   end
 
   def wagic_word

@@ -4,8 +4,23 @@
     getCards();
   });
   var id = parseInt($("#game-id").text()),
-      cards = [];
+      cards =[];
+  var timestamp = Math.floor(Date.now() / 1000)
 
+  //Initial request
+  $.ajax({
+    url: "/games/" + id + "/game_board",
+    type: "GET",
+    dataType: "json",
+    success: function(data) {
+      showBoard(data.game);
+      showGameMeta(data);
+      updateHand(data);
+      spellOverlay();
+      updateGame(data);
+      poll(data)
+    }
+  });
 
   function getCards() {
     $.ajax({
@@ -19,71 +34,43 @@
     });
   }
 
-  $.ajax({
-    url: "/games/" + id + "/game_board",
-    type: "GET",
-    dataType: "json",
-    success: function(data) {
-      initBoard(data);
-      console.log("initial board request successful");
-    }
-  });
-
-  function initBoard(data) {
-    showBoard(data.game);
-    showGameMeta(data);
-    if (data.user !== null) {
-      showHand(data);
-    }
-    if (data.game.turn == data.user && data.game.turn_state == "pick_letters") { // if users turn and needs to pick letters
-      loadBoardListeners();
-    } else if (data.game.turn == data.user && data.game.turn_state == "picked_letters") { // if its users turn and has picked letters
-        spellOverlay();
-        cardListeners();
-        loadHandListeners();
-        loadActionListeners();
-      }
-  }
-
   function lettersPicked(data) {
-    showBoard(data.game);
-    $('.tile').off();
-    spellOverlay();
-    cardListeners();
-    showHand(data);
-    reloadHandListeners();
-    loadActionListeners();
-  }
-
-  function destroySpace(data) {
-    showBoard(data.game);
-    $('#board .tile').off();
-    spellOverlay();
-    showHand(data);
-    loadHandListeners();
-    loadActionListeners();
-  }
-
-  function handToPlayArea() {
-    reloadHandListeners();
-    reloadWordListeners();
+    updateBoard(data.game);
+    updateHand(data);
   }
 
   function wagicWord(data) {
     showGameMeta(data);
     clearSpelledWord();
+    updateGame(data);
   }
 
-  function killListeners() {
-    $('.tile').off();
-    $('#wagic').off();
-    $('#end-turn').off();
+  function hoverBoard() {
+    var neighbors = getNeighbors(this);
+    neighbors.forEach(function(neighbor) {
+      neighbor = neighbor.split(',');
+      $('#x' + neighbor[0] + 'y' + neighbor[1]).toggleClass('selected');
+    });
   }
 
-  function cardListeners() {
-    $('.card').on('click', function() {
-      var cardID = $(this).attr('id');
-      useCard(cardID);
+  function chooseTile() {
+    var chosenTile = ($(this).attr('data-x') + $(this).attr('data-y')).split('');
+    var neighbors = getNeighbors(this);
+    neighbors.forEach(function(neighbor) {
+      neighbor = neighbor.split(',');
+    });
+    $.ajax({
+      url: '/games/' + id + '/pick_letters',
+      type: 'PATCH',
+      data: 'tile=' + chosenTile,
+      dataType: 'json',
+      success: function(data) {
+        $('.tile-wrap .tile').off();
+        $('.cards').show();
+        lettersPicked(data);
+        $('.hand-wrapper .tile').on('click', { elem: '.play-wrapper' }, moveTile);
+        $('.play-wrapper .tile').on('click', { elem: '.hand-wrapper' }, moveTile);
+      }
     });
   }
 
@@ -129,9 +116,9 @@
   }
 
   function switcherooCard(data) {
-    showHand(data);
+    updateHand(data);
     showGameMeta(data);
-    reloadHandListeners();
+    // reloadHandListeners();
   }
 
   function clusterCard(data) {
@@ -141,44 +128,19 @@
 
   function doubledipCard(data) {
     $('#board .cards').removeClass('show-cards').empty();
-    reloadBoardListeners();
-    // overlay goes away, event listeners for the board go on.
-    // game state goes back to pick letters in the backend
-    //
   }
 
   function spellOverlay() {
-      // $('#board .cards').empty();
-      // $('#board .cards').addClass('show-cards');
-      // $('#board .cards').append(
-      //   '<div class="mask"></div>' +
-      //   '<div class="cards-content">' +
-      //     '<div class="cards-top">' +
-      //       '<div class="flex-row card-wrapper">' +
-      //       '</div>' +
-      //     '</div>' +
-      //     '<div class="cards-bottom flex-column">' +
-      //       '<div class="flex-row" id="user-word">' +
-      //         '<div class="flex-row play-wrapper">' +
-      //         '</div>' +
-      //       '</div>' +
-      //       '<div class="flex-row spell-buttons">' +
-      //           '<button id="wagic" class="action-button">Wagic!</button>' +
-      //           '<button id="end-turn" class="action-button">EndTurn</button>' +
-      //       '</div>' +
-      //     '</div>' +
-      //   '</div>');
-      //
-      // cards.forEach(function(card) {
-      //   $('#board .cards .card-wrapper').append(
-      //     '<div class="card flex-column" id="'+ card.id + '">' +
-      //       '<div class="flex-row card-info">' +
-      //         '<span class="card-name">' + card.name + '</span>' +
-      //         '<span class="card-price">' + card.price + 'G</span>' +
-      //         '<span class="card-effect">' + card.effect + '<span>' +
-      //     '</div>'
-      //   );
-      // });
+      cards.forEach(function(card) {
+        $('#board .cards .card-wrapper').append(
+          '<div class="card flex-column" id="'+ card.id + '">' +
+            '<div class="flex-row card-info">' +
+              '<span class="card-name">' + card.name + '</span>' +
+              '<span class="card-price">' + card.price + 'G</span>' +
+              '<span class="card-effect">' + card.effect + '<span>' +
+          '</div>'
+        );
+      });
   }
 
   function resetHandPlayArea() {
@@ -192,171 +154,115 @@
       type: 'PATCH',
       dataType: 'json',
       success: function(data) {
-          killListeners();
           resetHandPlayArea();
-          hideSpellOverlay();
+          updateBoard(data.game);
+          $('.cards').hide();
       }
     });
   }
 
-  function hideSpellOverlay() {
-    $('#board .cards').empty().removeClass('show-cards');
-  }
-
-  function loadBoardListeners(){
-    $(document).ready(function(){
-      $('#board .tile').hover(function(){
-        var neighbors = getNeighbors(this);
-        neighbors.forEach(function(neighbor) {
-          neighbor = neighbor.split(',');
-          $('#x' + neighbor[0] + 'y' + neighbor[1]).toggleClass('selected');
-        });
-      });
-
-      var pressTimer;
-      $('#board .tile').mouseup(function(){
-        clearTimeout(pressTimer);
-        // Clear timeout
-        return false;
-      }).mousedown(function(){
-        var chosenTile = ($(this).attr('data-x') + $(this).attr('data-y')).split('');
-        pressTimer = window.setTimeout(function() {
-          $.ajax({
-            url: '/games/' + id + '/space',
-            type: 'DELETE',
-            data: 'tile=' + chosenTile,
-            dataType: 'json',
-            success: function(data) {
-              destroySpace(data);
-            }
-          });
-        },1000);
-        return false;
-      });
-
-
-
-      $('#board .tile').on('click', function() {
-        var chosenTile = ($(this).attr('data-x') + $(this).attr('data-y')).split('');
-        var neighborShiftInfo = []; // Is this being used for anything?
-        var neighbors = getNeighbors(this);
-        neighbors.forEach(function(neighbor) {
-          neighbor = neighbor.split(',');
-          neighborShiftInfo.push(neighbor); // ?
-          $('#x' + neighbor[0] + 'y' + neighbor[1]).remove();
-        });
-        $.ajax({
-          url: '/games/' + id + '/pick_letters',
-          type: 'PATCH',
-          data: 'tile=' + chosenTile,
-          dataType: 'json',
-          success: function(data) {
-            lettersPicked(data);
-          }
-        });
-      });
+  function submitWord() {
+    var word = [];
+    var collection = $('.play-wrapper').children();
+    $.each(collection, function(index, tile) {
+      var coordSpace = (tile.getAttribute('data-color') + '.' + tile.getAttribute('data-letter'));
+      word.push(coordSpace);
     });
-  }
-  function reloadBoardListeners() {
-    $('#board .tile').off();
-    loadBoardListeners();
-  }
-
-  function loadActionListeners() {
-    $('#end-turn').on('click', function() {
-      switchTurn();
-    });
-
-    $('#wagic').on('click', function() {
-      var word = [];
-      var collection = $('.play-wrapper').children();
-      $.each(collection, function(index, tile) {
-        var coordSpace = (tile.getAttribute('data-color') + '.' + tile.getAttribute('data-letter'));
-        word.push(coordSpace);
-      });
-      $.ajax({
-        url: '/games/' + id + '/wagic_word',
-        type: 'PATCH',
-        data: 'word=' + word,
-        dataType: 'json',
-        success: function(data) {
-          if (data === false) {
-            alert('That word is not allowed');
-          } else {
-            wagicWord(data);
-          }
+    $.ajax({
+      url: '/games/' + id + '/wagic_word',
+      type: 'PATCH',
+      data: 'word=' + word,
+      dataType: 'json',
+      success: function(data) {
+        if (data === false) {
+          alert('That word is not allowed');
+        } else {
+          wagicWord(data);
         }
-      });
+      }
     });
   }
 
-  function loadHandListeners() {
-    $('#user-hand .hand-wrapper .tile').on('click', function() {
-      $(this).appendTo('.play-wrapper');
-      handToPlayArea();
-    });
-  }
-  function reloadHandListeners() {
-    $('#user-hand .hand-wrapper .tile').off();
-    loadHandListeners();
+  function chooseCard() {
+    var cardID = $(this).attr('id');
+    useCard(cardID);
   }
 
-  function loadWordListeners() {
-    $('#user-word .play-wrapper .tile').on('click.loadWordListeners', function() {
-      $(this).appendTo('.hand-wrapper');
-      handToPlayArea();
-    });
+  function killListeners() {
+    $('button').off();
+    $('.card').off();
   }
-  function reloadWordListeners() {
-    $('#user-word .play-wrapper .tile').off();
-    loadWordListeners();
+
+  function loadListeners() {
+    console.log('reloading event handlers')
+
+    $('.tile-wrap .tile').on('click', chooseTile);
+    $('#end-turn').on('click', switchTurn);
+    $('#wagic').on('click', submitWord);
+    $('#board .tile').on('mouseenter mouseleave', hoverBoard);
+    $('.card').on('click', chooseCard);
   }
-  function reloadActionListeners() {
-    $('#end-turn').off();
-    $('#wagic').off();
-    loadActionListeners();
-  }
+
   function gameWon(winning_player) {
-    killListeners();
+    killListeners()
     alert('This game has been won by: ' + winning_player);
   }
 
-  // (function poll(previousTurn) {
-  //   setTimeout(function() {
-  //     $.ajax({
-  //       url: '/games/' + id + '/game_board',
-  //       type: 'GET',
-  //       dataType: 'json',
-  //       success: function(data) {
-  //         if (data.game.won != 'false') {
-  //           gameWon(data.game.won);
-  //         } else if (data.user === null) {
-  //           showBoard(data.game);
-  //           showGameMeta(data);
-  //           poll(data.game.turn);
-  //         } else if (data.user == data.game.turn && data.game.turn != previousTurn && previousTurn !== undefined) { // just became your turn
-  //           showBoard(data.game);
-  //           showGameMeta(data);
-  //           reloadBoardListeners();
-  //           poll(data.game.turn);
-  //         } else if (data.user == data.game.turn) { // your turn
-  //           poll(data.game.turn);
-  //         } else { // other persons turn
-  //           showBoard(data.game);
-  //           showGameMeta(data);
-  //           showHand(data);
-  //           poll(data.game.turn);
-  //         }
-  //       }
-  //     });
-  //   }, 1000);
-  // })();
+  function updateGame(data, prevBoard) {
+    if (data.game) {
+      console.log('board change detected')
+      timestamp = data.game.ts;
+      if (data.game.won != 'false') {
+        gameWon(data.game.won);
+      } else {
+        updateBoard(data.game);
+      }
+
+      if (data.game.turn === data.user) { 
+        console.log('your turn!')
+        if (data.game.turn_state === "picked_letters") {
+          $('.cards').show();
+        } else {
+          $('.cards').hide();
+          loadListeners();
+        }
+      } else {
+        console.log('not your turn!')
+        $('.cards').hide();
+        $('.tile').off('click', chooseTile)
+                  .off('mouseenter mouseleave', hoverBoard);
+      }
+    } else {
+      data = prevBoard;
+    }
+  }
+
+  function poll(prevBoard) {
+    setInterval(function() {
+      $.ajax({
+        url: '/games/' + id + '/game_board?ts=' + timestamp,
+        type: 'GET',
+        dataType: 'json',
+        success: function(data) {
+          updateGame(data, prevBoard);
+        }
+      });
+    }, 1000);
+  }
 
   function clearSpelledWord() {
     $('#user-word .play-wrapper').empty();
   }
 
-  function showHand(data) {
+  function moveTile(e) {
+    if ($(this).parent().hasClass('play-wrapper')) {
+      $(this).detach().appendTo('.hand-wrapper')
+    } else {
+      $(this).detach().appendTo('.play-wrapper')
+    }
+  };
+
+  function updateHand(data) {
     var hand = data.game.players[data.user].hand; // rewrite this shit so it gets it from the game data
     $('#user-hand .hand-wrapper').empty();
     hand.forEach(function(tile) {
@@ -370,25 +276,43 @@
   }
 
   function showBoard(game) {
-    $('#board').children().not('.cards').remove();
-    game.board.forEach(function(column, x) {
-      var make_column = '<div class="flex-column" id="row' + x + '"></div>';
-      $("#board").append(
-        make_column
-      );
-      column.forEach(function(tile, y) {
-        $('#row' + x).append(
-          '<button class="tile ' + tile.color + '"' +
-            'data-x="' + x + '"' +
-            'data-y="' + y + '"' +
-            'data-color="' + tile.color + '"' +
-            'id="x' + x + 'y' + y + '">' +
-            '<span>' + tile.letter + '</span>' +
-            '<span class="score">' + letterScore(tile.letter) + '</span>' +
-          '</button>'
-        );
-      });
-    });
+    if ($('.tile').length) {
+      updateBoard(game);
+    } else {
+      for (var x = 0; x < game.board.length; x++) {
+        var column = '<div class="flex-column" id="row' + x + '"></div>';
+        $("#board").append(column);
+        for (var y = 0; y < game.board[x].length; y++) {
+          var tile = newTile(game.board[x][y]);
+          $('#row' + x).append(tile);
+        };
+      };
+    }
+  }
+
+  function updateBoard(game) {
+    for (var x = 0; x < game.board.length; x++) {
+      for (var y = 0; y < game.board[x].length; y++) {
+        var prevTile = $('#row'+x+' button:nth-child('+(y+1)+')');
+        var nextTile = game.board[x][y];
+        if ( prevTile.attr('data-color') !== nextTile.color || 
+             prevTile.attr('data-letter') !== nextTile.letter ) {
+          prevTile.replaceWith( newTile(nextTile) )
+        }
+      }
+    }
+  }
+
+  function newTile(tile) {
+    return '<button class="tile ' + tile.color + '"' +
+              'data-x="' + tile.x + '"' +
+              'data-y="' + tile.y + '"' +
+              'data-color="' + tile.color + '"' +
+              'data-letter="' + tile.letter + '"' +
+              'id="x' + tile.x + 'y' + tile.y + '">' +
+              '<span>' + tile.letter + '</span>' +
+              '<span class="score">' + letterScore(tile.letter) + '</span>' +
+            '</button>'
   }
 
   function letterScore(letter) {
