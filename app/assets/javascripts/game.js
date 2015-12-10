@@ -366,36 +366,36 @@
 // #############################################################################
 
 
-  // (function poll(previousTurn) {
-  //   setTimeout(function() {
-  //     $.ajax({
-  //       url: '/games/' + id + '/game_board',
-  //       type: 'GET',
-  //       dataType: 'json',
-  //       success: function(data) {
-  //         if (data.game.won != 'false') {
-  //           gameWon(data.game.won);
-  //         } else if (data.user === null) {
-  //           showBoard(data.game);
-  //           showGameMeta(data);
-  //           poll(data.game.turn);
-  //         } else if (data.user == data.game.turn && data.game.turn != previousTurn && previousTurn !== undefined) { // just became your turn
-  //           showBoard(data.game);
-  //           showGameMeta(data);
-  //           reloadBoardListeners();
-  //           poll(data.game.turn);
-  //         } else if (data.user == data.game.turn) { // your turn
-  //           poll(data.game.turn);
-  //         } else { // other persons turn
-  //           showBoard(data.game);
-  //           showGameMeta(data);
-  //           showHand(data);
-  //           poll(data.game.turn);
-  //         }
-  //       }
-  //     });
-  //   }, 1000);
-  // })();
+  (function poll(previousTurn) {
+    setTimeout(function() {
+      $.ajax({
+        url: '/games/' + id + '/game_board',
+        type: 'GET',
+        dataType: 'json',
+        success: function(data) {
+          if (data.game.won != 'false') {
+            gameWon(data.game.won);
+          } else if (data.user === null) {
+            showBoard(data.game);
+            showGameMeta(data);
+            poll(data.game.turn);
+          } else if (data.user == data.game.turn && data.game.turn != previousTurn && previousTurn !== undefined) { // just became your turn
+            showBoard(data.game);
+            showGameMeta(data);
+            reloadBoardListeners();
+            poll(data.game.turn);
+          } else if (data.user == data.game.turn) { // your turn
+            poll(data.game.turn);
+          } else { // other persons turn
+            showBoard(data.game);
+            showGameMeta(data);
+            showHand(data);
+            poll(data.game.turn);
+          }
+        }
+      });
+    }, 1000);
+  })();
 
   function clearSpelledWord() {
     $('#board .spell-overlay .spell').empty();
