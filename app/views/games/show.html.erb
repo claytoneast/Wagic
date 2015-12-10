@@ -1,3 +1,6 @@
+<script type="text/javascript">
+  id = <%= @game.id %>;
+</script>
 <%= link_to "Lobby", root_path, class: "btn btn-primary" %>
 
     <div class="user-info">
@@ -6,14 +9,13 @@
       <% elsif user_signed_in? && !@game.user_check(current_user) && @game.users.length < 2 %>
         you are not part of this game
         <%= link_to "Join this game", game_join_game_path(@game) %>
+      <% else %>
+        You are a spectator of this game.
       <% end %>
     </div>
 <div class="wgc-board">
   <div class="board-wrapper">
     <div hidden id="game-id"><%= @game.id %></div>
-    <script type="text/javascript">
-      id = <%= @game.id %>;
-    </script>
     <div class="overlay-image"></div>
     <div class="game-header">
     </div>

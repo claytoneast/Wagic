@@ -1,6 +1,3 @@
-    cards = [];
-    // id = '';
-
   $(document).ready(function() {
     console.log("document ready");
     getCards();
@@ -13,14 +10,12 @@
         console.log("initial board request successful");
       }
     });
-    // id = parseInt($("#game-id").text());
   });
   function getCards() {
     $.ajax({
       url: "/cards",
       type: "GET",
       dataType: "json",
-      async: false,
       success: function(data) {
         cards = data;
       }
@@ -46,14 +41,17 @@
   }
 
   function handOverlay() {
+
     $('#user-hand').append(
       '<span class="hand-overlay">select a letter block</span>'
     );
     $('#user-hand .hand-wrapper').addClass('hand-mask');
-    for (var i=0; i<8; i++) {
-      $('#user-hand .hand-wrapper').append(
-        '<button class="tile hand-tile blank"></button>'
-      );
+    if ($('#user-hand .hand-wrapper').children().size() === 0) {
+      for (var i=0; i<8; i++) {
+        $('#user-hand .hand-wrapper').append(
+          '<button class="tile hand-tile blank"></button>'
+        );
+      }
     }
   }
 
@@ -216,8 +214,15 @@
           killListeners();
           resetHandPlayArea();
           hideSpellOverlay();
+          boardMask();
       }
     });
+  }
+
+  function boardMask() {
+    $('#board').prepend(
+      '<div class="mask"></div>'
+    );
   }
 
   function hideSpellOverlay() {
@@ -344,36 +349,36 @@
     alert('This game has been won by: ' + winning_player);
   }
 
-  (function poll(previousTurn) {
-    setTimeout(function() {
-      $.ajax({
-        url: '/games/' + id + '/game_board',
-        type: 'GET',
-        dataType: 'json',
-        success: function(data) {
-          if (data.game.won != 'false') {
-            gameWon(data.game.won);
-          } else if (data.user === null) {
-            showBoard(data.game);
-            showGameMeta(data);
-            poll(data.game.turn);
-          } else if (data.user == data.game.turn && data.game.turn != previousTurn && previousTurn !== undefined) { // just became your turn
-            showBoard(data.game);
-            showGameMeta(data);
-            reloadBoardListeners();
-            poll(data.game.turn);
-          } else if (data.user == data.game.turn) { // your turn
-            poll(data.game.turn);
-          } else { // other persons turn
-            showBoard(data.game);
-            showGameMeta(data);
-            showHand(data);
-            poll(data.game.turn);
-          }
-        }
-      });
-    }, 1000);
-  })();
+  // (function poll(previousTurn) {
+  //   setTimeout(function() {
+  //     $.ajax({
+  //       url: '/games/' + id + '/game_board',
+  //       type: 'GET',
+  //       dataType: 'json',
+  //       success: function(data) {
+  //         if (data.game.won != 'false') {
+  //           gameWon(data.game.won);
+  //         } else if (data.user === null) {
+  //           showBoard(data.game);
+  //           showGameMeta(data);
+  //           poll(data.game.turn);
+  //         } else if (data.user == data.game.turn && data.game.turn != previousTurn && previousTurn !== undefined) { // just became your turn
+  //           showBoard(data.game);
+  //           showGameMeta(data);
+  //           reloadBoardListeners();
+  //           poll(data.game.turn);
+  //         } else if (data.user == data.game.turn) { // your turn
+  //           poll(data.game.turn);
+  //         } else { // other persons turn
+  //           showBoard(data.game);
+  //           showGameMeta(data);
+  //           showHand(data);
+  //           poll(data.game.turn);
+  //         }
+  //       }
+  //     });
+  //   }, 1000);
+  // })();
 
   function clearSpelledWord() {
     $('#board .spell-overlay .spell').empty();
@@ -387,7 +392,7 @@
         '<button class="tile hand-tile ' + tile.color + '"' +
         'data-color="' + tile.color + '"' +
         'data-letter="' + tile.letter + '"' +
-        '>' + tile.letter + '</button>'
+        '>' + tile.letter + '<span class="score">' + letterScore(tile.letter) + '</span></button>'
       );
     });
   }
@@ -445,7 +450,20 @@
     };
     return scores[letter];
   }
-
+// #####################################################################################################################################################
+// #####################################################################################################################################################
+// ########################################          ######################         ###################################################################
+// ########################################           ###################           ####################################################################
+// ########################################      ##     ##############     ###      ####################################################################
+// ########################################      ###     ############     ####      ####################################################################
+// ########################################      #####     #######     #######      ####################################################################
+// ########################################      #######     ###     #########      ####################################################################
+// ########################################      #########          ##########      ####################################################################
+// ########################################      ###########     #############      ####################################################################
+// #####################################################################################################################################################
+// #####################################################################################################################################################
+// #####################################################################################################################################################
+// #####################################################################################################################################################
   function showGameMeta(data) {
     $('.game-header').empty();
     function activeTurn(id){
@@ -453,6 +471,11 @@
       return "inactive";
     }
     $.each(data.game.players, function(id, player){
+      if (data.game.turn === player.name) {
+        $('.game-header').append(
+          '<div class="recent ' + player.name + '">' + player.history + '</div>'
+        );
+      }
       $('.game-header').append(
         '<div class="stats ' + player.name + '">' +
           '<span class="bar-wrapper">' +

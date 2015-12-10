@@ -1,5 +1,62 @@
 /* line 4, /Users/hello/Desktop/wagick/app/assets/stylesheets/styles.scss */
 
+.flex-column {
+  display: flex;
+  flex-direction: column;
+}
+.flex-row {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+}
+
+.index-wrapper {
+  max-width: 600px;
+  &.flex-column {
+    margin: 0 15%;
+    justify-content: center;
+  }
+  .games {
+    min-width: 80%;
+    align-items: center;
+    span {
+      // padding: 0 2rem;
+    }
+    .flex-row {
+      justify-content: space-between;
+      width: 100%;
+      .link {
+        margin-left: 1rem;
+        width: 15%;
+        text-align: center;
+        height: 3rem;
+        line-height: 2.4rem;
+        font-size: 2rem;
+      }
+      .state {
+        margin-right: 1rem;
+        width: 30%;
+      }
+      .players {
+
+        width: 30%;
+      }
+      &.titles {
+        margin: 1rem 0;
+        border-bottom: 0.3rem solid #efefef;
+        text-transform: uppercase;
+      }
+      &.game {
+        margin: 0.5rem 0;
+        background: #efefef;
+        border: 0.3rem solid #444;
+        padding: 1rem 0;
+
+      }
+    }
+  }
+}
+
 .wgc-board {
   -webkit-font-smoothing: antialiased;
   display: flex;
@@ -63,15 +120,7 @@
       }
     }
   }
-  .flex-column {
-    display: flex;
-    flex-direction: column;
-  }
-  .flex-row {
-    display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
-  }
+
   #board {
     margin-top: 3px;
     position: relative;
@@ -88,7 +137,7 @@
       width: 183px;
       height: 29px;
       position: absolute;
-      top: 50px;
+      top: 0px;
       left: 115px;
       text-align: center;
       line-height: 29px;
@@ -216,6 +265,55 @@
     position: relative;
     border-top-left-radius: 10px;
     border-top-right-radius: 10px;
+    .recent {
+      &.player1 {
+        position: absolute;
+        top: 13%;
+        padding: 0px 5% 0px 5%;
+        border-radius: 50%;
+        background: #DF9405;
+        margin: 0;
+        left: 35%;
+        color: black;
+        text-transform: uppercase;
+        &:after {
+          content: "";
+          position: absolute;
+          bottom: -7px;
+          left: 3px;
+          border-style: solid;
+          border-color: #DF9405 transparent;
+          display: inline-block;
+          width: 0;
+          border-width: 13px 19px 0px 3px;
+          transform: rotate(15deg);
+        }
+      }
+      &.player2 {
+        position: absolute;
+        top: 13%;
+        padding: 0px 5% 0px 5%;
+        border-radius: 50%;
+        background: #DF9405;
+        margin: 0;
+        right: 35%;
+        color: black;
+        text-transform: uppercase;
+        &:after {
+          content: "";
+          position: absolute;
+          bottom: 1px;
+          right: 2px;
+          border-style: solid;
+          border-color: #DF9405 transparent;
+          display: inline-block;
+          width: 0;
+          border-width: 0px 3px 13px 19px;
+          transform: rotate(15deg);
+        }
+      }
+    }
+
     .stats {
       width: 50%;
       height: 100%;

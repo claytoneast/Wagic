@@ -23,7 +23,7 @@ class GamesController < ApplicationController
   end
 
   def index
-    @games = Game.limit(100)
+    @games = Game.limit(100).order(created_at: :desc)
   end
 
   def join_game
