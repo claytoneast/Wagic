@@ -1,16 +1,21 @@
-  $(document).ready(function() {
-    console.log("document ready");
-    getCards();
-    $.ajax({
-      url: "/games/" + id + "/game_board",
-      type: "GET",
-      dataType: "json",
-      success: function(data) {
-        initBoard(data);
-        console.log("initial board request successful");
-      }
-    });
+var ready;
+ready = function() {
+  console.log("document ready");
+  getCards();
+  $.ajax({
+    url: "/games/" + id + "/game_board",
+    type: "GET",
+    dataType: "json",
+    success: function(data) {
+      initBoard(data);
+      console.log("initial board request successful");
+    }
   });
+// js here
+};
+
+$(document).ready(ready);
+$(document).on('page:load', ready);
   function getCards() {
     $.ajax({
       url: "/cards",
@@ -24,7 +29,8 @@
 
 
   function initBoard(data) {
-    showBoard(data.game);
+    // debugger;
+    showBoard(data);
     showGameMeta(data);
     if (data.user !== null) {
       showHand(data);
@@ -61,7 +67,7 @@
   }
 
   function lettersPicked(data) {
-    showBoard(data.game);
+    showBoard(data);
     $('.tile').off();
     spellOverlay();
     cardListeners();
@@ -72,7 +78,7 @@
   }
 
   function destroySpace(data) {
-    showBoard(data.game);
+    showBoard(data);
     $('#board .tile').off();
     spellOverlay();
     showHand(data);
@@ -151,7 +157,7 @@
   }
 
   function clusterCard(data) {
-    showBoard(data.game);
+    showBoard(data);
     showGameMeta(data);
   }
 
@@ -231,7 +237,6 @@
   }
 
   function loadBoardListeners(){
-    $(document).ready(function(){
       $('#board .tile').hover(function(){
         var neighbors = getNeighbors(this);
         neighbors.forEach(function(neighbor) {
@@ -283,7 +288,6 @@
           }
         });
       });
-    });
   }
   function reloadBoardListeners() {
     $('#board .tile').off();
@@ -376,18 +380,18 @@
           if (data.game.won != 'false') {
             gameWon(data.game.won);
           } else if (data.user === null) {
-            showBoard(data.game);
+            showBoard(data);
             showGameMeta(data);
             poll(data.game.turn);
           } else if (data.user == data.game.turn && data.game.turn != previousTurn && previousTurn !== undefined) { // just became your turn
-            showBoard(data.game);
+            showBoard(data);
             showGameMeta(data);
             reloadBoardListeners();
             poll(data.game.turn);
           } else if (data.user == data.game.turn) { // your turn
             poll(data.game.turn);
           } else { // other persons turn
-            showBoard(data.game);
+            showBoard(data);
             showGameMeta(data);
             showHand(data);
             poll(data.game.turn);
@@ -414,7 +418,8 @@
     });
   }
 
-  function showBoard(game) {
+  function showBoard(data) {
+    var game = data.game;
     $('#board').children().not('.spell-overlay').remove();
     game.board.forEach(function(column, x) {
       var make_column = '<div class="flex-column" id="row' + x + '"></div>';
@@ -423,7 +428,7 @@
       );
       column.forEach(function(tile, y) {
         $('#row' + x).append(
-          '<button class="tile ' + tile.color + '"' +
+          '<button class="tile ' + tileColor(tile, data.user, data.game.turn) + '"' +
             'data-x="' + x + '"' +
             'data-y="' + y + '"' +
             'data-color="' + tile.color + '"' +
@@ -434,6 +439,14 @@
         );
       });
     });
+  }
+
+  function tileColor(tile, user, turn) {
+    if (user === turn) {
+      return tile.color;
+    } else {
+      return 'blank';
+    }
   }
 
   function letterScore(letter) {
@@ -488,7 +501,7 @@
       return "inactive";
     }
     $.each(data.game.players, function(id, player){
-      if (data.game.turn === player.name) {
+      if (data.game.turn === player.name && player.history !=='') {
         $('.game-header').append(
           '<div class="recent ' + player.name + '">' + player.history + '</div>'
         );
