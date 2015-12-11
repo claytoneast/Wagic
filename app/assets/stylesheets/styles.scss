@@ -126,6 +126,52 @@
     margin-top: 3px;
     position: relative;
   }
+  .counter {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    left: 0;
+    top: 0;
+    z-index: 22;
+    width: 100%;
+    height: 100%;
+    .chart {
+      position: relative;
+      width: 30%;
+      height: 30%;
+      border-radius: 50%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      canvas {
+        z-index: 1;
+        -webkit-filter: brightness(155%);
+      }
+      .backdrop {
+        width: 100%;
+        height: 100%;
+        position: absolute;
+        top: 0;
+        left: 0;
+        background: rgba(0,0,0,0.5);
+        border-radius: 50%;
+      }
+    }
+    .number {
+
+    }
+    .caption {
+      position: absolute;
+      top: 38px;
+      left: 28px;
+      color: white;
+      width: 60px;
+      text-align: center;
+    }
+  }
   #user-hand {
     margin-top: 10px;
     justify-content: center;
@@ -267,39 +313,31 @@
     border-top-left-radius: 10px;
     border-top-right-radius: 10px;
     .recent {
+      position: absolute;
+      top: 13%;
+      padding: 0px 5% 0px 5%;
+      border-radius: 5px;
+      background: #DF9405;
+      margin: 0;
+      color: black;
+      text-transform: uppercase;
       &.player1 {
-        position: absolute;
-        top: 13%;
-        padding: 0px 5% 0px 5%;
-        border-radius: 5px;
-        background: #DF9405;
-        margin: 0;
         left: 35%;
-        color: black;
-        text-transform: uppercase;
         &:after {
           content: "";
           position: absolute;
-          bottom: -10px;
-          left: 3px;
           border-style: solid;
           border-color: #DF9405 transparent;
           display: inline-block;
           width: 0;
           border-width: 13px 19px 0px 3px;
           transform: rotate(0deg);
+          bottom: -10px;
+          left: 3px;
         }
       }
       &.player2 {
-        position: absolute;
-        top: 13%;
-        padding: 0px 5% 0px 5%;
-        border-radius: 5px;
-        background: #DF9405;
-        margin: 0;
         right: 35%;
-        color: black;
-        text-transform: uppercase;
         &:after {
           content: "";
           position: absolute;
@@ -321,6 +359,16 @@
       float: left;
       z-index: 1;
       position: relative;
+      &.player1 {
+        .gold {
+
+        }
+      }
+      &.player2 {
+        .gold {
+
+        }
+      }
       .gold {
         position: absolute;
         bottom: 36px;
