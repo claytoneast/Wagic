@@ -421,7 +421,7 @@
   .tile {
     color: #efefef;
     font-size: 2.3rem;
-    transition: border .1s;
+    transition: -webkit-filter .2s;
     position: relative;
     height: 47px;
     width: 47px;
@@ -429,7 +429,6 @@
     max-width: 70px;
     text-transform: uppercase;
     font-weight: 500;
-    // transition: -webkit-filter .3s;
     border-radius: 10%;
     margin: 1px;
     border-width: 0px;
@@ -473,14 +472,14 @@
     justify-content: center;
     background: #444;
     padding: 5px;
-    #row1 .tile { animation: bounce .3s }
-    #row2 .tile { animation: bounce .35s }
-    #row3 .tile { animation: bounce .4s }
-    #row4 .tile { animation: bounce .45s }
-    #row5 .tile { animation: bounce .55s }
-    #row6 .tile { animation: bounce .6s }
-    #row7 .tile { animation: bounce .65s }
-    #row8 .tile { animation: bounce .7s }
+    #row0 .tile { animation: bounce .3s }
+    #row1 .tile { animation: bounce .35s }
+    #row2 .tile { animation: bounce .4s }
+    #row3 .tile { animation: bounce .45s }
+    #row4 .tile { animation: bounce .55s }
+    #row5 .tile { animation: bounce .6s }
+    #row6 .tile { animation: bounce .65s }
+    #row7 .tile { animation: bounce .7s }
     
   }
 }
@@ -491,19 +490,20 @@
   }
   0% {
     opacity: 0;
-    transform: translate3d(0, -3000px, 0);
+    transform: translate3d(0, -1000px, 0);
   }
   60% {
     transform: translate3d(0, 25px, 0);
   }
   75% {
-    opacity: 1;
+
     transform: translate3d(0, -10px, 0);
   }
   90% {
     transform: translate3d(0, 5px, 0);
   }
   100% {
+    opacity: 1;
     transform: none;
   }
 }

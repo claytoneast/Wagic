@@ -82,7 +82,7 @@ function chooseCard() {
 }
 
 function chooseTile() {
-  console.log('choose tile')
+  console.log('choose tile');
   var chosenTile = ($(this).attr('data-x') + $(this).attr('data-y')).split('');
   var neighbors = getNeighbors(this);
   neighbors.forEach(function(neighbor) {
@@ -175,15 +175,16 @@ function resetHandPlayArea() {
   $('.hand-wrapper').append(tiles);
 }
 
-function switchTurn() {
+function switchTurn(event) {
+  console.log('switch turn');
   $.ajax({
     url: '/games/' + id + '/switch_turn',
     type: 'PATCH',
     dataType: 'json',
     success: function(data) {
+        waitPhase();
         resetHandPlayArea();
         updateBoard(data);
-        waitPhase();
     }
   });
 }
@@ -241,7 +242,10 @@ function waitPhase() {
   $('.wgc-board')
     .off('click', '.board-tile', chooseTile)
     .off('mouseenter mouseleave', '.board-tile', hoverBoard)
-    .off('click', '.hand-wrapper .tile', moveTile);
+    .off('click', '.hand-wrapper .tile', moveTile)
+    .on('click', '.spell .tile', moveTile)
+    .off('click', '.end', switchTurn)
+    .off('click', '.wagick', submitWord);
 }
 
 
