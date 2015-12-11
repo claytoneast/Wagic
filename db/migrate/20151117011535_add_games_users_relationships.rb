@@ -8,6 +8,7 @@ class AddGamesUsersRelationships < ActiveRecord::Migration
     create_table :games do |t|
       t.column :gamestate, :json
       t.column :active, :boolean
+      t.timestamps null: false
     end
   end
 end

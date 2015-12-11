@@ -1,5 +1,6 @@
 class Game < ActiveRecord::Base
   has_and_belongs_to_many :users
+  before_save :stamp
 
   before_create :set_gamestate
   def set_gamestate
@@ -9,6 +10,7 @@ class Game < ActiveRecord::Base
       turn: 'player1',
       won: 'false',
       turn_state: 'pick_letters',
+      ts: Time.now.to_f * 1000,
       time_since_switch: Time.zone.now,
       players: {
         player1: {
@@ -55,6 +57,7 @@ class Game < ActiveRecord::Base
     colors = ['blue', 'red', 'orange']
     colors.sample
   end
+
 
   def win_game
     self.gamestate['players']['player1']['health'] -= 150
@@ -378,7 +381,13 @@ class Game < ActiveRecord::Base
       turn: gamestate['turn'],
       turn_state: gamestate['turn_state'],
       time_since_switch: gamestate['time_since_switch'],
-      won: gamestate['won']}
+      won: gamestate['won'],
+      ts: gamestate['ts']
+    }
+  end
+
+  def stamp
+    gamestate['ts'] = Time.now.to_f if gamestate
   end
 end
 
