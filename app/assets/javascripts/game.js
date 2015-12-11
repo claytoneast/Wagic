@@ -94,8 +94,6 @@ function chooseTile() {
     data: 'tile=' + chosenTile,
     dataType: 'json',
     success: function(data) {
-      $('.tile-wrap .tile').off();
-      $('.spell-overlay').show();
       updateBoard(data);
     }
   });
@@ -226,13 +224,16 @@ function pickPhase() {
 }
 
 function spellPhase() {
-  $('.spell-overlay').show();
   $('.wgc-board')
     .on('click', '.end', switchTurn)
     .on('click', '.wagick', submitWord)
     .on('click', '.card', chooseCard)
     .on('click', '.spell .tile', moveTile)
     .on('click', '.hand-wrapper .tile', moveTile);
+  setTimeout(function(){
+    $('.spell-overlay').show();
+  }, 500);
+
 }
 
 function waitPhase() {
