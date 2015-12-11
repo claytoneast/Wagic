@@ -1,5 +1,8 @@
 
-$(document).ready(function() {
+var id = parseInt($("#game-id").text()),
+    cards =[];
+var timestamp = Math.floor(Date.now() / 1000);
+
   //Fetch Board
   $.ajax({
     url: "/games/" + id + "/game_board",
@@ -26,11 +29,6 @@ $(document).ready(function() {
       cards = data;
     }
   });
-});
-
-var id = parseInt($("#game-id").text()),
-    cards =[];
-var timestamp = Math.floor(Date.now() / 1000);
 
 function wagicWord(data) {
   showGameMeta(data);
@@ -71,7 +69,6 @@ function submitWord() {
 
 function moveTile() {
   console.log('moveTile');
-
   if ($(this).parent().hasClass('play-wrapper')) {
     $(this).detach().appendTo('.hand-wrapper');
   } else {
@@ -203,13 +200,11 @@ function loadListeners() {
   console.log('loadListeners');
   //Event Bindings
   $('.wgc-board')
-    // .on('click', '#board .tile', chooseTile)
-    // .on('mouseenter mouseleave', '#board .tile', hoverBoard)
     .on('click', '#end-turn', switchTurn)
     .on('click', '#wagic', submitWord)
     .on('click', '.card', chooseCard)
-    .on('click', '.hand-wrapper .tile', { elem: '.play-wrapper' }, moveTile)
-    .on('click', '.play-wrapper .tile', { elem: '.hand-wrapper' }, moveTile);
+    .on('click', '.hand-wrapper .tile', moveTile)
+    .on('click', '.play-wrapper .tile', moveTile);
 }
 
 function gameWon(winning_player) {
@@ -302,7 +297,7 @@ function updateBoard(data) {
       var nextTile = data.game.board[x][y];
       if ( prevTile.attr('data-color') !== nextTile.color || 
            prevTile.attr('data-letter') !== nextTile.letter ) {
-        prevTile.replaceWith( newTile(nextTile) )
+        prevTile.replaceWith( newTile(nextTile) );
       }
     }
   }
