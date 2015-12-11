@@ -370,6 +370,8 @@ $(document).on('page:load', ready);
             poll(data.game.turn);
           } else if (data.user == data.game.turn && data.game.turn != previousTurn && previousTurn !== undefined) { // just became your turn
             $('#board .counter').remove();
+            clearTimeout(fiveCounter);
+            clearTimeout(thirtyCounter);
             showBoard(data);
             showGameMeta(data);
             reloadBoardListeners();
@@ -387,9 +389,9 @@ $(document).on('page:load', ready);
     }, 1000);
   })();
 
+  var thirtyCounter, fiveCounter;
 
   function xpCircle(data) {
-    // draw the first circle, do a timeout so it goes away after 30 seconds then executes 2nd circle drawing
     $('#board').append('<div class="counter">' +
       '<div class="chart">' +
         '<div class="backdrop"></div>' +
@@ -409,14 +411,13 @@ $(document).on('page:load', ready);
         easing: 'linear'
       }
     });
-    setTimeout(function() {
+    thirtyCounter = setTimeout(function() {
       $('#board .counter .chart').remove();
       fiveCounter();
     }, 30000);
   }
 
   function fiveCounter() {
-    // draw the 5 second circle
     $('#board .counter').append('<div class="chart">' +
       '<div class="backdrop"></div>' +
       '<span class="number"></span><span class="caption">+1 XP/5 seconds</span>' +
@@ -434,7 +435,7 @@ $(document).on('page:load', ready);
        easing: 'linear'
       }
     });
-    setTimeout(function() {
+    fiveTimeout = setTimeout(function() {
       $('#board .counter').empty();
       fiveCounter();
     }, 5000);
