@@ -1,24 +1,7 @@
-
-  $(document).ready(function() {
-    console.log("document ready");
-    getCards();
-  });
-  var id = parseInt($("#game-id").text()),
-      cards = [];
-
-
-  function getCards() {
-    $.ajax({
-      url: "/cards",
-      type: "GET",
-      dataType: "json",
-      async: false,
-      success: function(data) {
-        cards = data;
-      }
-    });
-  }
-
+var ready;
+ready = function() {
+  console.log("document ready");
+  getCards();
   $.ajax({
     url: "/games/" + id + "/game_board",
     type: "GET",
@@ -28,35 +11,74 @@
       console.log("initial board request successful");
     }
   });
+// js here
+};
+
+$(document).ready(ready);
+$(document).on('page:load', ready);
+  function getCards() {
+    $.ajax({
+      url: "/cards",
+      type: "GET",
+      dataType: "json",
+      success: function(data) {
+        cards = data;
+      }
+    });
+  }
+
 
   function initBoard(data) {
-    showBoard(data.game);
+    // debugger;
+    showBoard(data);
     showGameMeta(data);
     if (data.user !== null) {
       showHand(data);
     }
     if (data.game.turn == data.user && data.game.turn_state == "pick_letters") { // if users turn and needs to pick letters
       loadBoardListeners();
+      handOverlay();
     } else if (data.game.turn == data.user && data.game.turn_state == "picked_letters") { // if its users turn and has picked letters
-        spellOverlay();
-        cardListeners();
-        loadHandListeners();
-        loadActionListeners();
+      spellOverlay();
+      cardListeners();
+      loadHandListeners();
+      loadActionListeners();
+    }
+  }
+
+  function handOverlay() {
+
+    $('#user-hand').append(
+      '<span class="hand-overlay">select a letter block</span>'
+    );
+    $('#user-hand .hand-wrapper').addClass('hand-mask');
+    if ($('#user-hand .hand-wrapper').children().size() === 0) {
+      for (var i=0; i<8; i++) {
+        $('#user-hand .hand-wrapper').append(
+          '<button class="tile hand-tile blank"></button>'
+        );
       }
+    }
+  }
+
+  function removeHandOverlay() {
+    $('#user-hand .hand-wrapper').removeClass('hand-mask');
+    $('#user-hand .hand-overlay').remove();
   }
 
   function lettersPicked(data) {
-    showBoard(data.game);
+    showBoard(data);
     $('.tile').off();
     spellOverlay();
     cardListeners();
     showHand(data);
+    removeHandOverlay();
     reloadHandListeners();
     loadActionListeners();
   }
 
   function destroySpace(data) {
-    showBoard(data.game);
+    showBoard(data);
     $('#board .tile').off();
     spellOverlay();
     showHand(data);
@@ -135,50 +157,44 @@
   }
 
   function clusterCard(data) {
-    showBoard(data.game);
+    showBoard(data);
     showGameMeta(data);
   }
 
   function doubledipCard(data) {
-    $('#board .cards').removeClass('show-cards').empty();
+    $('#board .spell-overlay').removeClass('show-cards').empty();
     reloadBoardListeners();
-    // overlay goes away, event listeners for the board go on.
-    // game state goes back to pick letters in the backend
-    //
   }
 
   function spellOverlay() {
-      // $('#board .cards').empty();
-      // $('#board .cards').addClass('show-cards');
-      // $('#board .cards').append(
-      //   '<div class="mask"></div>' +
-      //   '<div class="cards-content">' +
-      //     '<div class="cards-top">' +
-      //       '<div class="flex-row card-wrapper">' +
-      //       '</div>' +
-      //     '</div>' +
-      //     '<div class="cards-bottom flex-column">' +
-      //       '<div class="flex-row" id="user-word">' +
-      //         '<div class="flex-row play-wrapper">' +
-      //         '</div>' +
-      //       '</div>' +
-      //       '<div class="flex-row spell-buttons">' +
-      //           '<button id="wagic" class="action-button">Wagic!</button>' +
-      //           '<button id="end-turn" class="action-button">EndTurn</button>' +
-      //       '</div>' +
-      //     '</div>' +
-      //   '</div>');
-      //
-      // cards.forEach(function(card) {
-      //   $('#board .cards .card-wrapper').append(
-      //     '<div class="card flex-column" id="'+ card.id + '">' +
-      //       '<div class="flex-row card-info">' +
-      //         '<span class="card-name">' + card.name + '</span>' +
-      //         '<span class="card-price">' + card.price + 'G</span>' +
-      //         '<span class="card-effect">' + card.effect + '<span>' +
-      //     '</div>'
-      //   );
-      // });
+      $('#board .spell-overlay').empty();
+      $('#board .spell-overlay').show();
+      $('#board .spell-overlay').append(
+        '<span class="title buy">Buy Items</span>' +
+        '<div class="cards flex-row">' +
+
+        '</div>' +
+        '<span class="title cast">cast spells</span>' +
+        '<div class="spell flex-row">' +
+        '</div>' +
+
+        '<div class="actions flex-row">' +
+          '<div class="butt wagick">wagick</div>' +
+          '<div class="butt end">end turn</div>' +
+        '</div>'
+      );
+
+      cards.forEach(function(card) {
+        $('#board .spell-overlay .cards').append(
+          '<div class="card flex-column ' + card.name + '" id="' + card.id + '">' +
+            '<img src="../card-' + card.name + '.png" class="icon">' +
+            '<div class="price">' +
+              '<div class="gold"></div>' +
+              '<span class="cost">X' + card.price + '</span>' +
+            '</div>' +
+          '</div>'
+        );
+      });
   }
 
   function resetHandPlayArea() {
@@ -195,16 +211,17 @@
           killListeners();
           resetHandPlayArea();
           hideSpellOverlay();
+          xpCircle(data);
       }
     });
   }
 
   function hideSpellOverlay() {
-    $('#board .cards').empty().removeClass('show-cards');
+    $('#board .spell-overlay').empty();
+    $('#board .spell-overlay').hide();
   }
 
   function loadBoardListeners(){
-    $(document).ready(function(){
       $('#board .tile').hover(function(){
         var neighbors = getNeighbors(this);
         neighbors.forEach(function(neighbor) {
@@ -245,6 +262,7 @@
           neighborShiftInfo.push(neighbor); // ?
           $('#x' + neighbor[0] + 'y' + neighbor[1]).remove();
         });
+
         $.ajax({
           url: '/games/' + id + '/pick_letters',
           type: 'PATCH',
@@ -255,7 +273,6 @@
           }
         });
       });
-    });
   }
   function reloadBoardListeners() {
     $('#board .tile').off();
@@ -263,13 +280,13 @@
   }
 
   function loadActionListeners() {
-    $('#end-turn').on('click', function() {
+    $('#board .end').on('click', function() {
       switchTurn();
     });
 
-    $('#wagic').on('click', function() {
+    $('#board .wagick').on('click', function() {
       var word = [];
-      var collection = $('.play-wrapper').children();
+      var collection = $('#board .spell-overlay .spell').children();
       $.each(collection, function(index, tile) {
         var coordSpace = (tile.getAttribute('data-color') + '.' + tile.getAttribute('data-letter'));
         word.push(coordSpace);
@@ -292,7 +309,7 @@
 
   function loadHandListeners() {
     $('#user-hand .hand-wrapper .tile').on('click', function() {
-      $(this).appendTo('.play-wrapper');
+      $(this).appendTo('#board .spell-overlay .spell');
       handToPlayArea();
     });
   }
@@ -302,7 +319,7 @@
   }
 
   function loadWordListeners() {
-    $('#user-word .play-wrapper .tile').on('click.loadWordListeners', function() {
+    $('#board .spell-overlay .spell .tile').on('click', function() {
       $(this).appendTo('.hand-wrapper');
       handToPlayArea();
     });
@@ -321,39 +338,110 @@
     alert('This game has been won by: ' + winning_player);
   }
 
-  // (function poll(previousTurn) {
-  //   setTimeout(function() {
-  //     $.ajax({
-  //       url: '/games/' + id + '/game_board',
-  //       type: 'GET',
-  //       dataType: 'json',
-  //       success: function(data) {
-  //         if (data.game.won != 'false') {
-  //           gameWon(data.game.won);
-  //         } else if (data.user === null) {
-  //           showBoard(data.game);
-  //           showGameMeta(data);
-  //           poll(data.game.turn);
-  //         } else if (data.user == data.game.turn && data.game.turn != previousTurn && previousTurn !== undefined) { // just became your turn
-  //           showBoard(data.game);
-  //           showGameMeta(data);
-  //           reloadBoardListeners();
-  //           poll(data.game.turn);
-  //         } else if (data.user == data.game.turn) { // your turn
-  //           poll(data.game.turn);
-  //         } else { // other persons turn
-  //           showBoard(data.game);
-  //           showGameMeta(data);
-  //           showHand(data);
-  //           poll(data.game.turn);
-  //         }
-  //       }
-  //     });
-  //   }, 1000);
-  // })();
+// #############################################################################
+// #############################################################################
+// #########                      ##############################################
+// #########                      ##############################################
+// #########      ############    ##############################################
+// #########      ############    ##############################################
+// #########                      ##############################################
+// #########                      ##############################################
+// #########      ##############################################################
+// #########      ##############################################################
+// #########      ##############################################################
+// #########      ##############################################################
+// #########      ##############################################################
+// #############################################################################
+// #############################################################################
+
+
+  (function poll(previousTurn) {
+    setTimeout(function() {
+      $.ajax({
+        url: '/games/' + id + '/game_board',
+        type: 'GET',
+        dataType: 'json',
+        success: function(data) {
+          if (data.game.won != 'false') {
+            gameWon(data.game.won);
+          } else if (data.user === null) {
+            showBoard(data);
+            showGameMeta(data);
+            poll(data.game.turn);
+          } else if (data.user == data.game.turn && data.game.turn != previousTurn && previousTurn !== undefined) { // just became your turn
+            $('#board .counter').remove();
+            showBoard(data);
+            showGameMeta(data);
+            reloadBoardListeners();
+            poll(data.game.turn);
+          } else if (data.user == data.game.turn) { // your turn
+            poll(data.game.turn);
+          } else { // other persons turn
+            showBoard(data);
+            showGameMeta(data);
+            showHand(data);
+            poll(data.game.turn);
+          }
+        }
+      });
+    }, 1000);
+  })();
+
+
+  function xpCircle(data) {
+    // draw the first circle, do a timeout so it goes away after 30 seconds then executes 2nd circle drawing
+    $('#board').append('<div class="counter">' +
+      '<div class="chart">' +
+        '<div class="backdrop"></div>' +
+        '<span class="number"></span><span class="caption">til bonus XP</span>' +
+      '</div>' +
+      '</div>');
+    $('#board .counter .chart').circleProgress({
+      value: 1,
+      startAngle: -1.57,
+      size: 100,
+      thickness: 13,
+      fill: {
+        color: '#016289'
+      },
+      animation: {
+        duration: 30000,
+        easing: 'linear'
+      }
+    });
+    setTimeout(function() {
+      $('#board .counter .chart').remove();
+      fiveCounter();
+    }, 30000);
+  }
+
+  function fiveCounter() {
+    // draw the 5 second circle
+    $('#board .counter').append('<div class="chart">' +
+      '<div class="backdrop"></div>' +
+      '<span class="number"></span><span class="caption">+1 XP/5 seconds</span>' +
+    '</div>');
+    $('#board .counter .chart').circleProgress({
+      value: 1,
+      startAngle: -1.57,
+      size: 100,
+      thickness: 13,
+      fill: {
+       color: '#016289'
+      },
+      animation: {
+       duration: 5000,
+       easing: 'linear'
+      }
+    });
+    setTimeout(function() {
+      $('#board .counter').empty();
+      fiveCounter();
+    }, 5000);
+  }
 
   function clearSpelledWord() {
-    $('#user-word .play-wrapper').empty();
+    $('#board .spell-overlay .spell').empty();
   }
 
   function showHand(data) {
@@ -361,16 +449,17 @@
     $('#user-hand .hand-wrapper').empty();
     hand.forEach(function(tile) {
       $('#user-hand .hand-wrapper').append(
-        '<button class="btn btn-game tile hand-tile btn-primary ' + tile.color + '"' +
+        '<button class="tile hand-tile ' + tile.color + '"' +
         'data-color="' + tile.color + '"' +
         'data-letter="' + tile.letter + '"' +
-        '>' + tile.letter + '</button>'
+        '>' + tile.letter + '<span class="score">' + letterScore(tile.letter) + '</span></button>'
       );
     });
   }
 
-  function showBoard(game) {
-    $('#board').children().not('.cards').remove();
+  function showBoard(data) {
+    var game = data.game;
+    $('#board').children().not('.spell-overlay, .counter').remove();
     game.board.forEach(function(column, x) {
       var make_column = '<div class="flex-column" id="row' + x + '"></div>';
       $("#board").append(
@@ -378,7 +467,7 @@
       );
       column.forEach(function(tile, y) {
         $('#row' + x).append(
-          '<button class="tile ' + tile.color + '"' +
+          '<button class="tile ' + tileColor(tile, data.user, data.game.turn) + '"' +
             'data-x="' + x + '"' +
             'data-y="' + y + '"' +
             'data-color="' + tile.color + '"' +
@@ -389,6 +478,14 @@
         );
       });
     });
+  }
+
+  function tileColor(tile, user, turn) {
+    if (user === turn) {
+      return tile.color;
+    } else {
+      return 'blank';
+    }
   }
 
   function letterScore(letter) {
@@ -422,40 +519,57 @@
     };
     return scores[letter];
   }
-
+// #####################################################################################################################################################
+// #####################################################################################################################################################
+// ########################################          ######################         ###################################################################
+// ########################################           ###################           ####################################################################
+// ########################################      ##     ##############     ###      ####################################################################
+// ########################################      ###     ############     ####      ####################################################################
+// ########################################      #####     #######     #######      ####################################################################
+// ########################################      #######     ###     #########      ####################################################################
+// ########################################      #########          ##########      ####################################################################
+// ########################################      ###########     #############      ####################################################################
+// #####################################################################################################################################################
+// #####################################################################################################################################################
+// #####################################################################################################################################################
+// #####################################################################################################################################################
   function showGameMeta(data) {
     $('.game-header').empty();
     function activeTurn(id){
       if (data.game.turn === id) return 'active';
+      return "inactive";
     }
     $.each(data.game.players, function(id, player){
+      if (data.game.turn === player.name && player.history !=='') {
+        $('.game-header').append(
+          '<div class="recent ' + player.name + '">' + player.history + '</div>'
+        );
+      }
       $('.game-header').append(
         '<div class="stats ' + player.name + '">' +
-          '<div class="xp"></div>' +
           '<span class="bar-wrapper">' +
             '<span class="bar" style="width:' + (player.current_health/player.max_health)*100 + '%">' + player.current_health + "/" + player.max_health +'</span>' +
           '</span>' +
-        '</div>' +
-
-          //   '<div class="stat xp">' +
-          //     '<span class="xp-caption">XP | ' + '</span>' +
-          //     '<span class="bar-wrapper">' +
-          //       '<span class="bar" style="width:' + (player.experience % 30)/30*100 + '%">' + player.experience + "/" + (player.level)*30 + '</span>' +
-          //     '</span>' +
-          //   '</div>' +
-          //   '<div class="stat gold">' +
-          //     'GOLD | ' +
-          //     '<span class="bar" style="width: 4rem">' + player.gold + '</span>' +
-          //   '</div>' +
-          // '</div>' +
+          '<span class="gold ' + player.name + '">x' + player.gold + '</span>' +
         '</div>'
       );
-      $(".xp").circleProgress({
-        value: 0.75,
-        size: 80,
-        thickness: 100,
-        lineCap: 'square',
-        fill: {color: '#0d6387'}
+      $('.board-wrapper').append(
+        '<div class="xp ' + player.name + '">' +
+          '<span class="xp-text">lvl' + '<span class="xp-num">' + player.level + '</span><span>' +
+        '</div>' +
+        '<div class="char ' + activeTurn(id) + ' ' + player.name + '"></div>'
+      );
+
+      $(document).ready(function(){
+          $('.xp.' + player.name).circleProgress({
+              value: player.experience/(player.level * 30),
+              startAngle: -1.57,
+              size: 26,
+              thickness: 13,
+              fill: {
+                color: '#016289'
+              }
+          });
       });
     });
     $('.game-header .' + data.game.turn + '-name').addClass('this-turn');

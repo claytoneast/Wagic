@@ -1,3 +1,6 @@
+<script type="text/javascript">
+  id = <%= @game.id %>;
+</script>
 <%= link_to "Lobby", root_path, class: "btn btn-primary" %>
 
     <div class="user-info">
@@ -6,48 +9,36 @@
       <% elsif user_signed_in? && !@game.user_check(current_user) && @game.users.length < 2 %>
         you are not part of this game
         <%= link_to "Join this game", game_join_game_path(@game) %>
+      <% else %>
+        You are a spectator of this game.
       <% end %>
     </div>
 <div class="wgc-board">
   <div class="board-wrapper">
-    <div class="overlay-image"></div>
     <div hidden id="game-id"><%= @game.id %></div>
-
+    <div class="overlay-image"></div>
     <div class="game-header">
     </div>
 
     <div class="flex-wrap tile-wrap" id="board">
-      <div class="cards">
-        <div class="mask"></div>
-        <div class="cards-content">
-          <div class="cards-top">
-            <div class="flex-row card-wrapper">
-            </div>
-          </div>
-          <div class="cards-bottom flex-column">
-            <div class="flex-row" id="user-word">
-              <div class="flex-row play-wrapper">
-              </div>
-            </div>
-            <div class="flex-row spell-buttons">
-                <button id="wagic" class="action-button">Wagic!</button>
-                <button id="end-turn" class="action-button">EndTurn</button>
-            </div>
-          </div>
+      <div class="spell-overlay">
+        <span class="title buy">Buy Items</span>
+        <div class="cards flex-row"></div>
+        <span class="title cast">cast spells</span>
+        <div class="spell flex-row"></div>
+        <div class="actions flex-row">
+          <div class="butt wagick">wagick</div>
+          <div class="butt end">end turn</div>
         </div>
       </div>
     </div>
+    <div id='user-hand' class='flex-column'>
+          <div class="hand-wrapper">
 
-
-      <div id='user-hand' class='flex-column'>
-            <div class="hand-wrapper">
-
-            </div>
-            <img src="" alt="" />
-
-      </div>
-      <hr>
+          </div>
+    </div>
   </div>
 </div>
-
-<%= javascript_include_tag "game" %>
+<% content_for :javascript do %>
+  <%= javascript_include_tag 'game.js' %>
+<% end %>

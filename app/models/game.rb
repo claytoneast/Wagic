@@ -11,6 +11,7 @@ class Game < ActiveRecord::Base
       won: 'false',
       turn_state: 'pick_letters',
       ts: Time.now.to_f * 1000,
+      time_since_switch: Time.zone.now,
       players: {
         player1: {
           id: '',
@@ -213,7 +214,7 @@ class Game < ActiveRecord::Base
   end
 
   def scrabble_word?(word)
-    r = Regexp.new('^' + word + '$')
+    r = Regexp.new('^' + word.upcase + '\r\n')
     !!open('db/seeds/wordlist.txt') { |f| f.each_line.detect { |l| r.match(l) } }
   end
 
@@ -312,12 +313,16 @@ class Game < ActiveRecord::Base
   end
 
   def switch_turn
-    if self.gamestate['turn'] == 'player1'
-      self.gamestate['turn'] = 'player2'
-    elsif self.gamestate['turn'] == 'player2'
-      self.gamestate['turn'] = 'player1'
+    game = self.gamestate
+    game['turn_state'] = 'pick_letters'
+    game['turn'] = game['turn'] == 'player1' ? 'player2' : 'player1'
+    diff = Time.zone.now - Time.parse(game['time_since_switch']) - 30
+    if diff >= 0
+      xp = 1 + (diff/5).floor
+      game['players'][game['turn']]['experience'] += xp
     end
-    self.gamestate['turn_state'] = 'pick_letters'
+    game['time_since_switch'] = Time.zone.now
+    self.check_level
     self.save
   end
 
@@ -375,6 +380,7 @@ class Game < ActiveRecord::Base
       players: gamestate['players'],
       turn: gamestate['turn'],
       turn_state: gamestate['turn_state'],
+      time_since_switch: gamestate['time_since_switch'],
       won: gamestate['won'],
       ts: gamestate['ts']
     }

@@ -1,16 +1,32 @@
-<div>
-  <% if current_user.nil? %>
-  <p>
-    Create an account or sign in to start playing Wagic!
-  </p>
-  <% else %>
-
-    <%= link_to 'New Game', games_path, class: "btn btn-primary", method: :post %>
-  <% end %>
+<div class="index-wrapper flex-column">
   <ul>
-    <% @games.each do |game| %>
-      <li> <%= link_to game.id, game_path(game) %> </li>
-    <% end %>
+    <div class='flex-column games'>
+      <% if current_user.nil? %>
+      <p>
+        Create an account or sign in to start playing Wagic!
+      </p>
+      <% else %>
+        <%= link_to 'New Game', games_path, class: "btn btn-primary", method: :post %>
+      <% end %>
+      <div class='flex-row titles'>
+        <span class='title link'>Game</span>
+        <span class='title players'>Players in Game</span>
+        <span class='title state'>Game State</span>
+      </div>
+      <% @games.each do |game| %>
+        <div class='flex-row game'>
+          <span class='link'><%= link_to game.id, game_path(game) %></span>
+          <span class='players'>
+            <% game.gamestate['players'].each do |player| %>
+            <%= User.find(player.last['id']).email if player.last['id'] != ''  %>
+            <% end %>
+          </span>
+          <span class='state'>Game won: <%= game.gamestate['won'] %></span>
+        </div>
+
+      <% end %>
+
+    </div>
 
   </ul>
 
