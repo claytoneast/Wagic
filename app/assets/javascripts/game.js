@@ -207,6 +207,7 @@ function updateGame(data, prevBoard) {
 }
 
 function pickPhase() {
+  $('.wgc-board').off();
   clearTimeout(fiveTimeout);
   clearTimeout(thirtyTimeout);
   $('#board .counter').remove();
@@ -423,10 +424,7 @@ function fiveCounter(elapsed) {
     },
     animation: {
      duration: left,
-     easing: 'linear',
-     complete: function() {
-       console.log('xp')
-     }
+     easing: 'linear'
     }
   });
   // run the animation again but with 0 seconds elapsed

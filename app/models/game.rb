@@ -11,7 +11,7 @@ class Game < ActiveRecord::Base
       won: 'false',
       turn_state: 'pick_letters',
       ts: Time.now.to_f * 1000,
-      time_since_switch: Time.zone.now,
+      time_since_switch: '',
       players: {
         player1: {
           id: '',
@@ -100,14 +100,16 @@ class Game < ActiveRecord::Base
   end
 
   def add_player(user)
+    g = self.gamestate
     unless user_check(user)
       self.users.push(user)
-      if self.gamestate['players']['player1']['id'] == ''
-        self.gamestate['players']['player1']['id'] = user.id
-      elsif self.gamestate['players']['player2']['id'] == ''
-        self.gamestate['players']['player2']['id'] = user.id
+      if g['players']['player1']['id'] == ''
+        g['players']['player1']['id'] = user.id
+      elsif g['players']['player2']['id'] == ''
+        g['players']['player2']['id'] = user.id
       end
     end
+    g['time_since_switch'] = Time.zone.now
     self.save
   end
 
