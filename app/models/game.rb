@@ -145,7 +145,12 @@ class Game < ActiveRecord::Base
 
   def check_level
     self.gamestate['players'].each do |player|
-      player[1]['level'] = (player[1]['experience'] / 29.9).ceil if player[1]['experience'] > 0
+    player[1]['level'] = 1 if player[1]['experience'] >= 0 && player[1]['experience'] < 20
+    player[1]['level'] = 2 if player[1]['experience'] >= 20 && player[1]['experience'] < 50
+    player[1]['level'] = 3 if player[1]['experience'] >= 50 && player[1]['experience'] < 90
+    player[1]['level'] = 4 if player[1]['experience'] >= 90 && player[1]['experience'] < 140
+    player[1]['level'] = 5 if player[1]['experience'] >= 140 && player[1]['experience'] < 200
+    player[1]['level'] = 6 if player[1]['experience'] >= 200 && player[1]['experience'] < 270
     end
   end
 

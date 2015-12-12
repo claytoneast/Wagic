@@ -496,10 +496,12 @@ function showGameMeta(data) {
       '</div>' +
       '<div class="char ' + activeTurn(id) + ' ' + player.name + '"></div>'
     );
-
+    var next = {
+      '1': 20, '2': 50, '3': 90, '4': 140, '5': 200, '6': 270
+    };
     $(document).ready(function(){
         $('.xp.' + player.name).circleProgress({
-            value: player.experience/(player.level * 30),
+            value: player.experience/(next[player.level]),
             startAngle: -1.57,
             size: 26,
             thickness: 13,
