@@ -1,8 +1,7 @@
-$(document).ready(function(){
+var ready = function() {
   var id = parseInt($("#game-id").text()),
       cards =[];
   var timestamp = Math.floor(Date.now() / 1000);
-
   //Fetch Board
   $.ajax({
     url: "/games/" + id + "/game_board",
@@ -27,7 +26,11 @@ $(document).ready(function(){
       spellOverlay(data);
     }
   });
-});
+};
+
+$(document).ready(ready);
+$(document).on('page:load', ready);
+
 
 function wagicWord(data) {
   showGameMeta(data);
@@ -74,7 +77,7 @@ function moveTile() {
   } else {
     $(this).detach().appendTo('.spell');
   }
-};
+}
 
 function chooseCard() {
   var cardID = $(this).attr('id');
@@ -135,40 +138,27 @@ function findCard(card_id) {
     }
     return foundCard;
   }
-
-  function healCard(data) {
-    showGameMeta(data);
-  }
-
-  function switcherooCard(data) {
-    showHand(data);
-    showGameMeta(data);
-    reloadHandListeners();
-  }
-
-  function clusterCard(data) {
-    showBoard(data);
-    showGameMeta(data);
-  }
   return foundCard;
+}
+
+function healCard(data) {
+  showGameMeta(data);
+}
+
+function switcherooCard(data) {
+  showHand(data);
+  showGameMeta(data);
+  reloadHandListeners();
+}
+
+function clusterCard(data) {
+  showBoard(data);
+  showGameMeta(data);
 }
 
 function doubledipCard(data) {
   $('#board .cards').removeClass('show-cards').empty();
 }
-
-// function spellOverlay() {
-//     cards.forEach(function(card) {
-//       $('#board .cards .card-wrapper').append(
-//         '<div class="card flex-column" id="'+ card.id + '">' +
-//           '<div class="flex-row card-info">' +
-//             '<span class="card-name">' + card.name + '</span>' +
-//             '<span class="card-price">' + card.price + 'G</span>' +
-//             '<span class="card-effect">' + card.effect + '<span>' +
-//         '</div>'
-//       );
-//     });
-// }
 
 function resetHandPlayArea() {
   tiles = $('.spell').children().detach();
@@ -190,17 +180,16 @@ function switchTurn(event) {
 }
 
 function updateGame(data, prevBoard) {
-  // loadListeners();
   if (data.game) {
     console.log('[board updated]');
     timestamp = data.game.ts;
+    showGameMeta(data);
     if (data.game.won != 'false') {
       gameWon(data.game.won);
     } else {
       updateBoard(data);
     }
-
-    if (data.game.turn === data.user) { 
+    if (data.game.turn === data.user) {
       console.log('your turn!');
       if (data.game.turn_state === "pick_letters") {
         pickPhase();
@@ -210,6 +199,7 @@ function updateGame(data, prevBoard) {
     } else {
       console.log('opponents turn!');
       waitPhase();
+      xpCircle(data);
     }
   } else {
     data = prevBoard;
@@ -217,6 +207,9 @@ function updateGame(data, prevBoard) {
 }
 
 function pickPhase() {
+  clearTimeout(fiveTimeout);
+  clearTimeout(thirtyTimeout);
+  $('#board .counter').remove();
   $('.spell-overlay').hide();
   $('.wgc-board')
     .on('click', '.board-tile', chooseTile)
@@ -225,6 +218,9 @@ function pickPhase() {
 }
 
 function spellPhase() {
+  clearTimeout(fiveTimeout);
+  clearTimeout(thirtyTimeout);
+  $('.wgc-board').off();
   $('.wgc-board')
     .on('click', '.end', switchTurn)
     .on('click', '.wagick', submitWord)
@@ -238,6 +234,9 @@ function spellPhase() {
 }
 
 function waitPhase() {
+  clearTimeout(fiveTimeout);
+  clearTimeout(thirtyTimeout);
+  $('#board .tile').addClass('wait-phase');
   $('.spell-overlay').hide();
   $('.wgc-board')
     .off('click', '.board-tile', chooseTile)
@@ -275,7 +274,7 @@ function poll(prevBoard) {
         updateGame(data, prevBoard);
       }
     });
-  }, 1000);
+  }, 500);
 }
 
 function clearSpelledWord() {
@@ -307,8 +306,8 @@ function showBoard(game) {
       for (var y = 0; y < game.board[x].length; y++) {
         var tile = newTile(game.board[x][y]);
         $('#row' + x).append(tile);
-      };
-    };
+      }
+    }
   }
 }
 
@@ -317,7 +316,7 @@ function updateBoard(data) {
     for (var y = 0; y < data.game.board[x].length; y++) {
       var prevTile = $('#row'+x+' button:nth-child('+(y+1)+')');
       var nextTile = data.game.board[x][y];
-      if ( prevTile.attr('data-color') !== nextTile.color || 
+      if ( prevTile.attr('data-color') !== nextTile.color ||
            prevTile.attr('data-letter') !== nextTile.letter ) {
         prevTile.replaceWith( newTile(nextTile) );
       }
@@ -325,7 +324,7 @@ function updateBoard(data) {
   }
   updateHand(data);
 }
- 
+
 function gameWon(winning_player) {
   waitPhase();
   alert('This game has been won by: ' + winning_player);
@@ -347,57 +346,90 @@ function gameWon(winning_player) {
 // #############################################################################
 // #############################################################################
 
-
-var thirtyCounter, fiveCounter;
+var thirtyTimeout;
+var fiveTimeout;
 
 function xpCircle(data) {
+  var bonus;
+  var elapsed = (Date.now() - Date.parse(data.game.time_since_switch));
+  if (elapsed < 30000) {
+    bonus = 0;
+  } else if (elapsed > 30000 && elapsed < 35000) {
+    bonus = 1;
+  } else {
+    bonus = Math.floor((1 + (elapsed - 30000) / 5000));
+  }
+  if ( $.contains($('#board')[0], $('.counter')[0]) ) { // delete it
+    $('#board .counter').remove();
+  }
   $('#board').append('<div class="counter">' +
-    '<div class="chart">' +
+      '<div class="chart">' +
       '<div class="backdrop"></div>' +
-      '<span class="number"></span><span class="caption">til bonus XP</span>' +
-    '</div>' +
-    '</div>');
+      '<span class="caption">+<span class="number">' + bonus + '</span> XP</span>' +
+      '</div>' +
+    '</div>'
+  ); // draw container for the time
+
+  if (elapsed < 30000) {
+    thirtyCounter(elapsed);
+    // draw circle at length it should be, timeout for what it should be calls 5 second
+    thirtyTimeout = setTimeout(function() {
+      incrementXP();
+      fiveCounter(0);
+    }, 30000-elapsed);
+  } else {
+    fiveCounter(elapsed);
+    // call 5 second for what it should be, recursively
+  }
+}
+
+function thirtyCounter(elapsed) {
+  var left = 30000-elapsed;
   $('#board .counter .chart').circleProgress({
     value: 1,
     startAngle: -1.57,
     size: 100,
     thickness: 13,
+    animationStartValue: elapsed/30000,
     fill: {
       color: '#016289'
     },
     animation: {
-      duration: 30000,
+      duration: left,
       easing: 'linear'
     }
   });
-  thirtyCounter = setTimeout(function() {
-    $('#board .counter .chart').remove();
-    fiveCounter();
-  }, 30000);
 }
 
-function fiveCounter() {
-  $('#board .counter').append('<div class="chart">' +
-    '<div class="backdrop"></div>' +
-    '<span class="number"></span><span class="caption">+1 XP/5 seconds</span>' +
-  '</div>');
+function incrementXP() {
+  next = parseInt($('#board .counter .caption .number').html()) + 1;
+  $('#board .counter .caption .number').html(next);
+}
+
+function fiveCounter(elapsed) {
+  var left = 5000 - (elapsed % 5000);
+  fiveTimeout = setTimeout(function() {
+    incrementXP();
+    fiveCounter(0);
+  }, left);
   $('#board .counter .chart').circleProgress({
     value: 1,
     startAngle: -1.57,
     size: 100,
     thickness: 13,
+    animationStartValue: 1 - (left/5000),
     fill: {
      color: '#016289'
     },
     animation: {
-     duration: 5000,
-     easing: 'linear'
+     duration: left,
+     easing: 'linear',
+     complete: function() {
+       console.log('xp')
+     }
     }
   });
-  fiveTimeout = setTimeout(function() {
-    $('#board .counter').empty();
-    fiveCounter();
-  }, 5000);
+  // run the animation again but with 0 seconds elapsed
 }
 
 
@@ -410,7 +442,7 @@ function newTile(tile) {
             'id="x' + tile.x + 'y' + tile.y + '">' +
             '<span>' + tile.letter + '</span>' +
             '<span class="score">' + letterScore(tile.letter) + '</span>' +
-          '</button>'
+          '</button>';
 }
 
 function letterScore(letter) {
@@ -418,54 +450,13 @@ function letterScore(letter) {
   return scores[letter];
 }
 
-function showGameMeta(data) {
-  $('.game-header').empty();
-  function activeTurn(id){
-    if (data.game.turn === id) return 'active';
+function tileColor(tile, user, turn) {
+  if (user === turn) {
+    return tile.color;
+  } else {
+    return 'blank';
   }
-  $.each(data.game.players, function(id, player){
-    $('.game-header').append(
-      '<div class="stats ' + player.name + '">' +
-        '<div class="xp"></div>' +
-        '<span class="bar-wrapper">' +
-          '<span class="bar" style="width:' + (player.current_health/player.max_health)*100 + '%">' + player.current_health + "/" + player.max_health +'</span>' +
-        '</span>' +
-      '</div>' +
-
-        //   '<div class="stat xp">' +
-        //     '<span class="xp-caption">XP | ' + '</span>' +
-        //     '<span class="bar-wrapper">' +
-        //       '<span class="bar" style="width:' + (player.experience % 30)/30*100 + '%">' + player.experience + "/" + (player.level)*30 + '</span>' +
-        //     '</span>' +
-        //   '</div>' +
-        //   '<div class="stat gold">' +
-        //     'GOLD | ' +
-        //     '<span class="bar" style="width: 4rem">' + player.gold + '</span>' +
-        //   '</div>' +
-        // '</div>' +
-      '</div>'
-    );
-    $(document).ready(function(){
-        $('.xp').circleProgress({
-            value: 1,
-            startAngle: -1.57,
-            size: 26,
-            thickness: 13,
-            fill: {
-              color: '#016289'
-            }
-        });
-      });
-    });
-  }
-
-  function tileColor(tile, user, turn) {
-    if (user === turn) {
-      return tile.color;
-    } else {
-      return 'blank';
-    }
-  }
+}
 
 // #####################################################################################################################################################
 // #####################################################################################################################################################
@@ -490,7 +481,7 @@ function showGameMeta(data) {
   $.each(data.game.players, function(id, player){
     if (data.game.turn === player.name && player.history !=='') {
       $('.game-header').append(
-        '<div class="recent ' + player.name + '">' + player.history + '</div>'
+        '<div class="recent ' + player.name + '">' + player.history + '!!</div>'
       );
     }
     $('.game-header').append(
