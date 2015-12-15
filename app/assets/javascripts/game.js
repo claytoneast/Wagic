@@ -10,7 +10,7 @@ var ready = function() {
     success: function(data) {
       showBoard(data.game);
       updateHand(data);
-      showGameMeta(data);
+      // showGameMeta(data);gam
       updateGame(data);
       poll(data);
     }
@@ -199,8 +199,8 @@ function updateGame(data, prevBoard) {
     } else {
       console.log('opponents turn!');
       waitPhase();
-      xpCircle(data);
     }
+    xpCircle(data);
   } else {
     data = prevBoard;
   }
@@ -263,19 +263,6 @@ function spellOverlay(cards) {
         '</div>'
       );
     });
-}
-
-function poll(prevBoard) {
-  setInterval(function() {
-    $.ajax({
-      url: '/games/' + id + '/game_board?ts=' + timestamp,
-      type: 'GET',
-      dataType: 'json',
-      success: function(data) {
-        updateGame(data, prevBoard);
-      }
-    });
-  }, 500);
 }
 
 function clearSpelledWord() {
@@ -347,12 +334,61 @@ function gameWon(winning_player) {
 // #############################################################################
 // #############################################################################
 
+function poll(prevBoard) {
+  setInterval(function() {
+    $.ajax({
+      url: '/games/' + id + '/game_board?ts=' + timestamp,
+      type: 'GET',
+      dataType: 'json',
+      success: function(data) {
+        updateGame(data, prevBoard);
+      }
+    });
+  }, 500);
+}
+
+
 var thirtyTimeout;
 var fiveTimeout;
 
 function xpCircle(data) {
-  var bonus;
   var elapsed = (Date.now() - Date.parse(data.game.time_since_switch));
+  // if ( $.contains($('#board')[0], $('.counter')[0]) ) { // delete it
+  //   $('#board .counter').remove();
+  // }
+  $('.board-wrapper .xp.' + inactivePlayer(data)).append(
+    '<div class="counter">' +
+      '<div class="chart">' +
+      // '<div class="backdrop"></div>' +
+      '<span class="caption">+<span class="number">' + 1 + '</span> XP</span>' +
+      '</div>' +
+    '</div>'
+  );
+  if (elapsed < 30000) {
+    thirtyCounter(elapsed, inactivePlayer(data));
+    thirtyTimeout = setTimeout(function() {
+      incrementXP(data);
+      fiveCounter(0, inactivePlayer(data));
+    }, 30000-elapsed);
+  } else {
+    fiveCounter(elapsed, inactivePlayer(data));
+  }
+}
+
+function incrementXP() {
+  $('.board-wrapper .counter .chart .caption').removeClass('fade');
+  setTimeout(function() {
+    $('.board-wrapper .counter .chart .caption').addClass('fade');
+  }, 0);
+                                              // .addClass('fade');
+}
+
+function inactivePlayer(data) {
+  return data.game.turn === 'player1' ? 'player2' : 'player1';
+}
+
+function bonusXP(elapsed) {
+  var bonus;
   if (elapsed < 30000) {
     bonus = 0;
   } else if (elapsed > 30000 && elapsed < 35000) {
@@ -360,36 +396,15 @@ function xpCircle(data) {
   } else {
     bonus = Math.floor((1 + (elapsed - 30000) / 5000));
   }
-  if ( $.contains($('#board')[0], $('.counter')[0]) ) { // delete it
-    $('#board .counter').remove();
-  }
-  $('#board').append('<div class="counter">' +
-      '<div class="chart">' +
-      '<div class="backdrop"></div>' +
-      '<span class="caption">+<span class="number">' + bonus + '</span> XP</span>' +
-      '</div>' +
-    '</div>'
-  ); // draw container for the time
-
-  if (elapsed < 30000) {
-    thirtyCounter(elapsed);
-    // draw circle at length it should be, timeout for what it should be calls 5 second
-    thirtyTimeout = setTimeout(function() {
-      incrementXP();
-      fiveCounter(0);
-    }, 30000-elapsed);
-  } else {
-    fiveCounter(elapsed);
-    // call 5 second for what it should be, recursively
-  }
+  return bonus;
 }
 
-function thirtyCounter(elapsed) {
+function thirtyCounter(elapsed, inactive) {
   var left = 30000-elapsed;
-  $('#board .counter .chart').circleProgress({
+  $('.board-wrapper .xp.' + inactive + ' .chart').circleProgress({
     value: 1,
     startAngle: -1.57,
-    size: 100,
+    size: 80,
     thickness: 13,
     animationStartValue: elapsed/30000,
     fill: {
@@ -402,22 +417,19 @@ function thirtyCounter(elapsed) {
   });
 }
 
-function incrementXP() {
-  next = parseInt($('#board .counter .caption .number').html()) + 1;
-  $('#board .counter .caption .number').html(next);
-}
-
-function fiveCounter(elapsed) {
+function fiveCounter(elapsed, inactive) {
   var left = 5000 - (elapsed % 5000);
   fiveTimeout = setTimeout(function() {
+    // debugger
     incrementXP();
-    fiveCounter(0);
+    fiveCounter(0, inactive);
   }, left);
-  $('#board .counter .chart').circleProgress({
+  // debugger;
+  $('.board-wrapper .xp.' + inactive + ' .chart').circleProgress({
     value: 1,
     startAngle: -1.57,
-    size: 100,
-    thickness: 13,
+    size: 80,
+    thickness: 8,
     animationStartValue: 1 - (left/5000),
     fill: {
      color: '#016289'
