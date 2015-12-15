@@ -26,6 +26,10 @@ var ready = function() {
       spellOverlay(data);
     }
   });
+  $(".hand-wrapper").mousewheel(function(event, delta) {
+      this.scrollLeft -= (delta * 3);
+      event.preventDefault();
+  });
 };
 
 $(document).ready(ready);

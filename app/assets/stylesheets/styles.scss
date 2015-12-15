@@ -2,6 +2,7 @@
 /* line 4, /Users/hello/Desktop/wagick/app/assets/stylesheets/styles.scss */
 $xp: #016289;
 $xp-bright: #0298D4;
+$grey-fade: #FCFCFC;
 
 .flex-column {
   display: flex;
@@ -504,14 +505,14 @@ $xp-bright: #0298D4;
     justify-content: center;
     background: #444;
     padding: 5px;
-    #row0 .tile { animation: bounce .3s }
-    #row1 .tile { animation: bounce .35s }
-    #row2 .tile { animation: bounce .4s }
-    #row3 .tile { animation: bounce .45s }
-    #row4 .tile { animation: bounce .55s }
-    #row5 .tile { animation: bounce .6s }
-    #row6 .tile { animation: bounce .65s }
-    #row7 .tile { animation: bounce .7s }
+    #row0 .tile { animation: bounce .3s, tileFadeIn .3s }
+    #row1 .tile { animation: bounce .35s, tileFadeIn .35s }
+    #row2 .tile { animation: bounce .4s, tileFadeIn .4s }
+    #row3 .tile { animation: bounce .45s, tileFadeIn .45s }
+    #row4 .tile { animation: bounce .55s, tileFadeIn .55s }
+    #row5 .tile { animation: bounce .6s, tileFadeIn .6s }
+    #row6 .tile { animation: bounce .65s, tileFadeIn .65s }
+    #row7 .tile { animation: bounce .7s, tileFadeIn .7s }
 
   }
 }
@@ -539,6 +540,30 @@ $xp-bright: #0298D4;
     transform: none;
   }
 }
+// 
+// @keyframes tileFadeIn {
+//   from, 60%, 75%, 90%, 100% {
+//     animation-timing-function: cubic-bezier(0.215, 0.610, 0.355, 1.000);
+//   }
+//   0% {
+//     opacity: 0;
+//     -webkit-filter: grayscale(100%);
+//     }
+//   60% {
+//     -webkit-filter: grayscale(100%);
+//     }
+//   75% {
+//     -webkit-filter: grayscale(50%);
+//     }
+//   90% {
+//     -webkit-filter: grayscale(20%);
+//     }
+//   100% {
+//     -webkit-filter: grayscale(0%);
+//       opacity: 1;
+//     transform: none;
+//   }
+// }
 
 @keyframes fadeLeft {
   40% {

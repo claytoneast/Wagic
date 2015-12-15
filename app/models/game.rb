@@ -38,9 +38,9 @@ class Game < ActiveRecord::Base
       }
     }
     game_board = []
-    8.times do |i|
+    6.times do |i|
       game_board << []
-      8.times do |j|
+      6.times do |j|
         game_board[i] << { color: random_color, x: i, y: j, letter: random_letter }
       end
     end
@@ -308,8 +308,8 @@ class Game < ActiveRecord::Base
   def add_spaces
     board = self.gamestate['board_state']
     board.each_with_index do |column, index|
-      if column.length < 8
-        (8-column.length).times {column.unshift(random_space_in_column(index))}
+      if column.length < 6
+        (6-column.length).times {column.unshift(random_space_in_column(index))}
       end
     end
   end
@@ -367,9 +367,9 @@ class Game < ActiveRecord::Base
     left = [intCoords[0]-1, intCoords[1]]
     right = [intCoords[0]+1, intCoords[1]]
     neighbors << xy_to_space(above)  if intCoords[1] > 0
-    neighbors << xy_to_space(below)  if intCoords[1] < 7
+    neighbors << xy_to_space(below)  if intCoords[1] < 5
     neighbors << xy_to_space(left)   if intCoords[0] > 0
-    neighbors << xy_to_space(right)  if intCoords[0] < 7
+    neighbors << xy_to_space(right)  if intCoords[0] < 5
     return neighbors.compact
   end
 
