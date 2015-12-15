@@ -409,7 +409,7 @@ function thirtyCounter(elapsed, inactive) {
     value: 1,
     startAngle: -1.57,
     size: 80,
-    thickness: 13,
+    thickness: 8,
     animationStartValue: elapsed/30000,
     fill: {
       color: '#016289'
@@ -488,6 +488,7 @@ function tileColor(tile, user, turn) {
 // #####################################################################################################################################################
 function showGameMeta(data) {
   $('.game-header').empty();
+  $('.xp, .char').remove();
   function activeTurn(id){
     if (data.game.turn === id) return 'active';
     return "inactive";
