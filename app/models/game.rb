@@ -41,7 +41,7 @@ class Game < ActiveRecord::Base
     6.times do |i|
       game_board << []
       6.times do |j|
-        game_board[i] << { color: random_color, x: i, y: j, letter: random_letter }
+        game_board[i] << { color: initial_random_color, x: i, y: j, letter: random_letter }
       end
     end
     initial_board[:board_state] = game_board
@@ -53,8 +53,26 @@ class Game < ActiveRecord::Base
     letters.sample
   end
 
-  def random_color
+  def initial_random_color
     colors = ['blue', 'red', 'orange']
+    colors.sample
+  end
+
+  def random_color
+    blue = 0
+    red = 0
+    orange = 0
+    colors = []
+    self.gamestate['board_state'].each do |column|
+      column.each do |space|
+        blue += 1 if space['color'] == 'blue'
+        red += 1 if space['color'] == 'red'
+        orange += 1 if space['color'] == 'orange'
+      end
+    end
+    (12 + (12-blue)).times {colors << 'blue'}
+    (12 + (12-red)).times {colors << 'red'}
+    (12 + (12-orange)).times {colors << 'orange'}
     colors.sample
   end
 

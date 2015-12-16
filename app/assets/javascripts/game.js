@@ -90,6 +90,7 @@ function chooseCard() {
 
 function chooseTile() {
   console.log('choose tile');
+  $('#board').off();
   var chosenTile = ($(this).attr('data-x') + $(this).attr('data-y')).split('');
   var neighbors = getNeighbors(this);
   neighbors.forEach(function(neighbor) {
@@ -339,16 +340,17 @@ function gameWon(winning_player) {
 // #############################################################################
 
 function poll(prevBoard) {
-  setInterval(function() {
+  setTimeout(function() {
     $.ajax({
       url: '/games/' + id + '/game_board?ts=' + timestamp,
       type: 'GET',
       dataType: 'json',
       success: function(data) {
         updateGame(data, prevBoard);
+        poll(prevBoard);
       }
     });
-  }, 500);
+  }, 1000);
 }
 
 
