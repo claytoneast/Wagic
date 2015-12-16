@@ -1,6 +1,8 @@
 
 /* line 4, /Users/hello/Desktop/wagick/app/assets/stylesheets/styles.scss */
 $xp: #016289;
+$hp: #AB2515;
+$gold: #816C00;
 $xp-bright: #0298D4;
 $grey-fade: #FCFCFC;
 
@@ -359,33 +361,44 @@ width: 100%;
       text-transform: uppercase;
       &.player1 {
         left: 15%;
-        &:after {
-          content: "";
-          position: absolute;
-          border-style: solid;
-          border-color: #DF9405 transparent;
-          display: inline-block;
-          width: 0;
-          border-width: 13px 19px 0px 3px;
-          transform: rotate(0deg);
-          bottom: -10px;
-          left: 3px;
-        }
+        // &:after {
+        //   content: "";
+        //   position: absolute;
+        //   border-style: solid;
+        //   border-color: #DF9405 transparent;
+        //   display: inline-block;
+        //   width: 0;
+        //   border-width: 13px 19px 0px 3px;
+        //   transform: rotate(0deg);
+        //   bottom: -10px;
+        //   left: 3px;
+        // }
       }
       &.player2 {
         right: 15%;
-        &:after {
-          content: "";
-          position: absolute;
-          bottom: -6px;
-          right: 2px;
-          border-style: solid;
-          border-color: #DF9405 transparent;
-          display: inline-block;
-          width: 0;
-          border-width: 0px 3px 13px 19px;
-          transform: rotate(33deg);
-        }
+        // &:after {
+        //   content: "";
+        //   position: absolute;
+        //   bottom: -6px;
+        //   right: 2px;
+        //   border-style: solid;
+        //   border-color: #DF9405 transparent;
+        //   display: inline-block;
+        //   width: 0;
+        //   border-width: 0px 3px 13px 19px;
+        //   transform: rotate(33deg);
+        // }
+      }
+      &.blue {
+        background-color: $xp;
+        color: #fff;
+      }
+      &.red {
+        background-color: $hp;
+        color: #fff;
+      }
+      &.orange {
+        background-color: $gold;
       }
     }
 

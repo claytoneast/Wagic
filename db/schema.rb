@@ -11,10 +11,15 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20151203185317) do
+ActiveRecord::Schema.define(version: 20151216012836) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
+
+  create_table "boards", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
 
   create_table "cards", force: :cascade do |t|
     t.integer  "price"
@@ -26,10 +31,11 @@ ActiveRecord::Schema.define(version: 20151203185317) do
   end
 
   create_table "games", force: :cascade do |t|
-    t.json     "gamestate"
-    t.boolean  "active"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.json     "gamestate"
+    t.boolean  "active"
+    t.integer  "board_size"
   end
 
   create_table "games_users", force: :cascade do |t|

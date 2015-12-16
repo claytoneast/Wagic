@@ -1,9 +1,9 @@
 class Game < ActiveRecord::Base
   has_and_belongs_to_many :users
   before_save :stamp
-
   before_create :set_gamestate
   def set_gamestate
+    self.board_size = 7
     initial_board = {
       board_state: [],
 
@@ -38,9 +38,9 @@ class Game < ActiveRecord::Base
       }
     }
     game_board = []
-    6.times do |i|
+    self.board_size.times do |i|
       game_board << []
-      6.times do |j|
+      self.board_size.times do |j|
         game_board[i] << { color: initial_random_color, x: i, y: j, letter: random_letter }
       end
     end
@@ -142,7 +142,7 @@ class Game < ActiveRecord::Base
       remove_letters_from_hand(word, hand)
       check_won
       check_level
-      self.gamestate['players'][user]['history'] = parsed_word
+      self.gamestate['players'][user]['history'] = {word: parsed_word, color: word.first[:color]}
       self.save
       return parsed_word
     else
@@ -168,7 +168,7 @@ class Game < ActiveRecord::Base
     player[1]['level'] = 3 if player[1]['experience'] >= 50 && player[1]['experience'] < 90
     player[1]['level'] = 4 if player[1]['experience'] >= 90 && player[1]['experience'] < 140
     player[1]['level'] = 5 if player[1]['experience'] >= 140 && player[1]['experience'] < 200
-    player[1]['level'] = 6 if player[1]['experience'] >= 200 && player[1]['experience'] < 270
+    player[1]['level'] = 6 if player[1]['experience'] >= 200
     end
   end
 
@@ -326,8 +326,8 @@ class Game < ActiveRecord::Base
   def add_spaces
     board = self.gamestate['board_state']
     board.each_with_index do |column, index|
-      if column.length < 6
-        (6-column.length).times {column.unshift(random_space_in_column(index))}
+      if column.length < self.board_size
+        (self.board_size-column.length).times {column.unshift(random_space_in_column(index))}
       end
     end
   end
@@ -385,9 +385,9 @@ class Game < ActiveRecord::Base
     left = [intCoords[0]-1, intCoords[1]]
     right = [intCoords[0]+1, intCoords[1]]
     neighbors << xy_to_space(above)  if intCoords[1] > 0
-    neighbors << xy_to_space(below)  if intCoords[1] < 5
+    neighbors << xy_to_space(below)  if intCoords[1] < (self.board_size -1)
     neighbors << xy_to_space(left)   if intCoords[0] > 0
-    neighbors << xy_to_space(right)  if intCoords[0] < 5
+    neighbors << xy_to_space(right)  if intCoords[0] < (self.board_size -1)
     return neighbors.compact
   end
 

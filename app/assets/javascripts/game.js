@@ -495,12 +495,8 @@ function showGameMeta(data) {
     if (data.game.turn === id) return 'active';
     return "inactive";
   }
+
   $.each(data.game.players, function(id, player){
-    if (data.game.turn === player.name && player.history !=='') {
-      $('.game-header').append(
-        '<div class="recent ' + player.name + '">' + player.history + '!!</div>'
-      );
-    }
     $('.game-header').append(
       '<div class="stats ' + player.name + '">' +
         '<span class="bar-wrapper">' +
@@ -515,6 +511,11 @@ function showGameMeta(data) {
       '</div>' +
       '<div class="char ' + activeTurn(id) + ' ' + player.name + '"></div>'
     );
+    if (data.game.turn === player.name && player.history !=='') {
+      $('.game-header').append(
+        '<div class="recent ' + player.name + ' ' + player.history.color + '">' + player.history.word + '!!</div>'
+      );
+    }
     var next = {
       '1': 20, '2': 50, '3': 90, '4': 140, '5': 200, '6': 270
     };
@@ -530,6 +531,19 @@ function showGameMeta(data) {
         });
     });
   });
+  $('.game-header').append(
+    '<span class="turn"></span>'
+  );
+  // debugger
+  if (data.game.turn === data.player) {
+    $('.game-header .turn').append(
+      'Your turn!'
+    );
+  } else {
+    $('.game-header .turn').append(
+      "enemy's turn!"
+    );
+  }
   $('.game-header .' + data.game.turn + '-name').addClass('this-turn');
 }
 
