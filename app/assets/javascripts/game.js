@@ -1,7 +1,10 @@
+/* jshint jquery: true, browser: true, devel: true */
+"use strict";
+var id, cards, timestamp;
 var ready = function() {
-  var id = parseInt($("#game-id").text()),
-      cards =[];
-  var timestamp = Math.floor(Date.now() / 1000);
+  id = parseInt($("#game-id").text());
+  cards = [];
+  timestamp = Math.floor(Date.now() / 1000);
   //Fetch Board
   $.ajax({
     url: "/games/" + id + "/game_board",
@@ -9,8 +12,8 @@ var ready = function() {
     dataType: "json",
     success: function(data) {
       showBoard(data.game);
+      buildGameMeta(data);
       updateHand(data);
-      // showGameMeta(data);gam
       updateGame(data);
       poll(data);
     }
@@ -23,7 +26,8 @@ var ready = function() {
     dataType: "json",
     async: false,
     success: function(data) {
-      spellOverlay(data);
+      cards = data;
+      spellOverlay();
     }
   });
   $(".hand-wrapper").mousewheel(function(event, delta) {
@@ -37,7 +41,7 @@ $(document).on('page:load', ready);
 
 
 function wagicWord(data) {
-  showGameMeta(data);
+  updateGameMeta(data);
   clearSpelledWord();
   updateGame(data);
 }
@@ -115,7 +119,7 @@ function useCard(card_id) {
     data: 'card_id=' + card_id,
     dataType: 'json',
     success: function(data) {
-      fCard = findCard(card_id);
+      var fCard = findCard(card_id);
       if (data !== false) {
         if (fCard.name == 'Heal') {
           healCard(data);
@@ -126,7 +130,6 @@ function useCard(card_id) {
         } else if (fCard.name == 'Switcheroo') {
           switcherooCard(data);
         }
-
       } else {
         alert("You do not have the gold for that card.");
       }
@@ -141,32 +144,29 @@ function findCard(card_id) {
       foundCard = cards[i];
       break;
     }
-    return foundCard;
   }
   return foundCard;
 }
 
 function healCard(data) {
-  showGameMeta(data);
+  // showGameMeta(data);
 }
 
 function switcherooCard(data) {
-  showHand(data);
-  showGameMeta(data);
-  reloadHandListeners();
+  // showGameMeta(data);
 }
 
 function clusterCard(data) {
-  showBoard(data);
-  showGameMeta(data);
+  // showBoard(data);
+  // showGameMeta(data);
 }
 
 function doubledipCard(data) {
-  $('#board .cards').removeClass('show-cards').empty();
+  // $('#board .cards').removeClass('show-cards').empty();
 }
 
 function resetHandPlayArea() {
-  tiles = $('.spell').children().detach();
+  var tiles = $('.spell').children().detach();
   $('.hand-wrapper').append(tiles);
 }
 
@@ -188,7 +188,7 @@ function updateGame(data, prevBoard) {
   if (data.game) {
     console.log('[board updated]');
     timestamp = data.game.ts;
-    showGameMeta(data);
+    updateGameMeta(data);
     if (data.game.won != 'false') {
       gameWon(data.game.won);
     } else {
@@ -254,9 +254,8 @@ function waitPhase() {
 }
 
 
-function spellOverlay(cards) {
+function spellOverlay() {
     $('.spell-overlay').show();
-
     cards.forEach(function(card) {
       $('#board .spell-overlay .cards').append(
         '<div class="card flex-column ' + card.name + '" id="' + card.id + '">' +
@@ -359,17 +358,6 @@ var fiveTimeout;
 
 function xpCircle(data) {
   var elapsed = (Date.now() - Date.parse(data.game.time_since_switch));
-  // if ( $.contains($('#board')[0], $('.counter')[0]) ) { // delete it
-  //   $('#board .counter').remove();
-  // }
-  $('.board-wrapper .xp.' + inactivePlayer(data)).append(
-    '<div class="counter">' +
-      '<div class="chart">' +
-      // '<div class="backdrop"></div>' +
-      '<span class="caption">+<span class="number">' + 1 + '</span> XP</span>' +
-      '</div>' +
-    '</div>'
-  );
   if (elapsed < 30000) {
     thirtyCounter(elapsed, inactivePlayer(data));
     thirtyTimeout = setTimeout(function() {
@@ -405,47 +393,26 @@ function bonusXP(elapsed) {
   return bonus;
 }
 
-function thirtyCounter(elapsed, inactive) {
+function thirtyCounter(elapsed) {
   var left = 30000-elapsed;
-  $('.board-wrapper .xp.' + inactive + ' .chart').circleProgress({
-    value: 1,
-    startAngle: -1.57,
-    size: 80,
-    thickness: 8,
-    animationStartValue: elapsed/30000,
-    fill: {
-      color: '#016289'
-    },
-    animation: {
-      duration: left,
-      easing: 'linear'
-    }
-  });
+  var start = Math.round((1-(left/30000))*100);
+  $('.game-header .turn .bar').width(start + '%');
+  $('.game-header .turn .bar').animate({
+    width: '100%'
+  }, left);
 }
 
-function fiveCounter(elapsed, inactive) {
+function fiveCounter(elapsed) {
   var left = 5000 - (elapsed % 5000);
+  var start = Math.round((1-(left/5000))*100);
+  $('.game-header .turn .bar').stop()
+                              .width(start + '%')
+                              .animate({
+                                width: '100%'
+                              }, left, 'linear');
   fiveTimeout = setTimeout(function() {
-    // debugger
-    incrementXP();
-    fiveCounter(0, inactive);
+    fiveCounter(0);
   }, left);
-  // debugger;
-  $('.board-wrapper .xp.' + inactive + ' .chart').circleProgress({
-    value: 1,
-    startAngle: -1.57,
-    size: 80,
-    thickness: 8,
-    animationStartValue: 1 - (left/5000),
-    fill: {
-     color: '#016289'
-    },
-    animation: {
-     duration: left,
-     easing: 'linear'
-    }
-  });
-  // run the animation again but with 0 seconds elapsed
 }
 
 
@@ -488,63 +455,73 @@ function tileColor(tile, user, turn) {
 // #####################################################################################################################################################
 // #####################################################################################################################################################
 // #####################################################################################################################################################
-function showGameMeta(data) {
-  $('.game-header').empty();
-  $('.xp, .char').remove();
-  function activeTurn(id){
-    if (data.game.turn === id) return 'active';
-    return "inactive";
-  }
+function activeTurn(data, id){
+  if (data.game.turn === id) return 'active';
+  return "inactive";
+}
 
-  $.each(data.game.players, function(id, player){
+function nextXP(level) {
+  var next = {'1': 20, '2': 50, '3': 90, '4': 140, '5': 200, '6': 270};
+  return next[level];
+}
+
+function buildGameMeta(data) {
+    $.each(data.game.players, function(id, player){
+      $('.game-header').append(
+        '<div class="stats ' + player.name + '">' +
+          '<span class="bar-wrapper">' +
+            '<span class="bar" style="width:' + (player.current_health/player.max_health)*100 + '%">' +
+            player.current_health + "/" + player.max_health +'</span>' +
+          '</span>' +
+          '<span class="gold ' + player.name + '">x' + player.gold + '</span>' +
+        '</div>'
+      );
+      $('.board-wrapper').append(
+        '<div class="xp ' + player.name + '">' +
+          '<span class="xp-text">lvl' + '<span class="xp-num">' + player.level + '</span><span>' +
+        '</div>' +
+        '<div class="char ' + activeTurn(data, id) + ' ' + player.name + '"></div>'
+      );
+      if (data.game.turn === player.name && player.history !=='') {
+        $('.game-header').append(
+          '<div class="recent ' + player.name + ' ' + player.history.color + '">' + player.history.word + '!!</div>'
+        );
+      }
+
+      $(document).ready(function(){
+          $('.xp.' + player.name).circleProgress({
+              value: player.experience/nextXP(player.level),
+              startAngle: -1.57,
+              size: 26,
+              thickness: 13,
+              fill: {
+                color: '#016289'
+              }
+          });
+      });
+    });
     $('.game-header').append(
-      '<div class="stats ' + player.name + '">' +
-        '<span class="bar-wrapper">' +
-          '<span class="bar" style="width:' + (player.current_health/player.max_health)*100 + '%">' + player.current_health + "/" + player.max_health +'</span>' +
-        '</span>' +
-        '<span class="gold ' + player.name + '">x' + player.gold + '</span>' +
+      '<div class="turn">' +
+        '<div class="inner">' +
+          '<div class="bar"></div>' +
+          '<div class="text"></div>' +
+        '</div>' +
       '</div>'
     );
-    $('.board-wrapper').append(
-      '<div class="xp ' + player.name + '">' +
-        '<span class="xp-text">lvl' + '<span class="xp-num">' + player.level + '</span><span>' +
-      '</div>' +
-      '<div class="char ' + activeTurn(id) + ' ' + player.name + '"></div>'
-    );
-    if (data.game.turn === player.name && player.history !=='') {
-      $('.game-header').append(
-        '<div class="recent ' + player.name + ' ' + player.history.color + '">' + player.history.word + '!!</div>'
+    if (data.game.turn === data.user) {
+      $('.game-header .text').append(
+        'Your turn!'
+      );
+    } else {
+      $('.game-header .text').append(
+        "enemy's turn!"
       );
     }
-    var next = {
-      '1': 20, '2': 50, '3': 90, '4': 140, '5': 200, '6': 270
-    };
-    $(document).ready(function(){
-        $('.xp.' + player.name).circleProgress({
-            value: player.experience/(next[player.level]),
-            startAngle: -1.57,
-            size: 26,
-            thickness: 13,
-            fill: {
-              color: '#016289'
-            }
-        });
-    });
-  });
-  $('.game-header').append(
-    '<span class="turn"></span>'
-  );
-  // debugger
-  if (data.game.turn === data.player) {
-    $('.game-header .turn').append(
-      'Your turn!'
-    );
-  } else {
-    $('.game-header .turn').append(
-      "enemy's turn!"
-    );
-  }
-  $('.game-header .' + data.game.turn + '-name').addClass('this-turn');
+}
+
+
+function updateGameMeta(data) {
+
 }
 
 function getNeighbors(space) {
@@ -558,8 +535,8 @@ function getNeighbors(space) {
       if (checkArray.indexOf(String(getCoords(space))) <= -1) { // if not in there do this
         checkArray.push(String(getCoords(space))); // push into check array
         colorBlock.push(space);
-        neighbors = findAllNeighbors(space); // returns coordinates, not UI objects
-        sameNeighbors = colorNeighbors(neighbors, getColor(space)); // returns an array
+        var neighbors = findAllNeighbors(space); // returns coordinates, not UI objects
+        var sameNeighbors = colorNeighbors(neighbors, getColor(space)); // returns an array
         if (sameNeighbors.length > 0) { // if this array has something in it then send it to getBlock
           getBlock(sameNeighbors);
         } else {
@@ -578,7 +555,7 @@ var colorNeighbors = function (neighbors, color) {
   var sameColorNeighbors = [];
 
   neighbors.forEach(function(neighbor) {
-    foundNeighbor = $('#x' + neighbor[0] + 'y' + neighbor[1]);
+    var foundNeighbor = $('#x' + neighbor[0] + 'y' + neighbor[1]);
     if (getColor(foundNeighbor) == color) {
       sameColorNeighbors.push(foundNeighbor);
     }
@@ -603,11 +580,114 @@ var findAllNeighbors = function (space) {
 };
 
 var getCoords = function(element) {
-  x = parseInt($(element).attr('data-x'));
-  y = parseInt($(element).attr('data-y'));
+  var x = parseInt($(element).attr('data-x'));
+  var y = parseInt($(element).attr('data-y'));
   return [x, y];
 };
 
 var getColor = function(element) {
   return $(element).attr('data-color');
 };
+
+
+
+
+
+// #######################################################################
+// #######################################################################
+// #######################################################################
+// #######################################################################
+// #######################################################################
+// #######################################################################
+// #######################################################################
+// #######################################################################
+//
+
+//
+// function xpCircle(data) {
+//   // var elapsed = (Date.now() - Date.parse(data.game.time_since_switch));
+//   // $('.board-wrapper .xp.' + inactivePlayer(data)).append(
+//   //   '<div class="counter">' +
+//   //     '<div class="chart">' +
+//   //     // '<div class="backdrop"></div>' +
+//   //     '<span class="caption">+<span class="number">' + 1 + '</span> XP</span>' +
+//   //     '</div>' +
+//   //   '</div>'
+//   // );
+//   // if (elapsed < 30000) {
+//   //   thirtyCounter(elapsed, inactivePlayer(data));
+//   //   thirtyTimeout = setTimeout(function() {
+//   //     incrementXP(data);
+//   //     fiveCounter(0, inactivePlayer(data));
+//   //   }, 30000-elapsed);
+//   // } else {
+//   //   fiveCounter(elapsed, inactivePlayer(data));
+//   // }
+// }
+//
+// function incrementXP() {
+//   $('.board-wrapper .counter .chart .caption').removeClass('fade');
+//   setTimeout(function() {
+//     $('.board-wrapper .counter .chart .caption').addClass('fade');
+//   }, 0);
+//                                               // .addClass('fade');
+// }
+//
+// function inactivePlayer(data) {
+//   return data.game.turn === 'player1' ? 'player2' : 'player1';
+// }
+//
+// function bonusXP(elapsed) {
+//   var bonus;
+//   if (elapsed < 30000) {
+//     bonus = 0;
+//   } else if (elapsed > 30000 && elapsed < 35000) {
+//     bonus = 1;
+//   } else {
+//     bonus = Math.floor((1 + (elapsed - 30000) / 5000));
+//   }
+//   return bonus;
+// }
+//
+// function thirtyCounter(elapsed, inactive) {
+//   var left = 30000-elapsed;
+//   $('.board-wrapper .xp.' + inactive + ' .chart').circleProgress({
+//     value: 1,
+//     startAngle: -1.57,
+//     size: 80,
+//     thickness: 8,
+//     animationStartValue: elapsed/30000,
+//     fill: {
+//       color: '#016289'
+//     },
+//     animation: {
+//       duration: left,
+//       easing: 'linear'
+//     }
+//   });
+// }
+//
+// function fiveCounter(elapsed, inactive) {
+//   var left = 5000 - (elapsed % 5000);
+//   fiveTimeout = setTimeout(function() {
+//     // debugger
+//     incrementXP();
+//     fiveCounter(0, inactive);
+//   }, left);
+//   // debugger;
+//   $('.board-wrapper .xp.' + inactive + ' .chart').circleProgress({
+//     value: 1,
+//     startAngle: -1.57,
+//     size: 80,
+//     thickness: 8,
+//     animationStartValue: 1 - (left/5000),
+//     fill: {
+//      color: '#016289'
+//     },
+//     animation: {
+//      duration: left,
+//      easing: 'linear'
+//     }
+//   });
+//   // run the animation again but with 0 seconds elapsed
+// }

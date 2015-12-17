@@ -28,3 +28,20 @@ things we did delete
   </div>
 <% end %>
 </div>
+
+
+
+<% @game.gamestate['players'].each do |player| %>
+  <div class="stats <%= player[1]['name'] %>">
+    <span class="bar-wrapper">
+      <span class="bar" style='width: <%= player[1]['current_health'] %>'></span>
+      <span class='gold <%= player[1]['name'] %>'>x<%= player[1]['gold'] %></span>
+    </span>
+
+  </div>
+<% end %>
+<% if @game.gamestate['turn'] === @user && @game.gamestate[@user]['history'] !='' %>
+  <div class="recent <%= @game.gamestate[@user]['name'] %><%= @game.gamestate[@user]['history']['color'] %>">
+    <%= @game.gamestate[@user]['history']['word'] %>!!
+  </div>
+<% end %>

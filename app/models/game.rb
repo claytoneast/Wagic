@@ -76,6 +76,10 @@ class Game < ActiveRecord::Base
     colors.sample
   end
 
+  def active_turn(id)
+    self.gamestate['turn'] === id ? 'active' : 'inactive'
+  end
+
 
   def win_game
     self.gamestate['players']['player1']['health'] -= 150
@@ -267,6 +271,7 @@ class Game < ActiveRecord::Base
   end
 
   def update_user_hand!(space, user)
+
     block = getBlock(xy_to_space(parse_coords(space)))
     letters_to_hand(block, user)
     self.gamestate['turn_state'] = 'picked_letters'
@@ -385,9 +390,9 @@ class Game < ActiveRecord::Base
     left = [intCoords[0]-1, intCoords[1]]
     right = [intCoords[0]+1, intCoords[1]]
     neighbors << xy_to_space(above)  if intCoords[1] > 0
-    neighbors << xy_to_space(below)  if intCoords[1] < (self.board_size -1)
+    neighbors << xy_to_space(below)  if intCoords[1] < self.board_size-1
     neighbors << xy_to_space(left)   if intCoords[0] > 0
-    neighbors << xy_to_space(right)  if intCoords[0] < (self.board_size -1)
+    neighbors << xy_to_space(right)  if intCoords[0] < self.board_size-1
     return neighbors.compact
   end
 
