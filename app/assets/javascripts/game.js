@@ -74,6 +74,7 @@
           alert('That word is not allowed');
         } else {
           wagicWord(data);
+          animateWord(data);
         }
       }
     });
@@ -251,7 +252,7 @@
 
 
   function spellOverlay() {
-      $('.spell-overlay').show();
+      // $('.spell-overlay').show();
       cards.forEach(function(card) {
         $('#board .spell-overlay .cards').append(
           '<div class="card flex-column ' + card.name + '" id="' + card.id + '">' +
@@ -278,8 +279,10 @@
         'data-color="' + tile.color + '"' +
         'data-letter="' + tile.letter + '"' +
         'data-x="' + tile.x + '"' +
-        'data-y="' + tile.y + '"' +
-        '>' + tile.letter + '</button>'
+        'data-y="' + tile.y + '">' +
+          tile.letter +
+          '<span class="score">' + letterScore(tile.letter) + '</span>' +
+        '</button>'
       );
     });
   }
@@ -353,7 +356,6 @@
   var fiveTimeout;
 
   function xpCircle(data) {
-
     var elapsed = (Date.now() - Date.parse(data.game.time_since_switch));
     if (elapsed < 30000) {
       thirtyCounter(elapsed, inactivePlayer(data));
@@ -367,10 +369,10 @@
   }
 
   function incrementXP() {
-    var cap  = $('div.board-wrapper .caption')
-    cap.removeClass('fade');
+    var xp = $('div.inactive .bonus-xp');
+    xp.removeClass('fade');
     setTimeout(function() {
-      cap.addClass('fade');
+      xp.addClass('fade');
     }, 0);
   }
 
@@ -409,6 +411,7 @@
                                   width: '100%'
                                 }, left, 'linear');
     fiveTimeout = setTimeout(function() {
+      incrementXP();
       fiveCounter(0);
     }, left);
   }
@@ -453,6 +456,29 @@
   // #####################################################################################################################################################
   // #####################################################################################################################################################
   // #####################################################################################################################################################
+  function animateWord(data) {
+    function hideRecent(recent_div) {
+      recent_div.hide();
+    }
+    var current = data.game.turn,
+    p = data.game.players[current],
+    recent = $('.char.' + current + ' .recent');
+    if (p.history.length > 0) {
+      var last = p.history.slice(-1)[0].slice(-1)[0];
+      if (last !== undefined && (Date.now() - (Date.parse(last.time)))/1000 < 10) {
+        recent.css('width', last.word.length * 20 + 'px')
+              .removeClass('red blue orange')
+              .addClass(last.color);
+        $('.recent span').hide().text(last.word + '!!');
+        setTimeout(function() {
+          recent.show();
+          recent.find('span').show();
+        },50);
+        setTimeout(hideRecent, 10000-(Date.now() - (Date.parse(last.time))), recent);
+      }
+    }
+  }
+
   function activeTurn(turn, id){
     if (turn === id) return 'active';
     return "inactive";
@@ -472,18 +498,18 @@
               player.current_health + "/" + player.max_health +'</span>' +
             '</span>' +
             '<span class="gold ' + player.name + '">x' + player.gold + '</span>' +
-          '</div>' +
-          '<div class="recent ' + player.name + ' ' + player.history.color + '">' + player.history.word + '!!</div>'
+          '</div>'
         );
         $('.board-wrapper').append(
             '<div class="xp ' + player.name + '">' +
               '<span class="xp-text">lvl' + '<span class="xp-num">' + player.level + '</span><span>' +
             '</div>' +
-            '<div class="char ' + activeTurn(data.game.turn, id) + ' ' + player.name + '"></div>'
+            '<div class="char ' + activeTurn(data.game.turn, id) + ' ' + player.name + '">' +
+              '<div class="image"></div>' +
+              '<div class="bonus-xp">+1XP</div>' +
+              '<div class="recent"><span></span></div>' +
+            '</div>'
         );
-        if (data.game.turn === player.name) {
-          $('.recent').show();
-        }
         $(document).ready(function(){
             $('.xp.' + player.name).circleProgress({
                 value: (player.experience - nextXP(player.level - 1))/(nextXP(player.level)),
@@ -500,8 +526,10 @@
         '<div class="turn">' +
           '<div class="inner">' +
             '<div class="bar"></div>' +
-            '<div class="text"></div>' +
+            '<div class="text">' +
+            '</div>' +
           '</div>' +
+
         '</div>'
       );
       if (data.game.turn === data.user) {
@@ -513,6 +541,7 @@
           "enemy's turn!"
         );
       }
+      animateWord(data);
   }
 
 
@@ -521,8 +550,8 @@
     text = header.find('.text');
     $.each(data.game.players, function(name, player) {
       var stats = header.find('.stats.' + player.name),
-      xp = $('.board-wrapper .xp.' + player.name),
-      recent = header.find('.recent.' + player.name);
+      xp = $('.board-wrapper .xp.' + player.name);
+      // recent = $('.char.' + player.name + ' .recent');
       stats.find('.bar')
            .width((player.current_health/player.max_health*100) + '%')
            .text(player.current_health + '/' + player.max_health);
@@ -530,15 +559,18 @@
            .text('x' + player.gold);
       xp.find('.xp-num')
            .text(player.level);
-      $('.board-wrapper .char.' + player.name).addClass(activeTurn(data.game.turn, name));
-      if (data.game.turn === player.name && player.history !=='') {
-        recent.removeClass('red blue orange')
-              .addClass(player.history.color)
-              .text(player.history.word)
-              .show();
-      } else {
-        recent.hide();
-      }
+      $('.board-wrapper .char.' + player.name).removeClass('inactive active').addClass(activeTurn(data.game.turn, name));
+      // if (data.game.turn === player.name && player.history !=='') {
+      //   recent.removeClass('red blue orange')
+      //         .addClass(player.history.color)
+      //         .text(player.history.word + '!!')
+      //         .hide();
+      //   setTimeout(function() {
+      //     recent.show();
+      //   }, 10)
+      // } else {
+      //   recent.hide();
+      // }
       xp.circleProgress({
           value: (player.experience - nextXP(player.level - 1))/(nextXP(player.level)),
           startAngle: -1.57,
@@ -554,7 +586,7 @@
     } else {
       text.text( "enemy's turn!" );
     }
-
+    animateWord(data);
   }
 
   function getNeighbors(space) {
@@ -635,90 +667,3 @@
 // #######################################################################
 // #######################################################################
 //
-
-//
-// function xpCircle(data) {
-//   // var elapsed = (Date.now() - Date.parse(data.game.time_since_switch));
-//   // $('.board-wrapper .xp.' + inactivePlayer(data)).append(
-//   //   '<div class="counter">' +
-//   //     '<div class="chart">' +
-//   //     // '<div class="backdrop"></div>' +
-//   //     '<span class="caption">+<span class="number">' + 1 + '</span> XP</span>' +
-//   //     '</div>' +
-//   //   '</div>'
-//   // );
-//   // if (elapsed < 30000) {
-//   //   thirtyCounter(elapsed, inactivePlayer(data));
-//   //   thirtyTimeout = setTimeout(function() {
-//   //     incrementXP(data);
-//   //     fiveCounter(0, inactivePlayer(data));
-//   //   }, 30000-elapsed);
-//   // } else {
-//   //   fiveCounter(elapsed, inactivePlayer(data));
-//   // }
-// }
-//
-// function incrementXP() {
-//   $('.board-wrapper .counter .chart .caption').removeClass('fade');
-//   setTimeout(function() {
-//     $('.board-wrapper .counter .chart .caption').addClass('fade');
-//   }, 0);
-//                                               // .addClass('fade');
-// }
-//
-// function inactivePlayer(data) {
-//   return data.game.turn === 'player1' ? 'player2' : 'player1';
-// }
-//
-// function bonusXP(elapsed) {
-//   var bonus;
-//   if (elapsed < 30000) {
-//     bonus = 0;
-//   } else if (elapsed > 30000 && elapsed < 35000) {
-//     bonus = 1;
-//   } else {
-//     bonus = Math.floor((1 + (elapsed - 30000) / 5000));
-//   }
-//   return bonus;
-// }
-//
-// function thirtyCounter(elapsed, inactive) {
-//   var left = 30000-elapsed;
-//   $('.board-wrapper .xp.' + inactive + ' .chart').circleProgress({
-//     value: 1,
-//     startAngle: -1.57,
-//     size: 80,
-//     thickness: 8,
-//     animationStartValue: elapsed/30000,
-//     fill: {
-//       color: '#016289'
-//     },
-//     animation: {
-//       duration: left,
-//       easing: 'linear'
-//     }
-//   });
-// }
-//
-// function fiveCounter(elapsed, inactive) {
-//   var left = 5000 - (elapsed % 5000);
-//   fiveTimeout = setTimeout(function() {
-//     incrementXP();
-//     fiveCounter(0, inactive);
-//   }, left);
-//   $('.board-wrapper .xp.' + inactive + ' .chart').circleProgress({
-//     value: 1,
-//     startAngle: -1.57,
-//     size: 80,
-//     thickness: 8,
-//     animationStartValue: 1 - (left/5000),
-//     fill: {
-//      color: '#016289'
-//     },
-//     animation: {
-//      duration: left,
-//      easing: 'linear'
-//     }
-//   });
-//   // run the animation again but with 0 seconds elapsed
-// }

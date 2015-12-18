@@ -21,7 +21,7 @@ class Game < ActiveRecord::Base
           level: 1,
           gold: 0,
           name: 'player1',
-          history: '',
+          history: [[]],
           hand: []
         },
         player2: {
@@ -32,7 +32,7 @@ class Game < ActiveRecord::Base
         level: 1,
         gold: 0,
         name: 'player2',
-        history: '',
+        history: [],
         hand: []
         }
       }
@@ -146,7 +146,8 @@ class Game < ActiveRecord::Base
       remove_letters_from_hand(word, hand)
       check_won
       check_level
-      self.gamestate['players'][user]['history'] = {word: parsed_word, color: word.first[:color]}
+      historied = {word: parsed_word, color: word.first[:color], time: Time.zone.now}
+      self.gamestate['players'][user]['history'].last << historied
       self.save
       return parsed_word
     else
@@ -346,6 +347,7 @@ class Game < ActiveRecord::Base
     game = self.gamestate
     game['turn_state'] = 'pick_letters'
     game['turn'] = game['turn'] == 'player1' ? 'player2' : 'player1'
+    game['players'][game['turn']]['history'] << []
     diff = Time.zone.now - Time.parse(game['time_since_switch']) - 30
     if diff >= 0
       xp = 1 + (diff/5).floor
