@@ -234,7 +234,11 @@ class Game < ActiveRecord::Base
       heal = score < (player['max_health'] - player['current_health']) ? score : player['max_health']
       player['health'] += heal
     elsif color == 'red'
-      dmg = (0.5 * player['level']) + 0.5
+      if player['level'] == 1
+        dmg = 0
+      else
+        dmg = player['level']
+      end
       self.gamestate['players']['player2']['current_health'] -= score*dmg if user == 'player1'
       self.gamestate['players']['player1']['current_health'] -= score*dmg if user == 'player2'
     elsif color == 'orange'
