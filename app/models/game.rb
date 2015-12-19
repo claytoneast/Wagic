@@ -173,7 +173,9 @@ class Game < ActiveRecord::Base
     player[1]['level'] = 3 if player[1]['experience'] >= 50 && player[1]['experience'] < 90
     player[1]['level'] = 4 if player[1]['experience'] >= 90 && player[1]['experience'] < 140
     player[1]['level'] = 5 if player[1]['experience'] >= 140 && player[1]['experience'] < 200
-    player[1]['level'] = 6 if player[1]['experience'] >= 200
+    player[1]['level'] = 6 if player[1]['experience'] >= 200 && player[1]['experience'] < 270
+    player[1]['level'] = 7 if player[1]['experience'] >= 270 && player[1]['experience'] < 350
+    player[1]['level'] = 8 if player[1]['experience'] >= 350 && player[1]['experience'] < 440
     end
   end
 
@@ -225,6 +227,7 @@ class Game < ActiveRecord::Base
                 z: 10
               }
     word.each { |letter| score += scores[letter.to_sym] }
+    score += (word.length - 4)*3 if word.length > 4
     return score
   end
 
@@ -234,11 +237,14 @@ class Game < ActiveRecord::Base
       heal = score < (player['max_health'] - player['current_health']) ? score : player['max_health']
       player['health'] += heal
     elsif color == 'red'
-      if player['level'] == 1
-        dmg = 0
-      else
-        dmg = player['level']
-      end
+      dmg = 0 if player['level'] == 1
+      dmg = 2 if player['level'] == 2
+      dmg = 4 if player['level'] == 3
+      dmg = 6 if player['level'] == 4
+      dmg = 8 if player['level'] == 5
+      dmg = 10 if player['level'] == 6
+      dmg = 12 if player['level'] == 7
+      dmg = 15 if player['level'] >= 7
       self.gamestate['players']['player2']['current_health'] -= score + dmg if user == 'player1'
       self.gamestate['players']['player1']['current_health'] -= score + dmg if user == 'player2'
     elsif color == 'orange'
