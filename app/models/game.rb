@@ -239,8 +239,8 @@ class Game < ActiveRecord::Base
       else
         dmg = player['level']
       end
-      self.gamestate['players']['player2']['current_health'] -= score*dmg if user == 'player1'
-      self.gamestate['players']['player1']['current_health'] -= score*dmg if user == 'player2'
+      self.gamestate['players']['player2']['current_health'] -= score + dmg if user == 'player1'
+      self.gamestate['players']['player1']['current_health'] -= score + dmg if user == 'player2'
     elsif color == 'orange'
       player['gold'] += score
     elsif color == 'blue'
