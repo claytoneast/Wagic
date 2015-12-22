@@ -49,11 +49,13 @@
 
   //Event Functions
   function hoverBoard() {
-    var neighbors = getNeighbors(this);
-    neighbors.forEach(function(neighbor) {
-      neighbor = neighbor.split(',');
-      $('#x' + neighbor[0] + 'y' + neighbor[1]).toggleClass('selected');
-    });
+    if (!this.classList.contains('black')) {
+      var neighbors = getNeighbors(this);
+      neighbors.forEach(function(neighbor) {
+        neighbor = neighbor.split(',');
+        $('#x' + neighbor[0] + 'y' + neighbor[1]).toggleClass('selected');
+      });
+    }
   }
 
   function submitWord() {
@@ -121,20 +123,6 @@
       data: 'card_id=' + card_id,
       dataType: 'json',
       success: function(data) {
-        var fCard = findCard(card_id);
-        if (data !== false) {
-          if (fCard.name == 'Heal') {
-            healCard(data);
-          } else if (fCard.name == 'Cluster') {
-            clusterCard(data);
-          } else if (fCard.name == 'Doubledip') {
-              doubledipCard(data);
-          } else if (fCard.name == 'Switcheroo') {
-            switcherooCard(data);
-          }
-        } else {
-          alert("You do not have the gold for that card.");
-        }
       }
     });
   }
@@ -150,17 +138,39 @@
     return foundCard;
   }
 
-  function healCard(data) {
-  }
-
-  function switcherooCard(data) {
-  }
-
-  function clusterCard(data) {
-  }
-
-  function doubledipCard(data) {
-  }
+  (function(cards, $, undefined) {
+    cardFunctions.clusterCard = function(data) {
+      $('.board-tile').removeClass('red orange blue')
+                      .addClass('black');
+      console.log('cluster card');
+    };
+    cardFunctions.cardClear = function() {
+      var tiles = $('.board-tile');
+      tiles.removeClass('black blank');
+      $.each(tiles, (function(i, tile) {
+        tile.classList.add(tile.dataset.color);
+      }));
+      console.log('card clear');
+    };
+    cardFunctions.healCard = function() {
+      console.log('heal card');
+    };
+    cardFunctions.switcherooCard = function() {
+      console.log('switch card');
+    };
+    cardFunctions.doubledipCard = function() {
+      console.log('doubledip card');
+    };
+    cardFunctions.randomoniumCard = function(data) {
+      data.game.events.slice(-1)[0].tiles.forEach(function(tile) {
+        var found = $('#x' + tile.x + 'y' + tile.y);
+        found.removeClass('red orange blue')
+             .addClass('blank')
+             .attr('data-color', 'blank');
+      });
+      console.log('randomonium card');
+    };
+  }(window.cardFunctions = window.cardFunctions || {}, jQuery));
 
   function resetHandPlayArea() {
     var tiles = $('.spell').children().detach();
@@ -313,6 +323,15 @@
         }
       }
     }
+    var events = data.game.events;
+    // debugger
+    if (events.slice(-1)[0] !== undefined) {
+      events.forEach(function(e) {
+        cardFunctions[e.name](data);
+      });
+    } else {
+      cardFunctions.cardClear();
+    }
     updateHand(data);
   }
 
@@ -415,7 +434,6 @@
       fiveCounter(0);
     }, left);
   }
-
 
   function newTile(tile) {
     return '<button class="tile board-tile ' + tile.color + '"' +
@@ -560,17 +578,6 @@
       xp.find('.xp-num')
            .text(player.level);
       $('.board-wrapper .char.' + player.name).removeClass('inactive active').addClass(activeTurn(data.game.turn, name));
-      // if (data.game.turn === player.name && player.history !=='') {
-      //   recent.removeClass('red blue orange')
-      //         .addClass(player.history.color)
-      //         .text(player.history.word + '!!')
-      //         .hide();
-      //   setTimeout(function() {
-      //     recent.show();
-      //   }, 10)
-      // } else {
-      //   recent.hide();
-      // }
       xp.circleProgress({
           value: (player.experience - nextXP(player.level - 1))/(nextXP(player.level)),
           startAngle: -1.57,

@@ -12,6 +12,8 @@ class Game < ActiveRecord::Base
       turn_state: 'pick_letters',
       ts: Time.now.to_f * 1000,
       time_since_switch: '',
+      events: [],
+      turn_count: 0,
       players: {
         player1: {
           id: '',
@@ -114,7 +116,7 @@ class Game < ActiveRecord::Base
   end
 
   def random_space_in_column(column)
-    jspace = { color: random_color, 'x': "#{column}", 'y': '', 'letter': random_letter }
+    space = { color: random_color, 'x': "#{column}", 'y': '', 'letter': random_letter }
   end
 
   def user_check(check_user)
@@ -133,6 +135,14 @@ class Game < ActiveRecord::Base
     end
     g['time_since_switch'] = Time.zone.now
     self.save
+  end
+
+  def events_handler
+    g = self.gamestate
+    events = g['events']
+    events.each_with_index do |e, i|
+      events.delete_if { |e| e && e['start'] + e['duration'] < g['turn_count']}
+    end
   end
 
   def wagic_word(word, user)
@@ -365,6 +375,8 @@ class Game < ActiveRecord::Base
       game['players'][game['turn']]['experience'] += xp
     end
     game['time_since_switch'] = Time.zone.now
+    game['turn_count'] += 1
+    self.events_handler
     self.check_level
     self.save
   end
@@ -423,9 +435,11 @@ class Game < ActiveRecord::Base
       players: gamestate['players'],
       turn: gamestate['turn'],
       turn_state: gamestate['turn_state'],
+      turn_count: gamestate['turn_count'],
       time_since_switch: gamestate['time_since_switch'],
       won: gamestate['won'],
-      ts: gamestate['ts']
+      ts: gamestate['ts'],
+      events: gamestate['events']
     }
   end
 
@@ -433,15 +447,3 @@ class Game < ActiveRecord::Base
     gamestate['ts'] = Time.now.to_f if gamestate
   end
 end
-
-
-#
-# def self.populate_list
-#   Word.delete_all
-#   File.foreach('db/seeds/wordlist.txt').with_object([]) do |word|
-#     begin
-#       Word.create(name: word.chomp)
-#     rescue ActiveRecord::RecordNotUnique
-#     end
-#   end
-# end
