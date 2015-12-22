@@ -562,7 +562,7 @@
             '<div class="text">' +
             '</div>' +
           '</div>' +
-
+          // '<div class="notifications">Sample Text</div>' +
         '</div>'
       );
       if (data.game.turn === data.user) {
