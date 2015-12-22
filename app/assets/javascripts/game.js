@@ -238,6 +238,10 @@
       .on('click', '.end', switchTurn)
       .on('click', '.wagick', submitWord)
       .on('click', '.card', chooseCard)
+      .on('mouseenter': carSnippet(),
+          'mouseleave': carSnipper())
+      .on('mouseenter', '.card', cardSnippet)
+
       .on('click', '.spell .tile', moveTile)
       .on('click', '.hand-wrapper .tile', moveTile);
     setTimeout(function(){
@@ -262,22 +266,28 @@
 
 
   function spellOverlay() {
-      // $('.spell-overlay').show();
-      cards.forEach(function(card) {
-        $('#board .spell-overlay .cards').append(
-          '<div class="card flex-column ' + card.name + '" id="' + card.id + '">' +
-            '<img src="../card-' + card.name + '.png" class="icon">' +
-            '<div class="price">' +
-              '<div class="gold"></div>' +
-              '<span class="cost">X' + card.price + '</span>' +
-            '</div>' +
-          '</div>'
-        );
-      });
+    var overlay = $('#board .spell-overlay .cards');
+    overlay.append('<div class="effect"><div class="inner"></div></div>');
+    cards.forEach(function(card) {
+      overlay.append(
+        '<div class="card flex-column ' + card.name + '" id="' + card.id + '">' +
+          '<img src="../card-' + card.name + '.png" class="icon">' +
+          '<div class="price">' +
+            '<div class="gold"></div>' +
+            '<span class="cost">X' + card.price + '</span>' +
+          '</div>' +
+        '</div>'
+      );
+    });
   }
 
   function clearSpelledWord() {
     $('.spell').empty();
+  }
+
+  function cardSnippet() {
+    var card = findCard(parseInt(this.id));
+    $('#board .effect .inner').text(card.effect);
   }
 
   function updateHand(data) {
