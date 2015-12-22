@@ -367,7 +367,8 @@ width: 100%;
       margin: 25px 25px 0% 25px;
       justify-content: space-around;
       .effect {
-        display: flex;
+        visibility: none;
+        display: none;
         flex-direction:column;
         justify-content: center;
         align-items: center;
@@ -384,6 +385,13 @@ width: 100%;
           background: #1A2834;
           color: #efefef;
           padding: 4px 10px;
+        }
+        .title {
+          margin: 0;
+          border-bottom: 3px solid #F09B00;
+          text-transform: uppercase;
+          padding: 0 20px;
+          font-weight: 600;
         }
       }
       .card {

@@ -238,10 +238,10 @@
       .on('click', '.end', switchTurn)
       .on('click', '.wagick', submitWord)
       .on('click', '.card', chooseCard)
-      .on('mouseenter': carSnippet(),
-          'mouseleave': carSnipper())
       .on('mouseenter', '.card', cardSnippet)
-
+      .on('mouseleave', '.card', function() {
+        $('#board .effect').css('display', 'none');
+      })
       .on('click', '.spell .tile', moveTile)
       .on('click', '.hand-wrapper .tile', moveTile);
     setTimeout(function(){
@@ -267,7 +267,9 @@
 
   function spellOverlay() {
     var overlay = $('#board .spell-overlay .cards');
-    overlay.append('<div class="effect"><div class="inner"></div></div>');
+    overlay.append('<div class="effect">' +
+                     '<div class="title"></div><div class="inner">' +
+                   '</div></div>');
     cards.forEach(function(card) {
       overlay.append(
         '<div class="card flex-column ' + card.name + '" id="' + card.id + '">' +
@@ -286,8 +288,11 @@
   }
 
   function cardSnippet() {
-    var card = findCard(parseInt(this.id));
-    $('#board .effect .inner').text(card.effect);
+    var card = findCard(parseInt(this.id)),
+    display = $('#board .effect');
+    display.find('.inner').text(card.effect);
+    display.find('.title').text(card.name);
+    display.css('display', 'flex');
   }
 
   function updateHand(data) {
