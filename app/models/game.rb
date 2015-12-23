@@ -6,7 +6,6 @@ class Game < ActiveRecord::Base
     self.board_size = 7
     initial_board = {
       board_state: [],
-
       turn: 'player1',
       won: 'false',
       turn_state: 'pick_letters',
@@ -43,7 +42,7 @@ class Game < ActiveRecord::Base
     self.board_size.times do |i|
       game_board << []
       self.board_size.times do |j|
-        game_board[i] << { color: initial_random_color, x: i, y: j, letter: random_letter }
+        game_board[i] << { color: initial_random_color, x: i, y: j, letter: random_letter, state: 1 }
       end
     end
     initial_board[:board_state] = game_board
@@ -141,7 +140,11 @@ class Game < ActiveRecord::Base
     g = self.gamestate
     events = g['events']
     events.each_with_index do |e, i|
-      events.delete_if { |e| e && e['start'] + e['duration'] < g['turn_count']}
+      if e && e['start'] + e['duration'] < g['turn_count']
+        card = Card.find( e['id'] )
+        card.deactivate(self)
+        events.delete_at(i)
+      end
     end
   end
 
@@ -324,9 +327,6 @@ class Game < ActiveRecord::Base
       chosen_spaces.each do |space|
         board_column = self.gamestate['board_state'][space['x'].to_i]
         board_column.delete_if { |item| hand << item if item['y'] == space['y'] }
-        # if hand.length > 14
-        #   (hand.length - 14).times { hand.shift }
-        # end
       end
     end
     if hand.empty?
@@ -389,7 +389,7 @@ class Game < ActiveRecord::Base
           masterBlock << space
           colorBlock << space
           neighbors = getNeighbors(space)
-          sameNeighbors = sameColorNeighbors(neighbors, space)
+          sameNeighbors = availableNeighbors(neighbors, space)
           recursiveGetBlock(sameNeighbors, masterBlock) if sameNeighbors.length > 0
         end
       end
@@ -421,11 +421,13 @@ class Game < ActiveRecord::Base
     return neighbors.compact
   end
 
-  def sameColorNeighbors(all_neighbors, space)
+  def availableNeighbors(all_neighbors, space)
     colorQueryAgainst = space['color']
     same_neighbors = []
     all_neighbors.each do |neighbor|
-      same_neighbors << neighbor if neighbor['color'] == colorQueryAgainst
+      if neighbor['color'] == colorQueryAgainst && neighbor['state'] === 1
+        same_neighbors << neighbor
+      end
     end
     return same_neighbors
   end

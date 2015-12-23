@@ -3,4 +3,8 @@ class CardDoubledip < Card
     game.gamestate['turn_state'] = 'pick_letters'
     player['gold'] -= self.price
   end
+
+  def deactivate(game)
+
+  end
 end

@@ -6,10 +6,14 @@ class CardCluster < Card
     game.add_spaces
     game.adjust_spaces
     game.gamestate['events'] << {
-      name: 'clusterCard',
+      name: 'cardCluster',
+      id: self.id,
       start: game.gamestate['turn_count'],
       duration: 1
     }
     game.gamestate['players'][player['name']]['gold'] -= self.price
+  end
+  def deactivate(game)
+
   end
 end

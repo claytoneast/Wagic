@@ -139,7 +139,7 @@
   }
 
   (function(cards, $, undefined) {
-    cardFunctions.clusterCard = function(data) {
+    cardFunctions.cardCluster = function(data) {
       $('.board-tile').removeClass('red orange blue')
                       .addClass('black');
       console.log('cluster card');
@@ -152,17 +152,23 @@
       }));
       console.log('card clear');
     };
-    cardFunctions.healCard = function() {
+    cardFunctions.cardHeal = function() {
       console.log('heal card');
     };
-    cardFunctions.switcherooCard = function() {
+    cardFunctions.cardSwitcheroo = function() {
       console.log('switch card');
     };
-    cardFunctions.doubledipCard = function() {
+    cardFunctions.cardDoubledip = function() {
       console.log('doubledip card');
     };
-    cardFunctions.randomoniumCard = function(data) {
-      data.game.events.slice(-1)[0].tiles.forEach(function(tile) {
+    cardFunctions.cardRandomonium = function(data) {
+      var foundEvent = data.game.events.find(function(e, i, array) {
+        if (e.name === 'cardRandomonium') {
+          return e;
+        }
+      });
+      // debugger
+      foundEvent.tiles.forEach(function(tile) {
         var found = $('#x' + tile.x + 'y' + tile.y);
         found.removeClass('red orange blue')
              .addClass('blank')
@@ -273,7 +279,7 @@
     cards.forEach(function(card) {
       overlay.append(
         '<div class="card flex-column ' + card.name + '" id="' + card.id + '">' +
-          '<img src="../card-' + card.name + '.png" class="icon">' +
+          '<img src="../Card' + card.name + '.png" class="icon">' +
           '<div class="price">' +
             '<div class="gold"></div>' +
             '<span class="cost">X' + card.price + '</span>' +

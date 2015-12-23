@@ -4,4 +4,8 @@ class CardHeal < Card
     heal = 15 < (player["max_health"] - player["current_health"]) ? 15 : player["max_health"] - player['current_health']
     player["current_health"] += heal
   end
+
+  def deactivate(game)
+
+  end
 end

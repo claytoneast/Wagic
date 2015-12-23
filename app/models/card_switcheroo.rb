@@ -6,4 +6,8 @@ class CardSwitcheroo < Card
     players['player1']['hand'] = hand2
     players[player['name']]['gold'] -= self.price
   end
+
+  def deactivate(game)
+
+  end
 end
