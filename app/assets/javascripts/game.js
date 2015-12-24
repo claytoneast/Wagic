@@ -302,7 +302,7 @@
   }
 
   function updateHand(data) {
-    var hand = data.game.players[data.user].hand; // rewrite this shit so it gets it from the game data
+    var hand = data.game.players[data.user].hand;
     $('#user-hand .hand-wrapper').empty();
     hand.forEach(function(tile) {
       $('#user-hand .hand-wrapper').append(
